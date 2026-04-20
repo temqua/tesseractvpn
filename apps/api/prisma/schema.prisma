@@ -142,11 +142,23 @@ model BotApiRequestException {
   message        String
   url            String
   method         String
-  statusCode     Int
-  requestBody    String?
-  requestHeaders String?
+  statusCode     Int      @map(name: "status_code")
+  requestBody    String?  @map(name: "request_body")
+  requestHeaders String?  @map(name: "request_headers")
 
   @@map("audit_bot_api_request_exceptions")
+}
+
+model BotIncomingMessages {
+  id         Int     @id @default(autoincrement())
+  telegramId String  @map(name: "telegram_id")
+  firstName  String  @map(name: "first_name")
+  lastName   String? @map(name: "last_name")
+  username   String?
+  isBot      Boolean @default(false) @map(name: "is_bot")
+  text       String?
+
+  @@map("bot_incoming_messages")
 }
 
 enum VPNProtocol {

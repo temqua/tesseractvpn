@@ -15,7 +15,9 @@ import { paymentsHelpMessage } from './payments.commands';
 import { plansHelpMessage } from './plans.commands';
 import { serversHelpMessage } from './servers.commands';
 import { userHelpMessage } from './users.commands';
+import { BotIncomingMessagesClient } from '../entities/bot-incoming-messages/client';
 const usersClient = new UsersClient();
+const incomingMessagesClient = new BotIncomingMessagesClient();
 const mainCommandsList = {
 	ping: {
 		regexp: /\/ping$/,
@@ -85,10 +87,21 @@ bot.on('message', async (msg: Message) => {
 	logger.log(`${msg?.from?.id} (${msg?.from?.first_name}) — ${msg.text}`);
 
 	const hasCommand = globalHandler.hasActiveCommand();
-	if (msg.from.id !== env.ADMIN_USER_ID && hasCommand) {
-		const activeCmd = globalHandler.getActiveCommand();
-		if (activeCmd.context[CmdCode.Command] !== VPNUserCommand.RequestCreation) {
-			return;
+
+	if (msg.from?.id !== env.ADMIN_USER_ID) {
+		incomingMessagesClient.create({
+			firstName: msg.from?.first_name,
+			telegramId: msg.from?.id.toString(),
+			isBot: msg.from?.is_bot,
+			lastName: msg.from?.last_name,
+			username: msg.from?.username,
+			text: msg.text,
+		});
+		if (hasCommand) {
+			const activeCmd = globalHandler.getActiveCommand();
+			if (activeCmd.context[CmdCode.Command] !== VPNUserCommand.RequestCreation) {
+				return;
+			}
 		}
 	}
 

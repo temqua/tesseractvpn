@@ -9,6 +9,7 @@ import { DeliveredMessagesModule } from './entities/users/delivered-messages/del
 import { UsersActionsModule } from './entities/users/users-actions/users-actions.module';
 import { UsersModule } from './entities/users/users.module';
 import { LogHttpExceptionFilter } from './log-exceptions-filter';
+import { BotIncomingMessagesModule } from './entities/bot-incoming-messages/bot-incoming-messages.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { LogHttpExceptionFilter } from './log-exceptions-filter';
     UsersServersModule,
     UsersActionsModule,
     DeliveredMessagesModule,
+    BotIncomingMessagesModule,
   ],
   providers: [
     {
