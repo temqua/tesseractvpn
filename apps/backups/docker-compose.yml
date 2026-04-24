@@ -18,9 +18,9 @@ services:
             retries: 5
         networks:
             - tesseract-network
-    backups-bot:
-        image: backups-bot
-        container_name: backups-bot
+    tesseract-backups-bot:
+        image: tesseract-backups-bot
+        container_name: tesseract-backups-bot
         build:
             context: .
             dockerfile: ./Dockerfile
