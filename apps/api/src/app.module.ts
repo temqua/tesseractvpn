@@ -10,6 +10,8 @@ import { UsersActionsModule } from './entities/users/users-actions/users-actions
 import { UsersModule } from './entities/users/users.module';
 import { LogHttpExceptionFilter } from './log-exceptions-filter';
 import { BotIncomingMessagesModule } from './entities/bot-incoming-messages/bot-incoming-messages.module';
+import { AuthModule } from './entities/auth/auth.module';
+import { BotUnauthorizedUserActionsModule } from './entities/bot-unauthorized-user-actions/bot-unauthorized-user-actions.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { BotIncomingMessagesModule } from './entities/bot-incoming-messages/bot-
     UsersActionsModule,
     DeliveredMessagesModule,
     BotIncomingMessagesModule,
+    AuthModule,
+    BotUnauthorizedUserActionsModule,
   ],
   providers: [
     {

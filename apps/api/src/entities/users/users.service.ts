@@ -45,6 +45,10 @@ export class UsersService {
     return await this.repository.findOne(id);
   }
 
+  async findOneByUsername(username: string) {
+    return await this.repository.findUniqueByUsername(username);
+  }
+
   async findUnpaid() {
     return await this.repository.getUnpaidUsers();
   }

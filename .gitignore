@@ -312,3 +312,6 @@ sheets-api.json
 .env.ignored
 *.tar.gz
 debug
+.vscode/tasks.json
+.env.bot
+.env.api

@@ -107,6 +107,23 @@ export class UsersRepository {
     });
   }
 
+  async findUniqueByUsername(username: string): Promise<VPNUser | null> {
+    return await this.databaseService.client.user.findUnique({
+      where: {
+        username,
+      },
+      include: {
+        payer: true,
+        payments: {
+          orderBy: {
+            paymentDate: 'desc',
+          },
+        },
+        dependants: true,
+      },
+    });
+  }
+
   async getByUsername(username: string): Promise<VPNUser | null> {
     return await this.databaseService.client.user.findUnique({
       where: {

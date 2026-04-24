@@ -44,6 +44,7 @@ import {
 	UsersContext,
 	UserUpdateCommandContext,
 } from './users.types';
+import { BotUnauthorizedUserActionsClient } from '../bot-unathorized-user-actions/client';
 
 export class UsersService {
 	constructor(
@@ -55,6 +56,7 @@ export class UsersService {
 		private plansClient: PlansClient = new PlansClient(),
 		private paymentsClient: PaymentsClient = new PaymentsClient(),
 		private expensesClient: ExpensesClient = new ExpensesClient(),
+		private unauthorizedUserActions = new BotUnauthorizedUserActionsClient(),
 	) {}
 
 	params = new Map();
@@ -719,8 +721,8 @@ currently have a trial period `,
 ${user.price} рублей стоит месяц
 ${env.PAYMENT_CARDS}
 `;
-					await bot.sendMessage(user.telegramId, messg);
-					await this.client.captureDelivery(user.id, messg);
+					bot.sendMessage(user.telegramId, messg);
+					this.client.captureDelivery(user.id, messg);
 				} catch (err) {
 					logger.error(err);
 				}
@@ -1380,6 +1382,15 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 		const lang = from?.is_bot || !from ? 'ru' : from?.language_code;
 
 		if (start) {
+			this.unauthorizedUserActions.create({
+				firstName: from.first_name,
+				telegramId: from.id.toString(),
+				action: dict.sign_up[lang],
+				command: 'VPNUserCommand.RequestCreation',
+				isBot: from.is_bot,
+				lastName: from.last_name,
+				username: from.username,
+			});
 			if (!from.username) {
 				bot.sendMessage(message.chat.id, dict.enter_username[lang]);
 				this.signUpParams.set('interaction', true);

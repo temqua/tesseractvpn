@@ -15,6 +15,7 @@ datasource db {
 model User {
   id                 Int               @id @default(autoincrement())
   username           String            @unique
+  password           String?
   telegramId         String?           @unique @map(name: "telegram_id")
   telegramLink       String?           @unique @map(name: "telegram_link")
   createdAt          DateTime          @default(now()) @map("created_at")
@@ -35,6 +36,7 @@ model User {
   rwUUID             String?           @map(name: "rw_uuid")
   payerId            Int?              @map(name: "payer_id")
   referrerId         Int?              @map(name: "referrer_id")
+  role               UserRole          @default(CLIENT) @map(name: "user_role")
   devices            Device[]          @default([])
   payments           Payment[]
   payer              User?             @relation("UserToPayer", fields: [payerId], references: [id])
@@ -94,9 +96,11 @@ model Plan {
 }
 
 model VpnServer {
-  id    Int            @id @default(autoincrement())
-  name  String
-  url   String
+  id        Int      @id @default(autoincrement())
+  name      String
+  url       String
+  createdAt DateTime @default(now()) @map("created_at")
+
   users ServersUsers[]
 
   @@map("vpn_servers")
@@ -150,15 +154,30 @@ model BotApiRequestException {
 }
 
 model BotIncomingMessages {
-  id         Int     @id @default(autoincrement())
-  telegramId String  @map(name: "telegram_id")
-  firstName  String  @map(name: "first_name")
-  lastName   String? @map(name: "last_name")
+  id         Int      @id @default(autoincrement())
+  telegramId String   @map(name: "telegram_id")
+  firstName  String   @map(name: "first_name")
+  lastName   String?  @map(name: "last_name")
   username   String?
-  isBot      Boolean @default(false) @map(name: "is_bot")
+  isBot      Boolean  @default(false) @map(name: "is_bot")
   text       String?
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("bot_incoming_messages")
+}
+
+model BotUnauthorizedUserActions {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now()) @map("created_at")
+  telegramId String   @map(name: "telegram_id")
+  firstName  String   @map(name: "first_name")
+  lastName   String?  @map(name: "last_name")
+  username   String?
+  isBot      Boolean  @default(false) @map(name: "is_bot")
+  command    String?
+  action     String?
+
+  @@map("bot_unauthorized_user_actions")
 }
 
 enum VPNProtocol {
@@ -185,4 +204,11 @@ enum ExpenseCategory {
   Servers
 
   @@map("expense_category")
+}
+
+enum UserRole {
+  CLIENT
+  ADMIN
+
+  @@map("user_role")
 }
