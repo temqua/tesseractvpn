@@ -17,16 +17,14 @@ on:
                     - norway
                     - sweden
                     - us2
-                    - albania-subs
-                    - austria-subs
-                    - brazil-subs
-                    - croatia-subs
+                    - albania
+                    - brazil
+                    - croatia
                     - de-subs
                     - fin-subs
                     - fin2-subs
                     - fin3-subs
                     - fin4-subs
-                    - greece-subs
                     - korea-subs
                     - norway-subs
                     - neth-subs
@@ -35,7 +33,7 @@ on:
                     - spain-subs
                     - sweden-subs
                     - swiss-subs
-                    - turkey-subs
+                    - turkey
 
 jobs:
     build-deploy:
