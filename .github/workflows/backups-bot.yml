@@ -1,0 +1,48 @@
+name: Build and Transfer tesseract-backups-bot
+
+run-name: "Build and Transfer tesseract-backups-bot"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.BOT_SERVER_SSH_KEY }}
+
+      - name: Add VPN server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.BOT_SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Build Docker image
+        run: docker compose build tesseract-backups-bot --no-cache
+
+      - name: Upload Docker image
+        run: |
+          docker save tesseract-backups-bot:latest \
+          | gzip \
+          | ssh -o ServerAliveInterval=15 \
+                  -o ServerAliveCountMax=8 \
+                  ${{ secrets.BOT_SERVER_USERNAME }}@${{ secrets.BOT_SERVER_HOST }} \
+                  'gunzip | docker load'
+
+      - name: Upload docker-compose.yml via SSH
+        run: |
+          cat docker-compose.yml | ssh ${{ secrets.BOT_SERVER_USERNAME }}@${{ secrets.BOT_SERVER_HOST }} "cat > ${{ secrets.BOT_SERVER_APP_DIRECTORY }}/docker-compose.yml"
+
+      - name: Restart container on server
+        run: |
+          ssh ${{ secrets.BOT_SERVER_USERNAME }}@${{ secrets.BOT_SERVER_HOST }} '
+            cd ${{ secrets.BOT_SERVER_APP_DIRECTORY }}
+            docker compose down tesseract-backups-bot && docker compose up tesseract-backups-bot -d
+          '
