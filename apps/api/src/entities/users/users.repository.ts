@@ -42,6 +42,8 @@ export class UsersRepository {
           },
         },
         dependants: true,
+        referrer: true,
+        referrals: true,
       },
     });
   }
@@ -58,11 +60,23 @@ export class UsersRepository {
         payer: true,
         payments: true,
         dependants: true,
+        referrer: true,
+        referrals: true,
       },
     });
   }
 
   async remove(id: number) {
+    await this.databaseService.client.userAction.deleteMany({
+      where: {
+        userId: id,
+      },
+    });
+    await this.databaseService.client.messageDelivery.deleteMany({
+      where: {
+        userId: id,
+      },
+    });
     return await this.databaseService.client.user.delete({
       where: {
         id,
@@ -83,6 +97,8 @@ export class UsersRepository {
           },
         },
         dependants: true,
+        referrer: true,
+        referrals: true,
       },
     });
   }
@@ -103,6 +119,8 @@ export class UsersRepository {
           },
         },
         dependants: true,
+        referrer: true,
+        referrals: true,
       },
     });
   }
@@ -120,6 +138,8 @@ export class UsersRepository {
           },
         },
         dependants: true,
+        referrer: true,
+        referrals: true,
       },
     });
   }
@@ -137,6 +157,8 @@ export class UsersRepository {
           },
         },
         dependants: true,
+        referrer: true,
+        referrals: true,
       },
     });
   }
@@ -157,6 +179,8 @@ export class UsersRepository {
           },
         },
         dependants: true,
+        referrer: true,
+        referrals: true,
       },
     });
   }

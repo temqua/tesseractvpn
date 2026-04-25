@@ -577,6 +577,35 @@ export const payersKeyboard: InlineKeyboardButton[][] = [
 	],
 ];
 
+export const referrersKeyboard: InlineKeyboardButton[][] = [
+	[
+		{
+			text: 'Show all',
+			callback_data: JSON.stringify({
+				[CmdCode.Scope]: CommandScope.Users,
+				[CmdCode.Context]: {
+					[CmdCode.Command]: VPNUserCommand.Update,
+					propId: UpdateUserPropsMap.referrerId,
+					accept: 1,
+				},
+				[CmdCode.Processing]: 1,
+			}),
+		},
+		{
+			text: 'Set null',
+			callback_data: JSON.stringify({
+				[CmdCode.Scope]: CommandScope.Users,
+				[CmdCode.Context]: {
+					[CmdCode.Command]: VPNUserCommand.Update,
+					propId: UpdateUserPropsMap.referrerId,
+					id: null,
+				},
+				[CmdCode.Processing]: 1,
+			}),
+		},
+	],
+];
+
 export function getUserContactKeyboard(requestId: UserRequest, text = 'Share user contact') {
 	return {
 		keyboard: [

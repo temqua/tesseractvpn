@@ -19,6 +19,7 @@ import { globalHandler } from '../../global.handler';
 import logger from '../../logger';
 import pollOptions from '../../pollOptions';
 import { formatDate, setActiveStep } from '../../utils';
+import { BotUnauthorizedUserActionsClient } from '../bot-unauthorized-user-actions/client';
 import { ExpensesClient } from '../expenses/expenses.client';
 import { CertificatesService } from '../keys/certificates.service';
 import { PaymentsClient } from '../payments/payments.client';
@@ -33,6 +34,7 @@ import {
 	getUserKeyboard,
 	getUserMenu,
 	payersKeyboard,
+	referrersKeyboard,
 	replySetNullPropKeyboard,
 	skipButton,
 } from './users.buttons';
@@ -44,7 +46,7 @@ import {
 	UsersContext,
 	UserUpdateCommandContext,
 } from './users.types';
-import { BotUnauthorizedUserActionsClient } from '../bot-unathorized-user-actions/client';
+import { BotUnauthorizedMessageDeliveriesClient } from '../bot-unauthorized-message-deliveries/client';
 
 export class UsersService {
 	constructor(
@@ -57,6 +59,7 @@ export class UsersService {
 		private paymentsClient: PaymentsClient = new PaymentsClient(),
 		private expensesClient: ExpensesClient = new ExpensesClient(),
 		private unauthorizedUserActions = new BotUnauthorizedUserActionsClient(),
+		private unauthorizedMessageDeliveries = new BotUnauthorizedMessageDeliveriesClient(),
 	) {}
 
 	params = new Map();
@@ -79,6 +82,7 @@ export class UsersService {
 	};
 	updateSteps = {
 		payerSearch: false,
+		referrerSearch: false,
 		apply: false,
 	};
 	private signUpSteps = {
@@ -87,8 +91,17 @@ export class UsersService {
 	};
 	private signUpParams = new Map();
 	private newUsers = new Map();
-	private textProps = ['telegramLink', 'firstName', 'lastName', 'username', 'subLink', 'rwLink'];
-	private boolProps = ['active', 'free'];
+	private textProps = [
+		'telegramLink',
+		'firstName',
+		'lastName',
+		'username',
+		'subLink',
+		'rwLink',
+		'languageCode',
+		'rwUsername',
+	];
+	private boolProps = ['active', 'free', 'muted'];
 	private numberProps = ['price'];
 	private paymentRequestParams = new Map();
 
@@ -135,6 +148,7 @@ export class UsersService {
 			this.setCreateStep('username');
 			return;
 		}
+
 		if (this.createSteps.username) {
 			this.params.set('username', message?.text);
 			await bot.sendMessage(chatId, 'Enter first name');
@@ -418,29 +432,11 @@ export class UsersService {
 			return;
 		}
 		if (context.prop === 'payerId') {
-			if (context.id === null) {
-				this.setUpdateStep('apply');
-			}
-			if (this.updateSteps.payerSearch) {
-				this.getPossiblePayers(message as Message, context, this.params.get('updateId'));
-				this.setUpdateStep('apply');
-				return;
-			}
-			const updateId = this.params.get('updateId');
-			try {
-				const updated = await this.client.update(updateId, {
-					payerId: context.id != null ? Number(context.id) : (context.id as null | undefined),
-				});
-				logger.success(`Payer has been successfully set to ${context.id} for user ${updateId}`);
-				await this.sendUserMenu(chatId, updated);
-			} catch (error) {
-				const errorMessage = `Error while updating payerId ${error}`;
-				logger.error(errorMessage);
-				await bot.sendMessage(chatId, errorMessage);
-			} finally {
-				this.params.clear();
-				globalHandler.finishCommand();
-			}
+			this.updatePayer(message, context, chatId);
+			return;
+		}
+		if (context.prop === 'referrerId') {
+			this.updateReferrer(message, context, chatId);
 			return;
 		}
 		if (numberProp && ['null', 'undefined'].includes(typeof message?.text)) {
@@ -474,6 +470,58 @@ export class UsersService {
 			newValue = message?.user_shared?.user_id.toString() ?? '';
 		}
 		this.applyUpdate(chatId, Number(context.id), context.prop, newValue);
+	}
+
+	async updatePayer(message: Message | null, context: UserUpdateCommandContext, chatId: number) {
+		if (context.id === null) {
+			this.setUpdateStep('apply');
+		}
+		if (this.updateSteps.payerSearch) {
+			this.getPossiblePayers(message as Message, context, this.params.get('updateId'));
+			this.setUpdateStep('apply');
+			return;
+		}
+		const updateId = this.params.get('updateId');
+		try {
+			const updated = await this.client.update(updateId, {
+				payerId: context.id != null ? Number(context.id) : (context.id as null | undefined),
+			});
+			logger.success(`Payer has been successfully set to ${context.id} for user ${updateId}`);
+			await this.sendUserMenu(chatId, updated);
+		} catch (error) {
+			const errorMessage = `Error while updating payerId ${error}`;
+			logger.error(errorMessage);
+			await bot.sendMessage(chatId, errorMessage);
+		} finally {
+			this.params.clear();
+			globalHandler.finishCommand();
+		}
+	}
+
+	async updateReferrer(message: Message | null, context: UserUpdateCommandContext, chatId: number) {
+		if (context.id === null) {
+			this.setUpdateStep('apply');
+		}
+		if (this.updateSteps.referrerSearch) {
+			this.getPossibleReferrers(message as Message, context, this.params.get('updateId'));
+			this.setUpdateStep('apply');
+			return;
+		}
+		const updateId = this.params.get('updateId');
+		try {
+			const updated = await this.client.update(updateId, {
+				referrerId: context.id != null ? Number(context.id) : (context.id as null | undefined),
+			});
+			logger.success(`Payer has been successfully set to ${context.id} for user ${updateId}`);
+			await this.sendUserMenu(chatId, updated);
+		} catch (error) {
+			const errorMessage = `Error while updating payerId ${error}`;
+			logger.error(errorMessage);
+			await bot.sendMessage(chatId, errorMessage);
+		} finally {
+			this.params.clear();
+			globalHandler.finishCommand();
+		}
 	}
 
 	async delete(msg: Message, context: UsersContext, start: boolean) {
@@ -714,15 +762,12 @@ currently have a trial period `,
 			createdAt: parseISO(u.createdAt),
 		}));
 		for (const user of users) {
-			if (user.telegramId) {
-				const message = user.createdAt < subMonths(new Date(), 1) ? 'пробного периода' : 'подписки';
+			if (user.telegramId && !user.muted) {
+				const isTrial = user.createdAt < subMonths(new Date(), 1);
 				try {
-					const messg = `Уважаемый пользователь! Время ${message} истекло. Необходимо оплатить впн @whirliswaiting
-${user.price} рублей стоит месяц
-${env.PAYMENT_CARDS}
-`;
-					bot.sendMessage(user.telegramId, messg);
-					this.client.captureDelivery(user.id, messg);
+					const msg = dict.expired[user.languageCode](isTrial);
+					bot.sendMessage(user.telegramId, msg);
+					this.client.captureDelivery(user.id, msg);
 				} catch (err) {
 					logger.error(err);
 				}
@@ -1390,9 +1435,14 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 				isBot: from.is_bot,
 				lastName: from.last_name,
 				username: from.username,
+				languageCode: from.language_code,
 			});
 			if (!from.username) {
 				bot.sendMessage(message.chat.id, dict.enter_username[lang]);
+				this.unauthorizedMessageDeliveries.create({
+					message: dict.enter_username[lang],
+					telegramId: message.chat.id.toString(),
+				});
 				this.signUpParams.set('interaction', true);
 				return;
 			}
@@ -1412,6 +1462,10 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 				chat_id: message.chat.id,
 			});
 		}
+		this.unauthorizedMessageDeliveries.create({
+			message: dict.wait_for_admin[lang],
+			telegramId: message.chat.id.toString(),
+		});
 		bot.sendMessage(
 			env.ADMIN_USER_ID,
 			`Пользователь с id=${from.id} username=${username}, first_name=${from.first_name}, last_name=${from.last_name} оставил заявку на создание`,
@@ -1451,7 +1505,8 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 		// 	return;
 		// }
 
-		const fr: TGUser = this.newUsers.get(context.tgid);
+		const fr: TGUser & { username: string } = this.newUsers.get(context.tgid);
+
 		try {
 			const newUser: User = await this.client.create({
 				username: fr.username,
@@ -1459,29 +1514,31 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 				telegramId: String(fr.id),
 				telegramLink: `@${fr.username}`,
 				lastName: fr.last_name,
+				languageCode: fr.language_code,
 			});
 			await bot.sendMessage(env.ADMIN_USER_ID, `User ${newUser.username} has been successfully created`);
 			let finalUser = newUser;
-			// if (context.accept) {
-			// const result = await this.createPasarguardUser({
-			// 	message,
-			// 	user: newUser,
-			// 	isAdmin: true,
-			// 	isNew: true,
-			// });
+
 			finalUser = await this.createRWUser(newUser.username, newUser.id);
-			// }
-			// delete context.accept;
+
 			await this.sendNewUserMenu(env.ADMIN_USER_ID, finalUser);
-			await bot.sendMessage(newUser.telegramId, dict.request_approved[lang]);
+
 			const messg = dict.installation_guide[lang](finalUser.rwLink);
-			await bot.sendMessage(newUser.telegramId, messg, {
-				parse_mode: 'MarkdownV2',
-			});
-			await bot.sendMessage(newUser.telegramId, dict.payment_intro[lang](finalUser.price, finalUser.currency));
-			await bot.sendMessage(newUser.telegramId, dict.start[lang], {
-				reply_markup: getUserKeyboard(lang),
-			});
+			if (newUser.telegramId) {
+				await bot.sendMessage(newUser.telegramId, dict.request_approved[lang]);
+				await bot.sendMessage(newUser.telegramId, messg);
+				await bot.sendMessage(
+					newUser.telegramId,
+					dict.payment_intro[lang](finalUser.price, finalUser.currency),
+				);
+				await bot.sendMessage(newUser.telegramId, dict.start[lang], {
+					reply_markup: getUserKeyboard(lang),
+				});
+				this.client.captureDelivery(newUser.id, dict.request_approved[lang]);
+				this.client.captureDelivery(newUser.id, messg);
+				this.client.captureDelivery(newUser.id, dict.payment_intro[lang](finalUser.price, finalUser.currency));
+				this.client.captureDelivery(newUser.id, dict.start[lang]);
+			}
 		} catch (error) {
 			logger.error(
 				`[${basename(__filename)}]: Unexpected error occurred while creating user ${fr?.username}: ${error}`,
@@ -1550,6 +1607,20 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 				},
 			);
 			this.setUpdateStep('payerSearch');
+		}
+		if (context.prop === 'referrerId') {
+			this.params.set('updateId', context.id);
+			await bot.editMessageText(
+				'Send start of username for user searching or click on the button to show all users',
+				{
+					chat_id: chatId,
+					message_id: this.params.get('message_id'),
+					reply_markup: {
+						inline_keyboard: referrersKeyboard,
+					},
+				},
+			);
+			this.setUpdateStep('referrerSearch');
 		} else {
 			const foundOptions: string[] = pollOptions[context.prop] ?? [];
 			if (foundOptions.length) {
@@ -1582,6 +1653,48 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 						[CmdCode.Command]: VPNUserCommand.Update,
 						id,
 						propId: UpdateUserPropsMap.payerId,
+					},
+					[CmdCode.Processing]: 1,
+				}),
+			} as InlineKeyboardButton,
+		]);
+		const chunkSize = 50;
+		const chunksCount = Math.ceil(buttons.length / chunkSize);
+		for (let i = 0; i < chunksCount; i++) {
+			const chunk = buttons.slice(i * chunkSize, i * chunkSize + chunkSize);
+			const inlineKeyboard: SendBasicOptions = {
+				reply_markup: {
+					inline_keyboard: [...chunk],
+				},
+			};
+			await bot.sendMessage(message.chat.id, `Select user (part ${i + 1}):`, inlineKeyboard);
+		}
+
+		await bot.sendMessage(message.chat.id, `Total count ${users.length}`);
+	}
+
+	private async getPossibleReferrers(message: Message, context: UsersContext, userId: string) {
+		const response = await this.client.list({
+			orderBy: 'firstName',
+			orderDirection: 'asc',
+		});
+		const possibleReferrers = response.filter(user => user.id !== Number(userId));
+		const users = context.accept
+			? possibleReferrers
+			: possibleReferrers?.filter(u => u.username.startsWith(message?.text ?? ''));
+		if (!users) {
+			await bot.sendMessage(message.chat.id, `No referrers found in system for user ${userId}`);
+			return;
+		}
+		const buttons = users?.map(({ id, username, firstName, lastName }) => [
+			{
+				text: `${username} (${firstName ?? ''} ${lastName ?? ''})`,
+				callback_data: JSON.stringify({
+					[CmdCode.Scope]: CommandScope.Users,
+					[CmdCode.Context]: {
+						[CmdCode.Command]: VPNUserCommand.Update,
+						id,
+						propId: UpdateUserPropsMap.referrerId,
 					},
 					[CmdCode.Processing]: 1,
 				}),
@@ -1681,6 +1794,45 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 				},
 			});
 		}
+		if (user.referrals?.length) {
+			const buttons: InlineKeyboardButton[][] = user.referrals.map(ref => [
+				{
+					text: ref.username,
+					callback_data: JSON.stringify({
+						[CmdCode.Scope]: CommandScope.Users,
+						[CmdCode.Context]: {
+							id: ref.id,
+							[CmdCode.Command]: VPNUserCommand.GetById,
+						},
+					}),
+				},
+			]);
+			await bot.sendMessage(chatId, 'Referrals', {
+				reply_markup: {
+					inline_keyboard: buttons,
+				},
+			});
+		}
+		if (user.referrerId != null) {
+			bot.sendMessage(chatId, 'Referrer', {
+				reply_markup: {
+					inline_keyboard: [
+						[
+							{
+								text: user.referrer.username,
+								callback_data: JSON.stringify({
+									[CmdCode.Scope]: CommandScope.Users,
+									[CmdCode.Context]: {
+										id: user.referrer.id,
+										[CmdCode.Command]: VPNUserCommand.GetById,
+									},
+								}),
+							},
+						],
+					],
+				},
+			});
+		}
 		if (user.payerId != null) {
 			await bot.sendMessage(chatId, 'Payer', {
 				reply_markup: {
@@ -1713,7 +1865,11 @@ Telegram Id: ${user.telegramId}
 Devices: ${user.devices.join(', ')}
 Price: ${user.price}
 Subscription link: ${user.subLink ? env.PASARGUARD_ROOT : ''}${user.subLink}
-Remnawave link: ${user.rwLink}
+RW link: ${user.rwLink}
+RW username: ${user.rwUsername}
+RW UUID: ${user.rwUUID}
+RW ID: ${user.rwId}
+Language Code: ${user.languageCode}
 Created At: ${formatDate(user.createdAt)}\n`;
 		if (user.bank) {
 			baseInfo = baseInfo.concat(`Bank: ${user.bank}\n`);
@@ -1723,6 +1879,9 @@ Created At: ${formatDate(user.createdAt)}\n`;
 		}
 		if (!user.active) {
 			baseInfo = baseInfo.concat('Inactive\n');
+		}
+		if (user.muted) {
+			baseInfo = baseInfo.concat('Muted\n');
 		}
 		return baseInfo;
 	}

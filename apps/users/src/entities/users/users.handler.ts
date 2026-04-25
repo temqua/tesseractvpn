@@ -21,7 +21,7 @@ class UsersCommandsHandler implements ICommandHandler {
 		init: false,
 	};
 	async handle(context: UsersContext, message: Message, from: User, start = false) {
-		context.chatId = message.chat.id;
+		context.chatId = message?.chat?.id;
 		this.state.init = start;
 		logger.log(`[users.handler.ts]: command: ${context[CmdCode.Command]}, start: ${start}`);
 		if (context[CmdCode.Command] === VPNUserCommand.List) {

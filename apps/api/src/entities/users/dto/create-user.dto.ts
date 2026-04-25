@@ -9,12 +9,9 @@ export class CreateUserDto {
   firstName: string;
 
   telegramId: string | null;
-  telegramLink: string | null;
-
-  lastName: string | null;
+  telegramLink?: string;
+  languageCode?: string;
+  lastName?: string;
   payerId: number | null;
   devices?: Device[];
-  subLink: string | null;
-  pasarguardUsername: string | null;
-  pasarguardId: number | null;
 }

@@ -148,9 +148,13 @@ export enum UpdateUserPropsMap {
 	bank = 'b',
 	active = 'a',
 	free = 'fr',
+	muted = 'm',
 	payerId = 'pid',
 	subLink = 's',
 	rwLink = 'rl',
+	rwUsername = 'ru',
+	languageCode = 'lc',
+	referrerId = 'rid',
 }
 
 export enum UpdatePlanPropsMap {

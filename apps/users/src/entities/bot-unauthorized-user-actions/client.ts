@@ -1,7 +1,7 @@
 import client from '../../api-client';
 import logger from '../../logger';
 
-export class CreateBotIncomingMessageDto {
+export class CreateBotUnauthorizedUserActionDto {
 	telegramId: string;
 
 	firstName: string;
@@ -12,13 +12,17 @@ export class CreateBotIncomingMessageDto {
 
 	isBot?: boolean;
 
-	text?: string;
+	command?: string;
+
+	action?: string;
+
+	languageCode?: string;
 }
 
-export class BotIncomingMessagesClient {
-	async create(dto: CreateBotIncomingMessageDto) {
+export class BotUnauthorizedUserActionsClient {
+	async create(dto: CreateBotUnauthorizedUserActionDto) {
 		return client
-			.post(`/bot-incoming-messages`, {
+			.post(`/bot-unauthorized-user-actions`, {
 				body: JSON.stringify({
 					...dto,
 				}),

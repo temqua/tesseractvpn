@@ -210,10 +210,20 @@ The setup process is similar in all apps:
 		ru: 'Ваш платёж был успешно обработан',
 	},
 	installation_guide: {
-		ru: (link: string) => {
-			return `Ваша подписка и инструкция по ссылке ${link}`;
-		},
+		ru: (link: string) => `Ваша подписка и инструкция по ссылке ${link}`,
 		en: (link: string) => `Your subscription and guide here ${link}`,
+	},
+	expired: {
+		ru: (
+			isTrial: boolean,
+		) => `Уважаемый пользователь! Время ${isTrial ? 'пробного периода' : 'подписки'} истекло. Необходимо продлить подписку здесь @tesseract_users_bot. 
+Для подробной информации по ценам нажмите "Цены". 
+Если вы не видите меню отправьте боту сообщение /start
+При возникновении проблем напишите в ЛС канала тессеракт клуб, либо @whirliswaiting`,
+		en: () => `Dear user! Your subscription has expired. Please renew your subscription via @tesseract_users_bot. 
+For pricing information, please tap "Prices".		
+If you do not see the menu, send  /start to the bot.
+If you experience any issues, please send a direct message to the тессеракт клуб channel or contact @whirliswaiting`,
 	},
 };
 

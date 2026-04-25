@@ -41,14 +41,15 @@ export interface CreatePasarguardUserParams {
 
 export interface CreateUserDto {
 	username: string;
-
 	firstName: string;
 
 	telegramId: string | null;
-	telegramLink: string | null;
+	telegramLink?: string;
 
-	lastName?: string | null;
+	lastName?: string;
+	languageCode?: string;
 	payerId?: number | null;
+	referrerId?: number | null;
 	devices?: Device[];
 }
 

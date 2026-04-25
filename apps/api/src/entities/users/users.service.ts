@@ -14,7 +14,7 @@ import { UsersRepository } from './users.repository';
 @Injectable()
 export class UsersService {
   constructor(
-    private repository: UsersRepository,
+    private readonly repository: UsersRepository,
     private readonly rwService: RemnawaveService,
   ) {}
 
