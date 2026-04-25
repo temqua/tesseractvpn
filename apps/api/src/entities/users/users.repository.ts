@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Payment, User, VPNProtocol } from '@prisma/client';
-import { subMonths, subWeeks } from 'date-fns';
+import { subDays } from 'date-fns';
 import { DatabaseService } from '../../database.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -198,7 +198,7 @@ export class UsersRepository {
           },
         },
         createdAt: {
-          lt: subWeeks(new Date(), 4),
+          lt: subDays(new Date(), 3),
         },
       },
       include: {
@@ -235,7 +235,7 @@ export class UsersRepository {
           },
         },
         createdAt: {
-          lt: subMonths(new Date(), 1),
+          lt: subDays(new Date(), 3),
         },
         telegramId,
       },
@@ -253,7 +253,7 @@ export class UsersRepository {
           },
         },
         createdAt: {
-          lt: subMonths(new Date(), 1),
+          lt: subDays(new Date(), 3),
         },
         id,
         active: true,
@@ -270,7 +270,7 @@ export class UsersRepository {
         OR: [
           {
             createdAt: {
-              lt: subMonths(new Date(), 1),
+              lt: subDays(new Date(), 3),
             },
             payments: {
               some: {
@@ -282,7 +282,7 @@ export class UsersRepository {
           },
           {
             createdAt: {
-              gt: subMonths(new Date(), 1),
+              gt: subDays(new Date(), 3),
             },
           },
           {
@@ -299,7 +299,7 @@ export class UsersRepository {
         free: false,
         active: true,
         createdAt: {
-          gt: subWeeks(new Date(), 3),
+          gt: subDays(new Date(), 3),
         },
       },
     });

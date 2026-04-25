@@ -7,7 +7,7 @@ export async function authenticate(prevState: string | undefined, formData: Form
 	}
 }
 
-export async function authAction(prevState: string, formData: FormData) {
+export async function auth(prevState: string, formData: FormData) {
 	const username = formData.get('username');
 	const password = formData.get('password');
 

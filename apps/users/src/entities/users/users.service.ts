@@ -1,5 +1,5 @@
 import { Device, User, VPNProtocol } from '@prisma/client';
-import { parseISO, subMonths } from 'date-fns';
+import { parseISO, subDays } from 'date-fns';
 import type { InlineKeyboardButton, Message, SendBasicOptions, User as TGUser } from 'node-telegram-bot-api';
 import { basename } from 'path';
 import bot from '../../bot';
@@ -19,6 +19,7 @@ import { globalHandler } from '../../global.handler';
 import logger from '../../logger';
 import pollOptions from '../../pollOptions';
 import { formatDate, setActiveStep } from '../../utils';
+import { BotUnauthorizedMessageDeliveriesClient } from '../bot-unauthorized-message-deliveries/client';
 import { BotUnauthorizedUserActionsClient } from '../bot-unauthorized-user-actions/client';
 import { ExpensesClient } from '../expenses/expenses.client';
 import { CertificatesService } from '../keys/certificates.service';
@@ -46,7 +47,6 @@ import {
 	UsersContext,
 	UserUpdateCommandContext,
 } from './users.types';
-import { BotUnauthorizedMessageDeliveriesClient } from '../bot-unauthorized-message-deliveries/client';
 
 export class UsersService {
 	constructor(
@@ -637,7 +637,7 @@ export class UsersService {
 			...u,
 			createdAt: parseISO(u.createdAt),
 		}));
-		const monthAgo = subMonths(new Date(), 1);
+		const days3Ago = subDays(new Date(), 3);
 		for (const user of users) {
 			if (user.payments.length) {
 				const lastPayment = user.payments[0];
@@ -652,7 +652,7 @@ export class UsersService {
 						parse_mode: 'MarkdownV2',
 					},
 				);
-			} else if (user.createdAt > monthAgo) {
+			} else if (user.createdAt > days3Ago) {
 				await bot.sendMessage(
 					message.chat.id,
 					`User ${user.username} ${user.telegramLink ?? ''} created at ${formatDate(user.createdAt)} has to pay soon`,
@@ -660,8 +660,8 @@ export class UsersService {
 			}
 		}
 		if (users.length) {
-			const trialUsers = users.filter(user => user.createdAt > monthAgo);
-			const oldtimers = users.filter(user => user.createdAt < monthAgo);
+			const trialUsers = users.filter(user => user.createdAt > days3Ago);
+			const oldtimers = users.filter(user => user.createdAt < days3Ago);
 			await bot.sendMessage(
 				message.chat.id,
 				`Users 
@@ -763,7 +763,7 @@ currently have a trial period `,
 		}));
 		for (const user of users) {
 			if (user.telegramId && !user.muted) {
-				const isTrial = user.createdAt < subMonths(new Date(), 1);
+				const isTrial = user.createdAt < subDays(new Date(), 3);
 				try {
 					const msg = dict.expired[user.languageCode](isTrial);
 					bot.sendMessage(user.telegramId, msg);
@@ -1329,7 +1329,7 @@ Created at ${record.assignedAt}`,
 		try {
 			const user = await this.client.getById(Number(context.id));
 			const mess = await this.getPaymentString(user, lang, false);
-			const final = `${dict.free_month[lang]}, ${dict.then[lang]} 
+			const final = `${dict.free_period[lang]}, ${dict.then[lang]} 
 ${mess}
 ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 			bot.sendMessage(message.chat.id, final, {

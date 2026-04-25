@@ -24,12 +24,13 @@ export const dict = {
 		ru: 'стоит',
 	},
 	payment_intro: {
-		en: (price: number, currency: string) => `1 month is free, then 1 month costs ${price} ${currency}`,
-		ru: (price: number, currency: string) => `1 месяц бесплатно, после 1 месяц стоит \n${price} ${currency}`,
+		en: (price: number, currency: string) => `3 days free, then 1 month costs ${price} ${currency}`,
+		ru: (price: number, currency: string) => `3 дня бесплатно, после 1 месяц стоит \n${price} ${currency}`,
 	},
-	free_month: {
-		en: '1 month is free',
-		ru: '1 месяц бесплатно',
+
+	free_period: {
+		en: '3 days free',
+		ru: '3 дня бесплатно',
 	},
 	payment_through: {
 		en: 'Payment through',
