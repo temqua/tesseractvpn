@@ -1,6 +1,7 @@
-import { addDays, addMonths } from 'date-fns';
+import { addDays } from 'date-fns';
 import client from '../../client';
 import env from '../../env';
+import logger from '../../logger';
 import { isJSONErrorResponse } from '../../utils';
 import {
 	IRWClientErrorResponse,
@@ -10,7 +11,6 @@ import {
 	IRWServerErrorResponse,
 	IRWUpdateUserDTO,
 } from './rw.types';
-import logger from '../../logger';
 
 export class RemnawaveService {
 	private apiRoot = env.RW_API_ROOT;
@@ -19,8 +19,8 @@ export class RemnawaveService {
 		const { isNew = false, expiresAt } = params;
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
-		const monthAfter = addMonths(today, 1);
-		const expire = isNew || !expiresAt ? monthAfter.toISOString() : addDays(expiresAt, 1).toISOString();
+		const days3After = addDays(today, 3);
+		const expire = isNew || !expiresAt ? days3After.toISOString() : addDays(expiresAt, 1).toISOString();
 		const newUser: IRWNewUserDTO = {
 			username,
 			expireAt: expire,
