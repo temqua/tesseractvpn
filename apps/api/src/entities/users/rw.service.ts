@@ -1,10 +1,11 @@
-import { addDays, addMonths } from 'date-fns';
+import { addDays } from 'date-fns';
 
 import {
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import client from '../../client';
 import env from '../../env';
 import { isJSONErrorResponse } from '../../utils';
 import {
@@ -16,7 +17,6 @@ import {
   IRWServerErrorResponse,
   IRWUpdateUserDTO,
 } from './rw.types';
-import client from '../../client';
 
 @Injectable()
 export class RemnawaveService {
@@ -51,10 +51,10 @@ export class RemnawaveService {
   ) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const monthAfter = addMonths(today, 1);
+    const days3After = addDays(today, 3);
     const expire =
       isNew || !expiresAt
-        ? monthAfter.toISOString()
+        ? days3After.toISOString()
         : addDays(expiresAt, 1).toISOString();
     const newUser: IRWNewUserDTO = {
       username,
