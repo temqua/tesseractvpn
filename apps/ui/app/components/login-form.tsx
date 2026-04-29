@@ -1,35 +1,30 @@
+'use client';
 import { useActionState } from 'react';
-import { auth } from '@/app/lib/actions';
+import { auth } from '@/app/lib/actions/auth';
 import { Button } from './button';
 
 export default function LoginForm() {
 	const [state, formAction, isPending] = useActionState(auth, undefined);
-
 	return (
 		<form action={formAction} className="flex flex-col gap-8">
-			<div>
-				<label htmlFor="username">Username</label>
+			<div className="flex flex-col">
 				<input id="username" name="username" placeholder="Username" />
 			</div>
-			{state?.errors?.username && <p>{state.errors.username}</p>}
-			<div>
-				<label htmlFor="password">Password</label>
-				<input id="password" name="password" type="password" />
+			{state?.errors?.properties?.username && <p>{state.errors?.properties.username?.errors.join()}</p>}
+			<div className="flex flex-col">
+				<input id="password" name="password" type="password" placeholder="Password" />
 			</div>
-			{state?.errors?.password && (
+			{state?.errors?.properties?.password && (
 				<div>
 					<p>Password must:</p>
-					<ul>
-						{state.errors.password.map(error => (
-							<li key={error}>- {error}</li>
-						))}
-					</ul>
+					<ul>{state.errors?.properties?.password?.errors.map(error => <li key={error}>- {error}</li>)}</ul>
 				</div>
 			)}
 			<Button className="cursor-pointer" disabled={isPending} type="submit">
-				Sign in
 				{isPending ? 'Loading...' : 'Sign in'}
 			</Button>
+
+			{state?.errors.errors.length ? state?.errors.errors.join(',') : ''}
 		</form>
 	);
 }

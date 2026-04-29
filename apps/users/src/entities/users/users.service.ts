@@ -150,6 +150,7 @@ export class UsersService {
 		}
 
 		if (this.createSteps.username) {
+			// const existing = await this.client.getByUsername(message?.text);
 			this.params.set('username', message?.text);
 			await bot.sendMessage(chatId, 'Enter first name');
 			this.setCreateStep('firstName');

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authSessionKey } from '@/app/lib/api/auth';
+
+const publicRoutes = ['auth', 'login', 'favicon.ico', '.well-known'];
 
 export function proxy(request: NextRequest) {
-	if (request.nextUrl.pathname.includes('/play')) {
-		return NextResponse.next();
-	}
-	if (!request.cookies.has('session_id') && !request.nextUrl.pathname.includes('login')) {
+	if (!request.cookies.has(authSessionKey) && !publicRoutes.some(route => request.nextUrl.pathname.includes(route))) {
 		return NextResponse.redirect(new URL('/login', request.url));
 	}
 	return NextResponse.next();

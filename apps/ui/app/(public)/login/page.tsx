@@ -5,13 +5,13 @@ export default function LoginPage() {
 		<main>
 			<div className="flex flex-col items-center justify-center min-h-screen gap-8">
 				<LoginForm />
-				<button className="tg-auth-button">Sign In with Telegram</button>
+				{/* <button className="tg-auth-button">Sign In with Telegram</button>
 				<script
 					async
 					src="https://oauth.telegram.org/js/telegram-login.js?3"
 					data-client-id="8010360221"
 					data-onauth="console.log(data)"
-				></script>
+				></script> */}
 			</div>
 		</main>
 	);

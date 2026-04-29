@@ -16,23 +16,21 @@ export class AuthService {
   async signIn(
     username: string,
     pass: string,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ accessToken: string }> {
     const user = await this.usersService.findOneByUsername(username);
     if (!user) {
-      throw new NotFoundException();
+      throw new NotFoundException(`There is no user ${username} in system`);
     }
     if (!user.password) {
-      throw new NotFoundException();
+      throw new NotFoundException('You entered incorrect password');
     }
     const match = await bcrypt.compare(pass, user?.password);
     if (!match) {
       throw new UnauthorizedException();
     }
-    const payload = { sub: user.id, username: user.username };
+    const payload = { id: user.id, username: user.username };
     return {
-      // 💡 Here the JWT secret key that's used for signing the payload
-      // is the key that was passed in the JwtModule
-      access_token: await this.jwtService.signAsync(payload),
+      accessToken: await this.jwtService.signAsync(payload),
     };
   }
 }
