@@ -1,5 +1,5 @@
 {
-	"name": "tesseract-admin-ui",
+	"name": "@tesseractvpn/admin-ui",
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {

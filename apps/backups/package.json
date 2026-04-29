@@ -1,5 +1,5 @@
 {
-	"name": "backups-bot",
+	"name": "@tesseractvpn/backups-bot",
 	"version": "3.1.0",
 	"devDependencies": {
 		"@types/ms": "^2.1.0",

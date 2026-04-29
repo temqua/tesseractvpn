@@ -1,5 +1,5 @@
 {
-	"name": "tesseract-bot",
+	"name": "@tesseractvpn/bot",
 	"version": "3.13.0",
 	"scripts": {
 		"generate": "prisma generate",
