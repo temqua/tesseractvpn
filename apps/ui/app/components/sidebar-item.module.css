@@ -1,0 +1,17 @@
+.item {
+	outline: none;
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	/* padding-left: 1.5rem; */
+	padding-right: 1.5rem;
+	min-height: 3rem;
+	border-radius: 0.625rem;
+}
+
+.active {
+	font-weight: bold;
+	color: #0db294;
+	transition-timing-function: ease-out;
+	transition-duration: 0.2s;
+}

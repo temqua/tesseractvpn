@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 		body: JSON.stringify(body),
 	}).catch(error2 => {
 		return NextResponse.json(
-			{ error: `Internal server error. Server-side request error: ` + error2.message },
+			{ message: `Internal server error. Server-side request error: ` + error2.message },
 			{ status: 500 },
 		);
 	});
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 		return NextResponse.json({ message: data.message }, { status: res.status });
 	}
 
-	const response = NextResponse.json({ success: true, token: data.accessToken });
+	const response = NextResponse.json({ token: data.accessToken }, { status: 200 });
 
 	response.cookies.set(authSessionKey, data.accessToken, {
 		httpOnly: true,

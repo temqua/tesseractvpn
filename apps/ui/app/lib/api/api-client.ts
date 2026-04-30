@@ -1,4 +1,5 @@
 import env from '@/app/lib/env';
+import { authSessionKey } from './auth';
 
 export interface IErrorBody {
 	message?: string;
@@ -7,13 +8,13 @@ export interface IErrorBody {
 
 class ApiClient {
 	async request(url: string, params: RequestInit) {
-		console.time(`${params.method} Request to ${env.API_URL}${url}`);
-		const response = await fetch(`${env.API_URL}${url}`, {
+		console.time(`${params.method} Request to ${process.env.NEXT_PUBLIC_API_URL}${url}`);
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
 			...params,
 			headers: {
 				'Content-Type': 'application/json',
 				'X-Source': 'bot',
-				'Authorization': `Bearer ${env.API_TOKEN}`,
+				'Authorization': `Bearer ${localStorage.getItem(authSessionKey)}`,
 				...(params?.headers ? { ...params.headers } : {}),
 			},
 		});

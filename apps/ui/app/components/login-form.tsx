@@ -2,17 +2,24 @@
 import { useActionState } from 'react';
 import { auth } from '@/app/lib/actions/auth';
 import { Button } from './button';
+import { Input } from './input';
 
 export default function LoginForm() {
 	const [state, formAction, isPending] = useActionState(auth, undefined);
 	return (
 		<form action={formAction} className="flex flex-col gap-8">
 			<div className="flex flex-col">
-				<input id="username" name="username" placeholder="Username" />
+				<label htmlFor="username">
+					Username <span style={{ color: 'red' }}>*</span>
+				</label>
+				<Input id="username" name="username" placeholder="Username" />
 			</div>
 			{state?.errors?.properties?.username && <p>{state.errors?.properties.username?.errors.join()}</p>}
 			<div className="flex flex-col">
-				<input id="password" name="password" type="password" placeholder="Password" />
+				<label htmlFor="password">
+					Password <span style={{ color: 'red' }}>*</span>
+				</label>
+				<Input id="password" name="password" type="password" placeholder="Password" />
 			</div>
 			{state?.errors?.properties?.password && (
 				<div>

@@ -2,6 +2,7 @@ import { redirect, RedirectType } from 'next/navigation';
 import { treeifyError } from 'zod';
 import { authClient } from '../api/auth/client';
 import { FormState, SignupFormSchema } from '../definitions';
+import { authSessionKey } from '../api/auth';
 
 export async function auth(state: FormState, formData: FormData) {
 	const validatedFields = SignupFormSchema.safeParse({
@@ -28,6 +29,7 @@ export async function auth(state: FormState, formData: FormData) {
 		};
 	}
 	if (token) {
+		localStorage.setItem(authSessionKey, token);
 		redirect('/', RedirectType.replace);
 	} else {
 		return {
@@ -35,5 +37,12 @@ export async function auth(state: FormState, formData: FormData) {
 				errors: ['No token received from the backend'],
 			},
 		};
+	}
+}
+
+export async function signOut() {
+	const result = await authClient.logout();
+	if (result.success) {
+		redirect('/', RedirectType.replace);
 	}
 }

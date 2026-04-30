@@ -1,0 +1,13 @@
+.root {
+	display: grid;
+}
+
+@media (min-width: 1024px) {
+	.root {
+		grid-template-columns: 150px 1fr;
+	}
+}
+
+.main {
+	height: 100%;
+}
