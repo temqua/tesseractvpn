@@ -17,6 +17,8 @@ class ApiClient {
 				'Authorization': `Bearer ${localStorage.getItem(authSessionKey)}`,
 				...(params?.headers ? { ...params.headers } : {}),
 			},
+		}).catch(error2 => {
+			throw new Error(`Internal server error. Server-side request error: ` + error2.message);
 		});
 		console.timeEnd(`${params.method} Request to ${env.API_URL}${url}`);
 		const isJson = response.headers.get('Content-Type')?.includes('application/json');

@@ -6,14 +6,22 @@ interface TableProps<T extends object = object> extends React.TableHTMLAttribute
 }
 
 export interface IColumn<T extends object = object> {
-	prop: string;
+	prop?: string;
 	label: string;
+	actions?: (row: T) => React.ReactNode;
 }
 
-export default function Table({ columns, data, ...rest }: TableProps) {
-	const headers = columns.map(column => <th key={column.prop}>{column.label}</th>);
+export default function Table<T extends object = object>({ columns, data, ...rest }: TableProps<T>) {
+	const headers = columns.map((column, i) => <th key={i}>{column.label}</th>);
 	const items = data.map((row, index) => {
-		const cells = columns.map(c => <td key={c.prop}>{row[c.prop]}</td>);
+		const cells = columns.map((c, ci) => {
+			if (c.actions) {
+				return (<td key={ci}>
+					{c.actions(row)}
+					</td>);
+			}
+			return <td key={ci}>{row[c.prop]}</td>;
+		});
 		return <tr key={index}>{cells}</tr>;
 	});
 	return (

@@ -10,6 +10,7 @@
 
 .grid td {
 	display: flex;
+	padding-left: 0.5rem;
 }
 
 .grid th {
@@ -19,4 +20,5 @@
 	align-items: center;
 	min-height: 35px;
 	background-color: #384353;
+	padding-left: 0.5rem;
 }

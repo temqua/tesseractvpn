@@ -1,7 +1,8 @@
 import apiClient from '../api-client';
+import { IPayment } from './definitions';
 
 export class PaymentsClient {
-	async getAll() {
+	async getAll(): Promise<IPayment[]> {
 		return await apiClient.get('/api/v1/payments');
 	}
 }

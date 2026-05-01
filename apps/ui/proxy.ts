@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authSessionKey } from '@/app/lib/api/auth';
 
-const publicRoutes = ['auth', 'login', 'favicon.ico', '.well-known'];
+const publicRoutes = ['auth', 'login', 'logout', 'favicon.ico', '.well-known'];
 
 export function proxy(request: NextRequest) {
 	if (!request.cookies.has(authSessionKey) && !publicRoutes.some(route => request.nextUrl.pathname.includes(route))) {

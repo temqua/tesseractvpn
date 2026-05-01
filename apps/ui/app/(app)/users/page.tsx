@@ -1,7 +1,8 @@
 'use client';
-import { useEffect, useState } from 'react';
-import Table, { IColumn } from '../../components/table';
 import { usersClient } from '@/app/lib/api/users/client';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import ContentArea from '../../components/content-area';
+import Table, { IColumn } from '../../components/table';
 
 const columns: IColumn[] = [
 	{
@@ -23,15 +24,18 @@ const columns: IColumn[] = [
 ];
 
 export default function UsersPage() {
-	const [users, setUsers] = useState([]);
-	useEffect(() => {
-		usersClient.getAll().then(res => {
-			setUsers(res);
-		});
-	}, []);
+	const { error, data } = useSuspenseQuery({
+		queryKey: ['users-all'],
+		queryFn: () => usersClient.getAll(),
+	});
+	if (error) {
+		return <div>Error {error.message}</div>;
+	}
 	return (
 		<div>
-			<Table columns={columns} data={users} />
+			<ContentArea>
+				<Table columns={columns} data={data} />
+			</ContentArea>
 		</div>
 	);
 }

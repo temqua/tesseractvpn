@@ -1,13 +1,18 @@
 .root {
 	display: grid;
+	padding-top: 1.5rem;
 }
 
 @media (min-width: 1024px) {
 	.root {
-		grid-template-columns: 150px 1fr;
+		grid-template-columns: 200px 1fr;
 	}
 }
 
 .main {
 	height: 100%;
+}
+
+.content {
+	padding-inline: 10px;
 }
