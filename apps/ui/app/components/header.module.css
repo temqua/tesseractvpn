@@ -1,0 +1,10 @@
+.header {
+	height: 66px;
+
+	background-color: white;
+	box-shadow: 0 0 2rem #0000001a;
+
+	@media (prefers-color-scheme: dark) {
+		background-color: #1e2c36;
+	}
+}

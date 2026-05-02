@@ -1,0 +1,5 @@
+.input {
+	border: 1px solid hsl(from var(--background) h s calc(l + 30));
+	padding: 5px 10px;
+	border-radius: 0.5rem;
+}

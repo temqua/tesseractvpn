@@ -19,12 +19,7 @@ export default function ExpensePage({ params }: { params: Promise<{ id: string }
 		<div>
 			<div className="flex flex-col">
 				<label htmlFor="paymentDate">Payment date</label>
-				<Input
-					value={data.paymentDate}
-					id="paymentDate"
-					name="paymentDate"
-					placeholder="Payment date"
-				/>
+				<Input value={data.paymentDate} id="paymentDate" name="paymentDate" placeholder="Payment date" />
 			</div>
 			<div className="flex flex-col">
 				<label htmlFor="amount">Amount</label>

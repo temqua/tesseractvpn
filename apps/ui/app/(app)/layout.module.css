@@ -1,15 +1,20 @@
 .root {
 	display: grid;
 	padding-top: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-	.root {
+	background-color: #f2f3f9;
+	@media (min-width: 1024px) {
 		grid-template-columns: 200px 1fr;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		background-color: #0b1621;
 	}
 }
 
 .main {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
 	height: 100%;
 }
 
