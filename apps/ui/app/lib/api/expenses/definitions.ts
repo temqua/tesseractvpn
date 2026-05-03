@@ -8,3 +8,11 @@ export interface IExpense {
 }
 
 export type ExpenseCategory = 'Nalog' | 'Servers';
+
+export interface ICreateExpenseDTO {
+	category: ExpenseCategory;
+	amount: number;
+	description: string;
+}
+
+export type IUpdateExpenseDto = Partial<ICreateExpenseDTO>;

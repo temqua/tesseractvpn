@@ -1,16 +1,16 @@
 'use client';
 
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import ContentArea from '../../components/content-area';
+import Dialog from '../../components/dialog';
+import { Input } from '../../components/input';
+import { Select } from '../../components/select';
 import Table, { IColumn } from '../../components/table';
+import { deleteAction } from '../../lib/actions/expenses';
 import { expensesClient } from '../../lib/api/expenses/client';
 import { IExpense } from '../../lib/api/expenses/definitions';
-import { Input } from '../../components/input';
-import { useMemo, useState } from 'react';
-import { Select } from '../../components/select';
-import Dialog from '../../components/dialog';
-import { Button } from '../../components/button';
 
 export default function ExpensesPage() {
 	const [searchFilters, setSearchFilters] = useState({
@@ -19,8 +19,10 @@ export default function ExpensesPage() {
 		amount: '',
 		category: '',
 	});
-	const [open, setOpen] = useState(false);
+	const queryClient = useQueryClient();
 	const [deleteId, setDeleteId] = useState(null);
+	const [isModalOpened, setModalOpened] = useState(false);
+
 	const columns: IColumn<IExpense>[] = [
 		{
 			label: 'ID',
@@ -50,7 +52,7 @@ export default function ExpensesPage() {
 						<button
 							onClick={() => {
 								setDeleteId(row.id);
-								setOpen(true);
+								setModalOpened(true);
 							}}
 						>
 							🗑️
@@ -116,17 +118,16 @@ export default function ExpensesPage() {
 				<Table searchRow={searchRow} columns={columns} data={filteredData} />
 			</ContentArea>
 			<div>
-				<Dialog open={open} onClose={() => setOpen(false)}>
-					<h2>Подтверждение</h2>
-					<p>Удалить?</p>
-					<Button
-						onClick={() => {
-							setOpen(false);
-						}}
-					>
-						Да
-					</Button>
-					<Button onClick={() => setOpen(false)}>Нет</Button>
+				<Dialog
+					isOpened={isModalOpened}
+					onCancel={() => setModalOpened(false)}
+					onClose={() => setModalOpened(false)}
+					onConfirm={() => {
+						setModalOpened(false);
+						deleteAction(deleteId, queryClient);
+					}}
+				>
+					Are you sure you want to delete expense?
 				</Dialog>
 			</div>
 		</div>

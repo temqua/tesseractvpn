@@ -1,0 +1,94 @@
+.modal {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	border-radius: 0.625rem;
+	box-shadow: 0 0 2px 0px #bbbbbb;
+	background-color: white;
+	overflow: hidden;
+
+	@media (min-width: 768px) {
+		min-width: 550px;
+		max-width: 700px;
+	}
+}
+
+.header,
+.footer {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.main,
+.header {
+	padding: 1.25rem;
+}
+
+.header {
+	justify-content: space-between;
+
+	& :global(.icon-button:hover path),
+	& :global(.icon-button:focus path) {
+		fill: #717171;
+		transition-duration: 0.2s;
+	}
+}
+
+.footer {
+	justify-content: flex-end;
+	margin: 0.9rem 1.25rem;
+}
+
+.dialog {
+	border-radius: 0.625rem;
+	z-index: 999;
+	animation: fade-out 0.3s ease forwards;
+	@media (max-width: 768px) {
+		width: 90vw;
+	}
+}
+
+.dialog[open] {
+	animation: fade-in 0.2s ease-in;
+}
+
+.dialog[open]::backdrop {
+	animation: backdrop-fade-in 0.2s ease-in forwards;
+}
+
+/* Animation keyframes */
+
+@keyframes fade-in {
+	0% {
+		opacity: 0;
+		display: none;
+	}
+
+	100% {
+		opacity: 1;
+		display: block;
+	}
+}
+
+@keyframes fade-out {
+	0% {
+		opacity: 1;
+		display: block;
+	}
+
+	100% {
+		opacity: 0;
+		display: none;
+	}
+}
+
+@keyframes backdrop-fade-in {
+	0% {
+		background-color: rgb(0 0 0 / 0%);
+	}
+
+	100% {
+		background-color: rgb(0 0 0 / 75%);
+	}
+}

@@ -9,9 +9,7 @@ export default function ConfirmDialog({ message }: { message: string }) {
 			<button onClick={() => setOpen(true)}>Открыть</button>
 
 			<Dialog open={open} onClose={() => setOpen(false)}>
-				<h2>Подтверждение</h2>
 				<p>{message}</p>
-				<button onClick={() => setOpen(false)}>Закрыть</button>
 			</Dialog>
 		</div>
 	);
