@@ -20,6 +20,7 @@ import { UsersContext } from '../users/users.types';
 import { PaymentsClient } from './payments.client';
 import { PaymentsContext } from './payments.types';
 import { RemnawaveService } from '../users/rw.service';
+type AvailableFields = 'amount' | 'from' | 'to' | 'user' | 'nalog' | 'expires' | 'months' | 'dependants' | 'plan';
 export class PaymentsService {
 	constructor(
 		private pasarguardService: PasarguardService = new PasarguardService(),
@@ -30,7 +31,7 @@ export class PaymentsService {
 	) {}
 
 	private nalogService: NalogService = new NalogService();
-	private params = new Map();
+	private params = new Map<AvailableFields, number | string | boolean | null | VPNUser | Plan>();
 	private paymentSteps = {
 		user: false,
 		amount: false,
@@ -461,7 +462,8 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 и истекает ${lastPayment.expiresOn ? formatDate(lastPayment.expiresOn) : 'unset'}`,
 			);
 		}
-		const calculated = addMonths(lastPayment?.expiresOn ?? new Date(), months);
+		// const calculated = addMonths(lastPayment?.expiresOn ?? new Date(), months);
+		const calculated = addMonths(new Date(), months);
 		await bot.sendMessage(chatId, `Вычисленная дата окончания работы: ${formatDate(calculated)}`, acceptKeyboard);
 		this.params.set('expires', calculated);
 		this.setPaymentStep('expires');
@@ -496,7 +498,11 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 				parse_mode: 'MarkdownV2',
 			});
 			if (user.telegramId) {
-				await bot.sendMessage(user.telegramId, dict.payment_processed['ru']);
+				try {
+					await bot.sendMessage(user.telegramId, dict.payment_processed['ru']);
+				} catch (err) {
+					logger.error(err);
+				}
 			}
 			if (nalog) {
 				await this.addPaymentNalog(chatId, user.username, amount, result.id);
@@ -541,7 +547,7 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 					}
 				}
 			}
-			if (env.BOT_ENV !== 'local') {
+			if (env.BOT_ENV !== 'local' && user.pasarguardId) {
 				await this.pasarguardService.updateUser(`${user.username}_${user.id}`, {
 					expire: addDays(result.expiresOn, 1).toISOString(),
 				});

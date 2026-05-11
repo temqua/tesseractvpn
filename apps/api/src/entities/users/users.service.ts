@@ -10,6 +10,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { RemnawaveService } from './rw.service';
 import { UsersRepository } from './users.repository';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -19,7 +20,17 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    return await this.repository.create(createUserDto);
+    try {
+      const result = await this.repository.create(createUserDto);
+      return result;
+    } catch (err) {
+      if (err?.meta?.driverAdapterError?.cause) {
+        throw new InternalServerErrorException(
+          err?.meta?.driverAdapterError?.cause?.originalMessage,
+        );
+      }
+      throw new InternalServerErrorException(err);
+    }
   }
 
   async findAll(dto: UserQueryDto) {
@@ -58,7 +69,17 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    return await this.repository.update(id, updateUserDto);
+    const dto = {
+      ...updateUserDto,
+    };
+    if (updateUserDto.password) {
+      dto.password = await bcrypt.hash(updateUserDto.password, env.SALT_ROUNDS);
+    }
+    try {
+      return await this.repository.update(id, dto);
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
   }
 
   async remove(id: number) {

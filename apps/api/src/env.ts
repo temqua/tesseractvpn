@@ -14,7 +14,7 @@ const env = cleanEnv(process.env, {
   RW_TOKEN: str({ default: '' }),
   SHEET_ID: str({ default: '' }),
   JWT_SECRET: str({ default: '' }),
-  SALT: str({ default: '' }),
+  SALT_ROUNDS: num({ default: 10 }),
 });
 
 export default env;

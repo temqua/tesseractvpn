@@ -14,4 +14,5 @@ export class CreateUserDto {
   lastName?: string;
   payerId: number | null;
   devices?: Device[];
+  password?: string;
 }

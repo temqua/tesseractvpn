@@ -1,0 +1,10 @@
+services:
+    api:
+        container_name: tesseract-admin-ui
+        build:
+            context: .
+            dockerfile: ./Dockerfile
+        image: tesseract-admin-ui
+        env_file: .env
+        network_mode: host
+        restart: always

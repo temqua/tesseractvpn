@@ -19,14 +19,13 @@ export class UsersRepository {
   }
 
   async findAll(orderParams?: UserOrderParams) {
-    const params = orderParams
-      ? {
-          orderBy: {
+    return await this.databaseService.client.user.findMany({
+      orderBy: orderParams
+        ? {
             [orderParams.by]: orderParams.direction,
-          },
-        }
-      : undefined;
-    return await this.databaseService.client.user.findMany(params);
+          }
+        : undefined,
+    });
   }
 
   async findOne(id: number) {

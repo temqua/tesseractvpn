@@ -1489,6 +1489,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 				},
 			},
 		);
+		this.signUpParams.clear();
 	}
 
 	async signUp(message: Message, context: UsersContext, from: TGUser, start = true) {
