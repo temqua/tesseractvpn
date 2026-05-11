@@ -21,8 +21,11 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException(`There is no user ${username} in system`);
     }
+
     if (!user.password) {
-      throw new NotFoundException('You entered incorrect password');
+      throw new NotFoundException(
+        'User does not have permissions to enter the system',
+      );
     }
     const match = await bcrypt.compare(pass, user?.password);
     if (!match) {

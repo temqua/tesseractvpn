@@ -1,3 +1,4 @@
+'use client';
 import env from '@/app/lib/env';
 import { authSessionKey } from './auth';
 

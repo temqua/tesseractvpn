@@ -18,14 +18,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private logger = new Logger('DatabaseModule');
 
   constructor() {
-    const userOmitConfig = {
-      password: true,
-    };
     this.prisma = new PrismaClient({
       adapter,
-      omit: {
-        user: userOmitConfig,
-      },
     });
   }
 

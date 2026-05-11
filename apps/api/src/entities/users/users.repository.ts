@@ -20,6 +20,9 @@ export class UsersRepository {
 
   async findAll(orderParams?: UserOrderParams) {
     return await this.databaseService.client.user.findMany({
+      omit: {
+        password: true,
+      },
       orderBy: orderParams
         ? {
             [orderParams.by]: orderParams.direction,

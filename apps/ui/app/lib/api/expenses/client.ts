@@ -1,3 +1,4 @@
+'use client';
 import apiClient from '../api-client';
 import { IExpense } from './definitions';
 

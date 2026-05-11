@@ -5,6 +5,11 @@ import env from './env';
 import { RequestsInterceptor } from './logging-interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  if (env.APP_ENV === 'local') {
+    app.enableCors({
+      origin: 'http://localhost:3000',
+    });
+  }
   const config = new DocumentBuilder()
     .setTitle('Tesseract')
     .setDescription('The Tesseract API description')
@@ -15,6 +20,6 @@ async function bootstrap() {
 
   app.setGlobalPrefix('/api/v1');
   app.useGlobalInterceptors(new RequestsInterceptor());
-  await app.listen(env.PORT ?? 3000);
+  await app.listen(env.PORT ?? 3002);
 }
 bootstrap();
