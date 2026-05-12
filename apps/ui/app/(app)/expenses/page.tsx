@@ -11,6 +11,7 @@ import Table, { IColumn } from '../../components/table';
 import { deleteAction } from '../../lib/actions/expenses';
 import { expensesClient } from '../../lib/api/expenses/client';
 import { IExpense } from '../../lib/api/expenses/definitions';
+import { Button } from '@/app/components/button';
 
 export default function ExpensesPage() {
 	const [searchFilters, setSearchFilters] = useState({
@@ -115,6 +116,9 @@ export default function ExpensesPage() {
 	return (
 		<div>
 			<ContentArea>
+				<div>
+					<Link href={`/expenses/new`}>ADD</Link>
+				</div>
 				<Table searchRow={searchRow} columns={columns} data={filteredData} />
 			</ContentArea>
 			<div>

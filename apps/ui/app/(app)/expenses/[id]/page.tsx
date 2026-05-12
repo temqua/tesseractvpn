@@ -33,6 +33,7 @@ export default function ExpensePage({ params }: { params: Promise<{ id: string }
 					onChange={event => setPaymentDate(event.target.value)}
 					id="paymentDate"
 					name="paymentDate"
+					type="datetime"
 					placeholder="Payment date"
 				/>
 			</div>
@@ -50,8 +51,8 @@ export default function ExpensePage({ params }: { params: Promise<{ id: string }
 				<label htmlFor="category">Category</label>
 				<Select onChange={event => setCategory(event.target.value)} id="category" name="category">
 					<option value=""></option>
-					<option value="nalog">Nalog</option>
-					<option value="servers">Servers</option>
+					<option value="Nalog">Nalog</option>
+					<option value="Servers">Servers</option>
 				</Select>
 			</div>
 			<div className="flex flex-col">

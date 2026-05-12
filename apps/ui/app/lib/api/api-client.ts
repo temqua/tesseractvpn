@@ -48,7 +48,7 @@ class ApiClient {
 			method: 'POST',
 			...params,
 		});
-		return await response.json();
+		return response;
 	}
 
 	async patch(url: string, params?: RequestInit) {

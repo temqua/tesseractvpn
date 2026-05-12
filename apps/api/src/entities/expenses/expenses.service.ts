@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ExpenseCategory } from '@prisma/client';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
@@ -11,11 +15,21 @@ export class ExpensesService {
   constructor(private repository: ExpensesRepository) {}
 
   async create(createExpenseDto: CreateExpenseDto) {
-    return await this.repository.create(
-      createExpenseDto.category,
-      createExpenseDto.amount,
-      createExpenseDto.description,
-    );
+    try {
+      const result = await this.repository.create(
+        createExpenseDto.category,
+        createExpenseDto.amount,
+        createExpenseDto.description,
+      );
+      return result;
+    } catch (err) {
+      if (err?.meta?.driverAdapterError?.cause) {
+        throw new InternalServerErrorException(
+          err?.meta?.driverAdapterError?.cause?.originalMessage,
+        );
+      }
+      throw new InternalServerErrorException(err);
+    }
   }
 
   async findOne(id: string) {
@@ -31,7 +45,11 @@ export class ExpensesService {
   }
 
   async update(id: string, updateExpenseDto: UpdateExpenseDto) {
-    return await this.repository.update(id, updateExpenseDto);
+    try {
+      return await this.repository.update(id, updateExpenseDto);
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
   }
 
   async remove(id: string) {
