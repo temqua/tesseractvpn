@@ -4,7 +4,7 @@ import { IExpense } from '../api/expenses/definitions';
 import { FormState } from '../definitions';
 import { IErrorBody } from '../definitions.global';
 
-export async function createAction(state: FormState, formData: FormData) {
+export async function createAction(state, formData: FormData) {
 	try {
 		const response: Response = await expensesClient.create({
 			amount: Number(formData.get('amount')),
@@ -31,7 +31,7 @@ export async function createAction(state: FormState, formData: FormData) {
 	}
 }
 
-export async function updateAction(state: FormState, formData: FormData) {
+export async function updateAction(state, formData: FormData) {
 	try {
 		const response: IErrorBody & IExpense = await expensesClient.update({
 			amount: Number(formData.get('amount')),

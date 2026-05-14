@@ -1,0 +1,85 @@
+name: Build & Deploy VPN Infrastructure Excepting IKEv2
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Target environment'
+                required: true
+                default: t
+                type: choice
+                options:
+                    - austria
+                    - brazil
+                    - greece
+                    - msk
+                    - neth
+                    - norway
+                    - sweden
+                    - us2
+                    - albania
+                    - brazil
+                    - croatia
+                    - de-subs
+                    - fin
+                    - fin2-subs
+                    - fin3-subs
+                    - fin4-subs
+                    - korea-subs
+                    - norway-subs
+                    - neth-subs
+                    - neth2-subs
+                    - neth3-subs
+                    - spain-subs
+                    - sweden-subs
+                    - swiss-subs
+                    - turkey
+jobs:
+    build-deploy:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        environment: ${{ inputs.environment }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup SSH
+              uses: webfactory/ssh-agent@v0.9.1
+              with:
+                  ssh-private-key: ${{ secrets.VPN_SERVER_SSH_KEY }}
+
+            - name: Add VPN server to known hosts
+              run: |
+                  mkdir -p ~/.ssh
+                  ssh-keyscan -H ${{ secrets.VPN_SERVER_HOST }} >> ~/.ssh/known_hosts
+
+            - name: Build WireGuard image
+              working-directory: apps/infrastructure
+              run: |
+                  docker compose build wg_service
+                  
+            - name: Build OpenVPN image
+              working-directory: apps/infrastructure
+              run: |
+                  docker compose build openvpn_service
+
+            - name: Upload OpenVPN to server
+              working-directory: apps/infrastructure
+              run: |
+                  docker save openvpn_service:latest \
+                  | gzip \
+                  | ssh -o ServerAliveInterval=15 \
+                          -o ServerAliveCountMax=8 \
+                          ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} \
+                          'gunzip | docker load'
+
+            - name: Upload docker-compose.yml via SSH
+              run: |
+                  cat ./apps/infrastructure/docker-compose.yml | ssh ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} "cat > ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}/docker-compose.yml"
+
+            - name: Restart containers on server
+              run: |
+                  ssh ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} '
+                    cd ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}
+                    docker compose up -d
+                  '

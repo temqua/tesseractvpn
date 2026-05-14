@@ -1,0 +1,49 @@
+name: Build and Transfer tesseract-admin-ui
+
+run-name: 'Build and Transfer tesseract-admin-ui'
+
+on:
+    workflow_dispatch:
+
+jobs:
+    build_and_deploy:
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.environment }}
+        timeout-minutes: 10
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup SSH
+              uses: webfactory/ssh-agent@v0.9.1
+              with:
+                  ssh-private-key: ${{ secrets.ADMIN_UI_SERVER_SSH_KEY }}
+
+            - name: Add VPN server to known hosts
+              run: |
+                  mkdir -p ~/.ssh
+                  ssh-keyscan -H ${{ secrets.ADMIN_UI_SERVER_HOST }} >> ~/.ssh/known_hosts
+
+            - name: Build Docker image
+              run: |
+                  docker compose build --no-cache
+
+            - name: Upload Docker image
+              run: |
+                  docker save tesseract-admin-ui:latest \
+                  | gzip \
+                  | ssh -o ServerAliveInterval=15 \
+                          -o ServerAliveCountMax=8 \
+                          ${{ secrets.ADMIN_UI_SERVER_USERNAME }}@${{ secrets.ADMIN_UI_SERVER_HOST }} \
+                          'gunzip | docker load'
+
+            - name: Upload docker-compose.yml via SSH
+              run: |
+                  cat docker-compose.yml | ssh ${{ secrets.ADMIN_UI_SERVER_USERNAME }}@${{ secrets.ADMIN_UI_SERVER_HOST }} "cat > ${{ secrets.ADMIN_UI_SERVER_APP_DIRECTORY }}/docker-compose.yml"
+
+            - name: Restart container on server
+              run: |
+                  ssh ${{ secrets.ADMIN_UI_SERVER_USERNAME }}@${{ secrets.ADMIN_UI_SERVER_HOST }} '
+                    cd ${{ secrets.ADMIN_UI_SERVER_APP_DIRECTORY }}
+                    docker compose down tesseract-api && docker compose up tesseract-api -d
+                  '

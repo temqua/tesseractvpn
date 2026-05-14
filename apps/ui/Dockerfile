@@ -2,21 +2,20 @@
 # Stage 1: Dependencies Installation Stage
 # ============================================
 
-FROM oven/bun:1 AS dependencies
+FROM oven/bun:alpine AS dependencies
 
 WORKDIR /app
 
 COPY package.json bun.lock* ./
 
 # Install project dependencies with frozen lockfile for reproducible builds
-RUN --mount=type=cache,target=/root/.bun/install/cache \
-    bun install --no-save --frozen-lockfile
+RUN  bun install --no-save --frozen-lockfile
 
 # ============================================
 # Stage 2: Build Next.js application in standalone mode
 # ============================================
 
-FROM oven/bun:1 AS builder
+FROM oven/bun:alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -42,7 +41,7 @@ RUN bun run build
 # Stage 3: Run Next.js application
 # ============================================
 
-FROM oven/bun:1 AS runner
+FROM oven/bun:alpine AS runner
 
 # Set working directory
 WORKDIR /app
