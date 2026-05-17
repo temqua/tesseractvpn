@@ -31,20 +31,22 @@ export async function createAction(state, formData: FormData) {
 	}
 }
 
-export async function updateAction(state, formData: FormData) {
-	try {
-		const response: IErrorBody & IExpense = await expensesClient.update({
-			amount: Number(formData.get('amount')),
-			category: formData.get('category'),
-			description: formData.get('description'),
-		});
-	} catch (err) {
-		return {
-			errors: {
-				errors: [err],
-			},
-		};
-	}
+export async function getUpdateAction(id: string) {
+	return async function (state, formData: FormData) {
+		try {
+			const response: IErrorBody & IExpense = await expensesClient.update(id, {
+				amount: Number(formData.get('amount')),
+				category: formData.get('category'),
+				description: formData.get('description'),
+			});
+		} catch (err) {
+			return {
+				errors: {
+					errors: [err],
+				},
+			};
+		}
+	};
 }
 
 export async function deleteAction(id: string, queryClient: QueryClient) {

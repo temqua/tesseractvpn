@@ -1,5 +1,5 @@
-import ssrClient from '../ssr-client';
-import { IExpense } from './definitions';
+import ssrClient from '@/app/lib/api/ssr-client';
+import { IExpense } from '@/app/lib/api/expenses/definitions';
 
 export class ExpensesSSRClient {
 	async getAll(): Promise<IExpense[]> {
@@ -10,4 +10,4 @@ export class ExpensesSSRClient {
 		return await ssrClient.get(`/api/v1/expenses/${id}`);
 	}
 }
-export const expensesClient = new ExpensesSSRClient();
+export const expensesSSRClient = new ExpensesSSRClient();

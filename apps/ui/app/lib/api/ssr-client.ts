@@ -1,4 +1,3 @@
-'use client';
 import env from '@/app/lib/env';
 import { authSessionKey } from './auth';
 import { cookies } from 'next/headers';
@@ -11,7 +10,8 @@ export interface IErrorBody {
 class SSRClient {
 	async request(url: string, params: RequestInit) {
 		const cookieStore = await cookies();
-		const token = cookieStore.get(authSessionKey);
+		const record = cookieStore.get(authSessionKey);
+		const token = record.value;
 		console.time(`${params.method} Request to ${process.env.NEXT_PUBLIC_API_URL}${url}`);
 		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
 			...params,
