@@ -31,7 +31,7 @@ export class PaymentsService {
 	) {}
 
 	private nalogService: NalogService = new NalogService();
-	private params = new Map<AvailableFields, number | string | boolean | null | VPNUser | Plan>();
+	private params = new Map<AvailableFields, unknown>();
 	private paymentSteps = {
 		user: false,
 		amount: false,
@@ -199,7 +199,7 @@ export class PaymentsService {
 			return;
 		}
 		try {
-			const fromStr = this.params.get('from');
+			const fromStr = this.params.get('from') as string;
 			// let from = parse(fromStr, 'yyyy-MM-dd', new Date());
 			// let to = parse(message.text, 'yyyy-MM-dd', new Date());
 			// if (from > to) {
@@ -288,7 +288,7 @@ export class PaymentsService {
 			return;
 		}
 
-		const user: VPNUser = this.params.get('user');
+		const user = this.params.get('user') as VPNUser;
 		if (!user) {
 			const errorMessage = `Ошибка при обработке платежа. Пользователь не найден в системе`;
 			logger.error(`[${basename(__filename)}]: ${errorMessage}`);
@@ -410,7 +410,7 @@ UUID: \`${p.id}\``;
 ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 	}
 	private async calculateMonthsCount(chatId: number, user: VPNUser) {
-		const amount = this.params.get('amount');
+		const amount = this.params.get('amount') as number;
 		const dependants = user.dependants?.filter(d => d.active && !d.free);
 		const dependantsCount = dependants?.length ?? 0;
 		const plans = await this.plansClient.getAll({
@@ -452,7 +452,7 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 	}
 
 	private async calculateExpirationDate(chatId: number, user: VPNUser) {
-		const months = this.params.get('months');
+		const months = this.params.get('months') as number;
 		const lastPayment = await this.usersClient.getLastPayment(user.id);
 		if (lastPayment) {
 			await bot.sendMessage(
@@ -471,12 +471,12 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 
 	private async executePayment(chatId: number, user: VPNUser) {
 		try {
-			const amount: number = this.params.get('amount');
-			const monthsCount: number = this.params.get('months');
-			const expiresOn: Date = this.params.get('expires');
-			const nalog: boolean = this.params.get('nalog');
-			const plan: Plan | null = this.params.get('plan') ?? null;
-			const addDependants: boolean | undefined = this.params.get('dependants');
+			const amount: number = this.params.get('amount') as number;
+			const monthsCount: number = this.params.get('months') as number;
+			const expiresOn = this.params.get('expires') as Date;
+			const nalog = this.params.get('nalog') as boolean;
+			const plan: Plan | null = (this.params.get('plan') as Plan) ?? null;
+			const addDependants = this.params.get('dependants') as boolean | undefined;
 			const result = await this.client.create({
 				userId: user.id,
 				amount: Number(amount),
@@ -577,19 +577,19 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 			},
 		});
 
-		const button = [
-			{
-				text: 'Delete',
-				callback_data: cd,
-			},
-		];
-		const markup: InlineKeyboardMarkup = {
-			inline_keyboard: [button],
-		};
+		// const button = [
+		// 	{
+		// 		text: 'Delete',
+		// 		callback_data: cd,
+		// 	},
+		// ];
+		// const markup: InlineKeyboardMarkup = {
+		// 	inline_keyboard: [button],
+		// };
 		if (!p.parentPaymentId) {
 			await bot.sendMessage(message.chat.id, this.formatPayment(p), {
 				parse_mode: 'MarkdownV2',
-				reply_markup: markup,
+				// reply_markup: markup,
 			});
 			return;
 		}
@@ -599,7 +599,7 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 Expires On: ${p.expiresOn ? formatDate(p.expiresOn).replace(/[-.*#_]/g, match => `\\${match}`) : 'unset'}`,
 			{
 				parse_mode: 'MarkdownV2',
-				reply_markup: markup,
+				// reply_markup: markup,
 			},
 		);
 		const parentPayment = await this.client.getById(p.parentPaymentId);
@@ -613,7 +613,7 @@ Expires On: ${parentPayment.expiresOn ? formatDate(parentPayment.expiresOn).repl
 Amount: ${parentPayment.amount} ${parentPayment.currency}`,
 				{
 					parse_mode: 'MarkdownV2',
-					reply_markup: markup,
+					// reply_markup: markup,
 				},
 			);
 		}

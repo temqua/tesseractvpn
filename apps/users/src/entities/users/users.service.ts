@@ -43,6 +43,7 @@ import { UsersClient } from './users.client';
 import { type VPNUser } from './users.repository';
 import {
 	CreatePasarguardUserParams,
+	CreateUserDto,
 	UserCreateCommandContext,
 	UsersContext,
 	UserUpdateCommandContext,
@@ -1208,8 +1209,7 @@ Created at ${record.assignedAt}`,
 			this.client.captureDelivery(user.id, msg);
 		}
 		if (!list.length) {
-			bot.sendMessage(message.chat.id, dict.no_keys[lang]);
-			this.client.captureDelivery(user.id, dict.no_keys[lang]);
+			this.sendAndCaptureMessage(message.chat.id, user.id, dict.no_keys[lang]);
 		}
 		globalHandler.finishCommand();
 	}
@@ -1280,7 +1280,7 @@ Created at ${record.assignedAt}`,
 	async showMenu(message: Message, from: TGUser) {
 		const lang = from?.is_bot || !from ? 'ru' : from?.language_code;
 
-		bot.editMessageText(dict.start[lang], {
+		bot.editMessageText(dict.start[lang](from.id), {
 			message_id: message.message_id,
 			chat_id: message.chat.id,
 			reply_markup: getUserKeyboard(lang),
@@ -1412,12 +1412,11 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 					],
 				},
 			});
-			this.paymentRequestParams.set('msg_id', ms.message_id);
 			this.client.captureDelivery(user.id, `${mess}\n${dict.click_to_confirm_payment[lang]}`);
+			this.paymentRequestParams.set('msg_id', ms.message_id);
 			this.client.createAction(user.id, 'UserPay', dict.pay[lang]);
 		} catch (error) {
-			bot.sendMessage(message.chat.id, `Ошибка обработки платежа ${error}`);
-			this.client.captureDelivery(user.id, `Ошибка обработки платежа ${error}`);
+			this.sendAndCaptureMessage(message.chat.id, user.id, `Ошибка обработки платежа ${error}`);
 			bot.sendMessage(env.ADMIN_USER_ID, `Ошибка обработки платежа для пользователя ${message.chat.id} ${error}`);
 			this.paymentRequestParams.clear();
 			globalHandler.finishCommand();
@@ -1481,6 +1480,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 									[CmdCode.Context]: {
 										[CmdCode.Command]: VPNUserCommand.RequestCreationAdmin,
 										tgid: from.id,
+										ref: context.ref,
 									},
 								}),
 							},
@@ -1509,16 +1509,29 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 
 		const fr: TGUser & { username: string } = this.newUsers.get(context.tgid);
 
+		const createBody: CreateUserDto = {
+			username: fr.username,
+			firstName: fr.first_name,
+			telegramId: String(fr.id),
+			telegramLink: `@${fr.username}`,
+			lastName: fr.last_name,
+			languageCode: fr.language_code,
+		};
+
+		if (!isNaN(context.ref) && isFinite(context.ref)) {
+			const refUser = await this.client.getByTelegramId(context.ref);
+			if (refUser) {
+				createBody.referrerId = Number(refUser.id);
+			} else {
+				bot.sendMessage(
+					env.ADMIN_USER_ID,
+					`Ошибка во время создания пользователя. Реферальный пользователь с telegram id ${context.ref} не найден в системе`,
+				);
+			}
+		}
 		try {
-			const newUser: User = await this.client.create({
-				username: fr.username,
-				firstName: fr.first_name,
-				telegramId: String(fr.id),
-				telegramLink: `@${fr.username}`,
-				lastName: fr.last_name,
-				languageCode: fr.language_code,
-			});
-			await bot.sendMessage(env.ADMIN_USER_ID, `User ${newUser.username} has been successfully created`);
+			const newUser: User = await this.client.create(createBody);
+			await bot.sendMessage(env.ADMIN_USER_ID, `Пользователь ${newUser.username} успешно создан`);
 			let finalUser = newUser;
 
 			finalUser = await this.createRWUser(newUser.username, newUser.id);
@@ -1527,19 +1540,17 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 
 			const messg = dict.installation_guide[lang](finalUser.rwLink);
 			if (newUser.telegramId) {
-				await bot.sendMessage(newUser.telegramId, dict.request_approved[lang]);
-				await bot.sendMessage(newUser.telegramId, messg);
-				await bot.sendMessage(
+				await this.sendAndCaptureMessage(newUser.telegramId, newUser.id, dict.request_approved[lang]);
+				await this.sendAndCaptureMessage(newUser.telegramId, newUser.id, messg);
+				await this.sendAndCaptureMessage(
 					newUser.telegramId,
+					newUser.id,
 					dict.payment_intro[lang](finalUser.price, finalUser.currency),
 				);
-				await bot.sendMessage(newUser.telegramId, dict.start[lang], {
+				await bot.sendMessage(newUser.telegramId, dict.start[lang](newUser.telegramId), {
 					reply_markup: getUserKeyboard(lang),
 				});
-				this.client.captureDelivery(newUser.id, dict.request_approved[lang]);
-				this.client.captureDelivery(newUser.id, messg);
-				this.client.captureDelivery(newUser.id, dict.payment_intro[lang](finalUser.price, finalUser.currency));
-				this.client.captureDelivery(newUser.id, dict.start[lang]);
+				this.client.captureDelivery(newUser.id, dict.start[lang](newUser.telegramId));
 			}
 		} catch (error) {
 			logger.error(
@@ -1977,6 +1988,11 @@ ${env.PAYMENT_CARDS}`
 			rwUsername: createdRWUser.response.username,
 			rwUUID: createdRWUser.response.uuid,
 		});
+	}
+
+	private async sendAndCaptureMessage(chatId: number, userId: number, text: string) {
+		await bot.sendMessage(chatId, text);
+		this.client.captureDelivery(userId, text);
 	}
 
 	private log(message: string) {

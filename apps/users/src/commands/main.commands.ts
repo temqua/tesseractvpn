@@ -2,6 +2,7 @@ import type { Message } from 'node-telegram-bot-api';
 import TelegramBot from 'node-telegram-bot-api';
 import bot from '../bot';
 import { dict } from '../dict';
+import { BotIncomingMessagesClient } from '../entities/bot-incoming-messages/client';
 import { getUserContactKeyboard, getUserKeyboard } from '../entities/users/users.buttons';
 import { UsersClient } from '../entities/users/users.client';
 import { type VPNUser } from '../entities/users/users.repository';
@@ -15,7 +16,6 @@ import { paymentsHelpMessage } from './payments.commands';
 import { plansHelpMessage } from './plans.commands';
 import { serversHelpMessage } from './servers.commands';
 import { userHelpMessage } from './users.commands';
-import { BotIncomingMessagesClient } from '../entities/bot-incoming-messages/client';
 const usersClient = new UsersClient();
 const incomingMessagesClient = new BotIncomingMessagesClient();
 const mainCommandsList = {
@@ -33,7 +33,7 @@ const mainHelpMessage = Object.values(mainCommandsList)
 	.map(c => c.docs)
 	.join('\n');
 
-bot.onText(/\/start/, async (msg: Message) => {
+bot.onText(/\/start\s*(.*)/, async (msg: Message, match) => {
 	logger.success('Ready');
 	const lang = msg.from.is_bot ? 'ru' : msg.from.language_code;
 
@@ -51,13 +51,17 @@ bot.onText(/\/start/, async (msg: Message) => {
 		if (user) {
 			const mg = `${dict.hello[lang]}, ${msg?.from?.first_name}! ${dict.welcome[lang]}`;
 			await bot.sendMessage(msg.chat.id, mg);
-			await bot.sendMessage(msg.chat.id, dict.start[lang], {
+			await bot.sendMessage(msg.chat.id, dict.start[lang](user.telegramId), {
 				reply_markup: getUserKeyboard(lang),
 			});
-			usersClient.createAction(user.id, '/start', '');
+			usersClient.createAction(user.id, msg.text, '');
 			usersClient.captureDelivery(user.id, mg);
-			usersClient.captureDelivery(user.id, dict.start[lang]);
+			usersClient.captureDelivery(user.id, dict.start[lang](user.telegramId));
 		} else {
+			let ref;
+			if (match[1] && match[1] !== '') {
+				ref = match[1].trim();
+			}
 			await bot.sendMessage(
 				msg.chat.id,
 				`${dict.hello[lang]}, ${msg?.from?.first_name}! ${dict.registration[lang](env.CHANNEL_URL)}`,
@@ -71,6 +75,7 @@ bot.onText(/\/start/, async (msg: Message) => {
 										[CmdCode.Scope]: CommandScope.Users,
 										[CmdCode.Context]: {
 											[CmdCode.Command]: VPNUserCommand.RequestCreation,
+											ref,
 										},
 									}),
 								},

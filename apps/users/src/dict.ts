@@ -87,8 +87,10 @@ The setup process is similar in all apps:
         `,
 	},
 	start: {
-		ru: '/me — для просмотра информации, которая хранится о вас',
-		en: '/me — to view the information stored about you',
+		ru: (refId: string) => `/me — для просмотра информации, которая хранится о вас
+Ваша реферальная ссылка: https://t.me/tesseract_users_bot?start=${refId}`,
+		en: (refId: string) => `/me — to view the information stored about you
+Your referral link: https://t.me/tesseract_users_bot?start=${refId}`,
 	},
 	no_sub: {
 		ru: 'У вас пока нет ключей',

@@ -17,6 +17,7 @@ export interface UsersContext {
 	rid?: string;
 	username?: string;
 	tgid?: number;
+	ref?: number;
 	[CmdCode.SubOperation]?: VPNUserCommand;
 }
 
