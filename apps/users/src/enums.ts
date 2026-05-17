@@ -155,6 +155,7 @@ export enum UpdateUserPropsMap {
 	rwUsername = 'ru',
 	languageCode = 'lc',
 	referrerId = 'rid',
+	password = 'pwd',
 }
 
 export enum UpdatePlanPropsMap {

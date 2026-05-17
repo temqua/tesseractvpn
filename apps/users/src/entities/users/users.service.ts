@@ -101,6 +101,7 @@ export class UsersService {
 		'rwLink',
 		'languageCode',
 		'rwUsername',
+		'password',
 	];
 	private boolProps = ['active', 'free', 'muted'];
 	private numberProps = ['price'];
