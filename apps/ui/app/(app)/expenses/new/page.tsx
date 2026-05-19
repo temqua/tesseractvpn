@@ -5,14 +5,12 @@ import { Select } from '@/app/components/select';
 import { createAction } from '@/app/lib/actions/expenses';
 import { use, useActionState, useState } from 'react';
 
-export default function NewExpensePage({ params }: { params: Promise<{ id: string }> }) {
-	const { id } = use(params);
+export default function NewExpensePage() {
 	const [state, formAction, isPendingUpdate] = useActionState(createAction, undefined);
 
-	const [amount, setAmount] = useState(0);
+	const [amount, setAmount] = useState('');
 	const [category, setCategory] = useState('');
 	const [description, setDescription] = useState('');
-	console.log(state);
 	return (
 		<form action={formAction}>
 			<div className="flex flex-col">

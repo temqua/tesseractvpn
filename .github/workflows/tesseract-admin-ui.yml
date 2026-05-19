@@ -45,5 +45,5 @@ jobs:
               run: |
                   ssh ${{ secrets.ADMIN_UI_SERVER_USERNAME }}@${{ secrets.ADMIN_UI_SERVER_HOST }} '
                     cd ${{ secrets.ADMIN_UI_SERVER_APP_DIRECTORY }}
-                    docker compose down tesseract-api && docker compose up tesseract-api -d
+                    docker compose down tesseract-admin-ui && docker compose up tesseract-admin-ui -d
                   '
