@@ -25,6 +25,7 @@ COPY --from=dependencies /app/node_modules ./node_modules
 
 # Copy application source code
 COPY ./app/ ./app/
+COPY ./features/ ./features/
 COPY package.json tsconfig.json proxy.ts next.config.ts next-env.d.ts postcss.config.mjs ./
 
 ENV NODE_ENV=production

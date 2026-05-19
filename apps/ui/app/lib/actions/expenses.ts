@@ -1,20 +1,32 @@
 import { QueryClient } from '@tanstack/react-query';
 import { expensesClient } from '../api/expenses/client';
 import { IExpense } from '../api/expenses/definitions';
-import { FormState } from '../definitions';
 import { IErrorBody } from '../definitions.global';
+import { ExpenseFormSchema, ExpenseFormState } from '@/features/expenses/lib/definitions';
+import { treeifyError } from 'zod';
 
-export async function createAction(state, formData: FormData) {
+export async function createAction(state: ExpenseFormState, formData: FormData) {
+	const validatedFields = ExpenseFormSchema.safeParse({
+		amount: formData.get('amount'),
+		category: formData.get('category'),
+		description: formData.get('description'),
+	});
+	if (!validatedFields.success) {
+		return {
+			errors: treeifyError(validatedFields.error),
+		};
+	}
 	try {
 		const response: Response = await expensesClient.create({
 			amount: Number(formData.get('amount')),
 			category: formData.get('category'),
-			description: formData.get('description'),
+			description: formData.get('description') as string,
 		});
 		const data: IExpense & IErrorBody = await response.json();
-		console.log(data);
 		if (response.ok) {
-			return data;
+			return {
+				data,
+			};
 		} else {
 			return {
 				errors: {
@@ -25,24 +37,37 @@ export async function createAction(state, formData: FormData) {
 	} catch (err) {
 		return {
 			errors: {
-				errors: [err],
+				errors: [err] as string[],
 			},
 		};
 	}
 }
 
 export async function getUpdateAction(id: string) {
-	return async function (state, formData: FormData) {
+	return async function (state: ExpenseFormState, formData: FormData) {
+		const validatedFields = ExpenseFormSchema.safeParse({
+			amount: formData.get('amount'),
+			category: formData.get('category'),
+			description: formData.get('description'),
+		});
+		if (!validatedFields.success) {
+			return {
+				errors: treeifyError(validatedFields.error),
+			};
+		}
 		try {
 			const response: IErrorBody & IExpense = await expensesClient.update(id, {
 				amount: Number(formData.get('amount')),
 				category: formData.get('category'),
-				description: formData.get('description'),
+				description: formData.get('description') as string,
 			});
+			return {
+				data: response,
+			};
 		} catch (err) {
 			return {
 				errors: {
-					errors: [err],
+					errors: [err as string],
 				},
 			};
 		}

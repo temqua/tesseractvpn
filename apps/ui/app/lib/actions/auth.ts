@@ -1,10 +1,10 @@
 import { redirect, RedirectType } from 'next/navigation';
 import { treeifyError } from 'zod';
 import { authClient } from '../api/auth/client';
-import { FormState, SignupFormSchema } from '../definitions';
+import { AuthFormState, SignupFormSchema } from '../definitions';
 import { authSessionKey } from '../api/auth';
 
-export async function auth(state: FormState, formData: FormData) {
+export async function auth(state: AuthFormState, formData: FormData) {
 	const validatedFields = SignupFormSchema.safeParse({
 		username: formData.get('username'),
 		password: formData.get('password'),
@@ -15,8 +15,8 @@ export async function auth(state: FormState, formData: FormData) {
 			errors: treeifyError(validatedFields.error),
 		};
 	}
-	const username = formData.get('username');
-	const password = formData.get('password');
+	const username = formData.get('username') as string;
+	const password = formData.get('password') as string;
 	let token;
 	try {
 		const r = await authClient.auth(username, password);
@@ -24,7 +24,7 @@ export async function auth(state: FormState, formData: FormData) {
 	} catch (err) {
 		return {
 			errors: {
-				errors: [err],
+				errors: [err as string],
 			},
 		};
 	}

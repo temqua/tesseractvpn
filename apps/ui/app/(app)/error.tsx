@@ -3,6 +3,8 @@ import { useEffect } from "react"
 
 export default function ErrorPage({
     error
+}: {
+    error: Error & { digest?: string }
 }) {
     useEffect(() => {
         // Log the error to an error reporting service
@@ -11,7 +13,7 @@ export default function ErrorPage({
     return (
         <div>
             <h2>Something went wrong</h2>
-            <span>{error}</span>
+            <span>{error.message}</span>
         </div>
     )
 }

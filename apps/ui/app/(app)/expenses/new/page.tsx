@@ -3,13 +3,13 @@ import { Button } from '@/app/components/button';
 import { Input } from '@/app/components/input';
 import { Select } from '@/app/components/select';
 import { createAction } from '@/app/lib/actions/expenses';
-import { use, useActionState, useState } from 'react';
+import { useActionState, useState } from 'react';
 
 export default function NewExpensePage() {
 	const [state, formAction, isPendingUpdate] = useActionState(createAction, undefined);
 
 	const [amount, setAmount] = useState('');
-	const [category, setCategory] = useState('');
+	const [category, setCategory] = useState('Servers');
 	const [description, setDescription] = useState('');
 	return (
 		<form action={formAction}>
@@ -27,7 +27,7 @@ export default function NewExpensePage() {
 			</div>
 			<div className="flex flex-col">
 				<label htmlFor="category">Category</label>
-				<Select onChange={event => setCategory(event.target.value)} id="category" name="category">
+				<Select value={category} onChange={event => setCategory(event.target.value)} id="category" name="category">
 					<option value="Nalog">Nalog</option>
 					<option value="Servers">Servers</option>
 				</Select>
@@ -44,7 +44,7 @@ export default function NewExpensePage() {
 			</div>
 			<Button type="submit">Submit</Button>
 			{state?.errors?.errors?.length ? state?.errors?.errors.join(',') : ''}
-			{state?.id ? `Successfully created expense ${state?.id}` : ''}
+			{state?.data?.id ? `Successfully created expense ${state?.data.id}` : ''}
 		</form>
 	);
 }

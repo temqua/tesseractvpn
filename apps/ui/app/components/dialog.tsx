@@ -3,11 +3,11 @@ import styles from './dialog.module.css';
 import { Button } from './button';
 interface DialogProps {
 	isOpened: boolean;
-	onClose: () => void;
-	onCancel: () => void;
+	onClose?: () => void;
+	onCancel?: () => void;
 	onConfirm: () => void;
 	children: React.ReactNode;
-	modalHeader: string;
+	modalHeader?: string;
 }
 
 export default function Dialog({

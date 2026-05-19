@@ -13,7 +13,7 @@ export default function ExpenseClientSide({ data, id }: { data: IExpense; id: st
 	const [state, formAction, isPendingUpdate] = useActionState(getUpdateAction(id), undefined);
 
 	const [paymentDate, setPaymentDate] = useState(data?.paymentDate);
-	const [amount, setAmount] = useState(data?.amount);
+	const [amount, setAmount] = useState(data?.amount.toString());
 	const [category, setCategory] = useState(data?.category);
 	const [description, setDescription] = useState(data?.description);
 	// if (isPending) {
@@ -47,7 +47,7 @@ export default function ExpenseClientSide({ data, id }: { data: IExpense; id: st
 			</div>
 			<div className="flex flex-col">
 				<label htmlFor="category">Category</label>
-				<Select onChange={event => setCategory(event.target.value)} id="category" name="category">
+				<Select value={category} onChange={event => setCategory(event.target.value)} id="category" name="category">
 					<option value=""></option>
 					<option value="Nalog">Nalog</option>
 					<option value="Servers">Servers</option>

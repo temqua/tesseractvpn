@@ -13,11 +13,22 @@ export const SignupFormSchema = z.object({
 		.trim(),
 });
 
-export type FormState =
+export type AuthFormState =
 	| {
 			errors?: {
-				username?: string[];
-				password?: string[];
+				errors: string[];
+				properties?: {
+					username?:
+						| {
+								errors: string[];
+						  }
+						| undefined;
+					password?:
+						| {
+								errors: string[];
+						  }
+						| undefined;
+				};
 			};
 			message?: string;
 	  }
