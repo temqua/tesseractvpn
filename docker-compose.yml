@@ -40,7 +40,7 @@ services:
     tesseract-admin-ui:
         container_name: tesseract-admin-ui
         build:
-            context: .
+            context: ./apps/ui
             dockerfile: ./Dockerfile
         image: tesseract-admin-ui
         env_file: .env
