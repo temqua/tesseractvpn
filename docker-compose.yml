@@ -36,6 +36,17 @@ services:
         restart: unless-stopped
         volumes:
             - backups:/home/vpnadmin/backups
+
+    tesseract-admin-ui:
+        container_name: tesseract-admin-ui
+        build:
+            context: .
+            dockerfile: ./Dockerfile
+        image: tesseract-admin-ui
+        env_file: .env
+        ports:
+            - 3000:3000        
+        restart: always
 networks:
     tesseract-network:
         external: true

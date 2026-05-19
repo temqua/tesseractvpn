@@ -1,5 +1,5 @@
 services:
-    api:
+    tesseract-admin-ui:
         container_name: tesseract-admin-ui
         build:
             context: .
