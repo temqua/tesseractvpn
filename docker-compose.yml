@@ -45,7 +45,7 @@ services:
         image: tesseract-admin-ui
         env_file: .env
         ports:
-            - 3000:3000        
+            - 3000:3000
         restart: always
 networks:
     tesseract-network:

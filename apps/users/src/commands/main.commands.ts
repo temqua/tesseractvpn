@@ -52,7 +52,7 @@ bot.onText(/\/start\s*(.*)/, async (msg: Message, match) => {
 			const mg = `${dict.hello[lang]}, ${msg?.from?.first_name}! ${dict.welcome[lang]}`;
 			await bot.sendMessage(msg.chat.id, mg);
 			await bot.sendMessage(msg.chat.id, dict.start[lang](user.telegramId), {
-				reply_markup: getUserKeyboard(lang),
+				reply_markup: getUserKeyboard(lang, user.telegramId),
 			});
 			usersClient.createAction(user.id, msg.text, '');
 			usersClient.captureDelivery(user.id, mg);

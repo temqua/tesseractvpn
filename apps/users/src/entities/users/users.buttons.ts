@@ -486,9 +486,31 @@ export const createBackToMenuButton = (lang: string): InlineKeyboardMarkup => {
 	};
 };
 
-export const getUserKeyboard = (lang = 'ru'): InlineKeyboardMarkup => {
+export const getUserKeyboard = (lang = 'ru', telegramId: number): InlineKeyboardMarkup => {
 	return {
 		inline_keyboard: [
+			[
+				{
+					text: dict.pay[lang],
+					callback_data: JSON.stringify({
+						[CmdCode.Scope]: CommandScope.Users,
+						[CmdCode.Context]: {
+							[CmdCode.Command]: VPNUserCommand.UserPay,
+						},
+					}),
+				},
+			],
+			[
+				{
+					text: dict.refLink[lang](telegramId),
+					callback_data: JSON.stringify({
+						[CmdCode.Scope]: CommandScope.Users,
+						[CmdCode.Context]: {
+							[CmdCode.Command]: VPNUserCommand.ShowSubLink,
+						},
+					}),
+				},
+			],
 			[
 				{
 					text: dict.last_payment[lang],
@@ -529,17 +551,6 @@ export const getUserKeyboard = (lang = 'ru'): InlineKeyboardMarkup => {
 						[CmdCode.Scope]: CommandScope.Users,
 						[CmdCode.Context]: {
 							[CmdCode.Command]: VPNUserCommand.ShowPlans,
-						},
-					}),
-				},
-			],
-			[
-				{
-					text: dict.pay[lang],
-					callback_data: JSON.stringify({
-						[CmdCode.Scope]: CommandScope.Users,
-						[CmdCode.Context]: {
-							[CmdCode.Command]: VPNUserCommand.UserPay,
 						},
 					}),
 				},

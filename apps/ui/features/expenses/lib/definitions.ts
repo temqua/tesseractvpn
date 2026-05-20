@@ -11,9 +11,8 @@ export const ExpenseFormSchema = z.object({
 });
 
 export type ExpenseFormState =
-
 	| {
-            data?: IExpense & IErrorBody;
+			data?: IExpense & IErrorBody;
 			errors?: {
 				errors: string[];
 				properties?: {

@@ -78,7 +78,7 @@ export class PaymentsService {
 					parse_mode: 'MarkdownV2',
 					message_id: message.message_id,
 					chat_id: message.chat.id,
-					reply_markup: getUserKeyboard(lang),
+					reply_markup: getUserKeyboard(lang, from.id),
 				});
 				this.usersClient.captureDelivery(userId, p);
 			} catch (err) {
@@ -88,7 +88,7 @@ export class PaymentsService {
 			await bot.editMessageText(dict.payments_not_found[lang], {
 				message_id: message.message_id,
 				chat_id: message.chat.id,
-				reply_markup: getUserKeyboard(lang),
+				reply_markup: getUserKeyboard(lang, from.id),
 			});
 			this.usersClient.captureDelivery(userId, dict.payments_not_found[lang]);
 		}

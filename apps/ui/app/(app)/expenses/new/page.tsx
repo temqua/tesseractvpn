@@ -27,7 +27,12 @@ export default function NewExpensePage() {
 			</div>
 			<div className="flex flex-col">
 				<label htmlFor="category">Category</label>
-				<Select value={category} onChange={event => setCategory(event.target.value)} id="category" name="category">
+				<Select
+					value={category}
+					onChange={event => setCategory(event.target.value)}
+					id="category"
+					name="category"
+				>
 					<option value="Nalog">Nalog</option>
 					<option value="Servers">Servers</option>
 				</Select>

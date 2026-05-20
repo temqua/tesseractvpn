@@ -24,7 +24,7 @@ export async function auth(state: AuthFormState, formData: FormData) {
 	} catch (err) {
 		return {
 			errors: {
-				errors: [err as string],
+				errors: [`${err}`],
 			},
 		};
 	}

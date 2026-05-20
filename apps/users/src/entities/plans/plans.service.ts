@@ -96,7 +96,7 @@ export class PlansService {
 		bot.editMessageText(finalMessage, {
 			message_id: message.message_id,
 			chat_id: message.chat.id,
-			reply_markup: getUserKeyboard(lang),
+			reply_markup: getUserKeyboard(lang, user.telegramId),
 		});
 		globalHandler.finishCommand();
 	}

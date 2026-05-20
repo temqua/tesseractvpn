@@ -92,6 +92,10 @@ The setup process is similar in all apps:
 		en: (refId: string) => `/me — to view the information stored about you
 Your referral link: https://t.me/tesseract_users_bot?start=${refId}`,
 	},
+	ref_link: {
+		ru: (refId: string) => `Ваша реферальная ссылка: https://t.me/tesseract_users_bot?start=${refId}`,
+		en: (refId: string) => `Your referral link: https://t.me/tesseract_users_bot?start=${refId}`,
+	},
 	no_sub: {
 		ru: 'У вас пока нет ключей',
 		en: "You don't have subscriptions yet.",
@@ -143,6 +147,10 @@ Your referral link: https://t.me/tesseract_users_bot?start=${refId}`,
 	subscription: {
 		ru: '🔗 Ссылка-ключ',
 		en: '🔗 Subscription link',
+	},
+	refLink: {
+		ru: '🔗 Ваша реферальная ссылка',
+		en: '🔗 Your referral link',
 	},
 	guide: {
 		ru: '📖 Гайд',

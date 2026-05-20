@@ -5,12 +5,13 @@ import { Select } from '@/app/components/select';
 import { getUpdateAction } from '@/app/lib/actions/expenses';
 import { IExpense } from '@/app/lib/api/expenses/definitions';
 import { useActionState, useState } from 'react';
+import { ExpenseFormState } from '../lib/definitions';
 export default function ExpenseClientSide({ data, id }: { data: IExpense; id: string }) {
 	// const { isPending, error, data } = useQuery({
 	// 	queryKey: [`expense-${id}`],
 	// 	queryFn: () => expensesClient.getById(id),
 	// });
-	const [state, formAction, isPendingUpdate] = useActionState(getUpdateAction(id), undefined);
+	const [state, formAction, isPendingUpdate] = useActionState<ExpenseFormState>(getUpdateAction(id), null);
 
 	const [paymentDate, setPaymentDate] = useState(data?.paymentDate);
 	const [amount, setAmount] = useState(data?.amount.toString());
@@ -47,7 +48,12 @@ export default function ExpenseClientSide({ data, id }: { data: IExpense; id: st
 			</div>
 			<div className="flex flex-col">
 				<label htmlFor="category">Category</label>
-				<Select value={category} onChange={event => setCategory(event.target.value)} id="category" name="category">
+				<Select
+					value={category}
+					onChange={event => setCategory(event.target.value)}
+					id="category"
+					name="category"
+				>
 					<option value=""></option>
 					<option value="Nalog">Nalog</option>
 					<option value="Servers">Servers</option>

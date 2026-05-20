@@ -30,20 +30,20 @@ export async function createAction(state: ExpenseFormState, formData: FormData) 
 		} else {
 			return {
 				errors: {
-					errors: [data.message],
+					errors: [data.message ?? 'Unknown Error'],
 				},
 			};
 		}
 	} catch (err) {
 		return {
 			errors: {
-				errors: [err] as string[],
+				errors: [err instanceof Error ? err.message : String(err)],
 			},
 		};
 	}
 }
 
-export async function getUpdateAction(id: string) {
+export function getUpdateAction(id: string) {
 	return async function (state: ExpenseFormState, formData: FormData) {
 		const validatedFields = ExpenseFormSchema.safeParse({
 			amount: formData.get('amount'),
@@ -67,7 +67,7 @@ export async function getUpdateAction(id: string) {
 		} catch (err) {
 			return {
 				errors: {
-					errors: [err as string],
+					errors: [err instanceof Error ? err.message : String(err)],
 				},
 			};
 		}

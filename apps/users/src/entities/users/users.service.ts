@@ -789,14 +789,14 @@ currently have a trial period `,
 			bot.editMessageText(dict.installation_guide[lang](user.rwLink), {
 				chat_id: message.chat.id,
 				message_id: message.message_id,
-				reply_markup: getUserKeyboard(lang),
+				reply_markup: getUserKeyboard(lang, user.telegramId),
 			});
 			this.client.captureDelivery(user.id, dict.installation_guide[lang](user.rwLink));
 		} else {
 			bot.editMessageText(dict.no_sub[lang], {
 				message_id: message.message_id,
 				chat_id: message.chat.id,
-				reply_markup: getUserKeyboard(lang),
+				reply_markup: getUserKeyboard(lang, user.telegramId),
 			});
 			this.client.captureDelivery(user.id, dict.no_sub[lang]);
 		}
@@ -833,7 +833,7 @@ currently have a trial period `,
 				message_id: message.message_id,
 				chat_id: message.chat.id,
 				parse_mode: 'MarkdownV2',
-				reply_markup: getUserKeyboard(lang),
+				reply_markup: getUserKeyboard(lang, from.id),
 			});
 		} catch (err) {
 			logger.error(err);
@@ -992,20 +992,20 @@ currently have a trial period `,
 				await bot.editMessageText(dict.deleted_sub[lang], {
 					message_id: message.message_id,
 					chat_id: message.chat.id,
-					reply_markup: getUserKeyboard(lang),
+					reply_markup: getUserKeyboard(lang, user.telegramId),
 				});
 			} else {
 				await bot.editMessageText(dict.delete_sub_error[lang](env.CHANNEL_URL), {
 					message_id: message.message_id,
 					chat_id: message.chat.id,
-					reply_markup: getUserKeyboard(lang),
+					reply_markup: getUserKeyboard(lang, user.telegramId),
 				});
 			}
 		} catch (error) {
 			await bot.editMessageText(`Ошибка удаления ${error.message}`, {
 				message_id: message.message_id,
 				chat_id: message.chat.id,
-				reply_markup: getUserKeyboard(lang),
+				reply_markup: getUserKeyboard(lang, user.telegramId),
 			});
 		}
 	}
@@ -1284,7 +1284,7 @@ Created at ${record.assignedAt}`,
 		bot.editMessageText(dict.start[lang](from.id), {
 			message_id: message.message_id,
 			chat_id: message.chat.id,
-			reply_markup: getUserKeyboard(lang),
+			reply_markup: getUserKeyboard(lang, from.id),
 		});
 	}
 
@@ -1354,7 +1354,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 			const userInfo = this.params.get('user_info') ?? '';
 			const mesId = this.paymentRequestParams.get('msg_id');
 			bot.editMessageText(dict.payment_request[lang], {
-				reply_markup: getUserKeyboard(lang),
+				reply_markup: getUserKeyboard(lang, user.telegramId),
 				message_id: mesId,
 				chat_id: message.chat.id,
 			});
@@ -1549,7 +1549,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 					dict.payment_intro[lang](finalUser.price, finalUser.currency),
 				);
 				await bot.sendMessage(newUser.telegramId, dict.start[lang](newUser.telegramId), {
-					reply_markup: getUserKeyboard(lang),
+					reply_markup: getUserKeyboard(lang, newUser.telegramId),
 				});
 				this.client.captureDelivery(newUser.id, dict.start[lang](newUser.telegramId));
 			}
@@ -1569,6 +1569,20 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 			});
 			globalHandler.finishCommand();
 		}
+	}
+
+	async showRefLink(message: Message, from: TGUser) {
+		this.log('showRefLink');
+		const lang = from?.is_bot ? 'ru' : from?.language_code;
+
+		const user: VPNUser = await this.client.getByTelegramId(message.chat.id.toString());
+		this.client.createAction(user.id, 'showRefLink', `${dict.refLink[lang](user.telegramId)}`);
+		bot.editMessageText(dict.refLink[lang](user.telegramId), {
+			chat_id: message.chat.id,
+			message_id: message.message_id,
+			reply_markup: getUserKeyboard(lang, user.telegramId),
+		});
+		this.client.captureDelivery(user.id, dict.refLink[lang](user.telegramId));
 	}
 
 	private async createUserServer(userId: string, serverId: string, protocol: VPNProtocol, username: string) {
@@ -1951,7 +1965,7 @@ Created At: ${formatDate(user.createdAt)}\n`;
 			await bot.editMessageText(dict.createSubError[lang], {
 				message_id: message.message_id,
 				chat_id: message.chat.id,
-				reply_markup: getUserKeyboard(lang),
+				reply_markup: getUserKeyboard(lang, from.id),
 			});
 			return null;
 		}

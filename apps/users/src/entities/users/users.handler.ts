@@ -190,6 +190,9 @@ class UsersCommandsHandler implements ICommandHandler {
 		if (context[CmdCode.Command] === VPNUserCommand.RequestCreationAdmin) {
 			await this.service.signUp(message, context, from, this.state.init);
 		}
+		if (context[CmdCode.Command] === VPNUserCommand.ShowRefLink) {
+			await this.service.showRefLink(message, from);
+		}
 	}
 
 	async handleQuery(context: UsersContext, query: TelegramBot.CallbackQuery, start = false) {
