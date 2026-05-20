@@ -1575,14 +1575,15 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 		this.log('showRefLink');
 		const lang = from?.is_bot ? 'ru' : from?.language_code;
 
-		const user: VPNUser = await this.client.getByTelegramId(message.chat.id.toString());
-		this.client.createAction(user.id, 'showRefLink', `${dict.refLink[lang](user.telegramId)}`);
-		bot.editMessageText(dict.refLink[lang](user.telegramId), {
+		const user = await this.client.getByTelegramId(message.chat.id.toString());
+		this.client.createAction(user.id, 'showRefLink', `${dict.refLink[lang]}`);
+		const msg = dict.ref_link[lang](user.telegramId);
+		bot.editMessageText(msg, {
 			chat_id: message.chat.id,
 			message_id: message.message_id,
 			reply_markup: getUserKeyboard(lang, user.telegramId),
 		});
-		this.client.captureDelivery(user.id, dict.refLink[lang](user.telegramId));
+		this.client.captureDelivery(user.id, msg);
 	}
 
 	private async createUserServer(userId: string, serverId: string, protocol: VPNProtocol, username: string) {

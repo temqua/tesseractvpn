@@ -149,8 +149,8 @@ Your referral link: https://t.me/tesseract_users_bot?start=${refId}`,
 		en: '🔗 Subscription link',
 	},
 	refLink: {
-		ru: '🔗 Ваша реферальная ссылка',
-		en: '🔗 Your referral link',
+		ru: '🔗 Реферальная ссылка',
+		en: '🔗 Referral link',
 	},
 	guide: {
 		ru: '📖 Гайд',

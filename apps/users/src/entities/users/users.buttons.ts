@@ -491,6 +491,17 @@ export const getUserKeyboard = (lang = 'ru', telegramId: number): InlineKeyboard
 		inline_keyboard: [
 			[
 				{
+					text: dict.subscription[lang],
+					callback_data: JSON.stringify({
+						[CmdCode.Scope]: CommandScope.Users,
+						[CmdCode.Context]: {
+							[CmdCode.Command]: VPNUserCommand.ShowSubLink,
+						},
+					}),
+				},
+			],
+			[
+				{
 					text: dict.pay[lang],
 					callback_data: JSON.stringify({
 						[CmdCode.Scope]: CommandScope.Users,
@@ -502,11 +513,11 @@ export const getUserKeyboard = (lang = 'ru', telegramId: number): InlineKeyboard
 			],
 			[
 				{
-					text: dict.refLink[lang](telegramId),
+					text: dict.prices[lang],
 					callback_data: JSON.stringify({
 						[CmdCode.Scope]: CommandScope.Users,
 						[CmdCode.Context]: {
-							[CmdCode.Command]: VPNUserCommand.ShowSubLink,
+							[CmdCode.Command]: VPNUserCommand.ShowPlans,
 						},
 					}),
 				},
@@ -524,15 +535,16 @@ export const getUserKeyboard = (lang = 'ru', telegramId: number): InlineKeyboard
 			],
 			[
 				{
-					text: dict.subscription[lang],
+					text: dict.refLink[lang],
 					callback_data: JSON.stringify({
 						[CmdCode.Scope]: CommandScope.Users,
 						[CmdCode.Context]: {
-							[CmdCode.Command]: VPNUserCommand.ShowSubLink,
+							[CmdCode.Command]: VPNUserCommand.ShowRefLink,
 						},
 					}),
 				},
 			],
+
 			[
 				{
 					text: dict.keys[lang],
@@ -540,17 +552,6 @@ export const getUserKeyboard = (lang = 'ru', telegramId: number): InlineKeyboard
 						[CmdCode.Scope]: CommandScope.Users,
 						[CmdCode.Context]: {
 							[CmdCode.Command]: VPNUserCommand.KeysUser,
-						},
-					}),
-				},
-			],
-			[
-				{
-					text: dict.prices[lang],
-					callback_data: JSON.stringify({
-						[CmdCode.Scope]: CommandScope.Users,
-						[CmdCode.Context]: {
-							[CmdCode.Command]: VPNUserCommand.ShowPlans,
 						},
 					}),
 				},
