@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { expensesClient } from '../api/expenses/client';
-import { IExpense } from '../api/expenses/definitions';
+import { ExpenseCategory, IExpense } from '../api/expenses/definitions';
 import { IErrorBody } from '../definitions.global';
 import { ExpenseFormSchema, ExpenseFormState } from '@/features/expenses/lib/definitions';
 import { treeifyError } from 'zod';
@@ -19,7 +19,7 @@ export async function createAction(state: ExpenseFormState, formData: FormData) 
 	try {
 		const response: Response = await expensesClient.create({
 			amount: Number(formData.get('amount')),
-			category: formData.get('category'),
+			category: formData.get('category') as ExpenseCategory,
 			description: formData.get('description') as string,
 		});
 		const data: IExpense & IErrorBody = await response.json();
@@ -46,7 +46,7 @@ export async function createAction(state: ExpenseFormState, formData: FormData) 
 export function getUpdateAction(id: string) {
 	return async function (state: ExpenseFormState, formData: FormData) {
 		const validatedFields = ExpenseFormSchema.safeParse({
-			amount: formData.get('amount'),
+			amount: Number(formData.get('amount')),
 			category: formData.get('category'),
 			description: formData.get('description'),
 		});
@@ -58,7 +58,7 @@ export function getUpdateAction(id: string) {
 		try {
 			const response: IErrorBody & IExpense = await expensesClient.update(id, {
 				amount: Number(formData.get('amount')),
-				category: formData.get('category'),
+				category: formData.get('category') as ExpenseCategory,
 				description: formData.get('description') as string,
 			});
 			return {

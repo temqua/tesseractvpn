@@ -11,6 +11,9 @@ class SSRClient {
 	async request(url: string, params: RequestInit) {
 		const cookieStore = await cookies();
 		const record = cookieStore.get(authSessionKey);
+		if (!record) {
+			throw new Error('There is no user session cookie set');
+		}
 		const token = record.value;
 		console.time(`${params.method} Request to ${process.env.NEXT_PUBLIC_API_URL}${url}`);
 		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {

@@ -4,7 +4,7 @@ export interface IPayment {
 	amount: number;
 	currency: string;
 	monthsCount: number | null;
-	expiresOn: Date | null;
+	expiresOn: string | null;
 	userId: number;
 	parentPaymentId: string | null;
 	planId: number | null;

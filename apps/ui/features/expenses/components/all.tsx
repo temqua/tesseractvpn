@@ -11,15 +11,22 @@ import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
+interface IExpenseForm {
+	id: string;
+	paymentDate: string;
+	amount: string;
+	category: string;
+}
+
 export default function ExpensesClientSide({ data }: { data: IExpense[] }) {
-	const [searchFilters, setSearchFilters] = useState({
+	const [searchFilters, setSearchFilters] = useState<IExpenseForm>({
 		id: '',
 		paymentDate: '',
 		amount: '',
 		category: '',
 	});
 	const queryClient = useQueryClient();
-	const [deleteId, setDeleteId] = useState(null);
+	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [isModalOpened, setModalOpened] = useState(false);
 	queryClient.setQueryData(['expenses-all'], data);
 
@@ -62,7 +69,7 @@ export default function ExpensesClientSide({ data }: { data: IExpense[] }) {
 			},
 		},
 	];
-	const setFilter = (key: keyof typeof searchFilters, value: string) => {
+	const setFilter = (key: keyof IExpenseForm, value: string) => {
 		setSearchFilters(prev => ({
 			...prev,
 			[key]: value,
@@ -98,7 +105,7 @@ export default function ExpensesClientSide({ data }: { data: IExpense[] }) {
 						<Input
 							type="search"
 							placeholder={c.label}
-							onChange={event => setFilter(c.prop, event.target.value)}
+							onChange={event => setFilter(c.prop as keyof IExpenseForm, event.target.value)}
 						></Input>
 					</th>
 				))}
@@ -127,7 +134,9 @@ export default function ExpensesClientSide({ data }: { data: IExpense[] }) {
 					onClose={() => setModalOpened(false)}
 					onConfirm={() => {
 						setModalOpened(false);
-						deleteAction(deleteId, queryClient);
+						if (deleteId) {
+							deleteAction(deleteId, queryClient);
+						}
 					}}
 				>
 					Are you sure you want to delete expense?
