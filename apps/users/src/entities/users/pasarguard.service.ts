@@ -38,14 +38,14 @@ export class PasarguardService {
 
 	async createUser(
 		username: string,
-		params: { expiresOn?: Date; isNew?: boolean } = {},
+		params: { expiresOn?: string; isNew?: boolean } = {},
 	): Promise<PasarguardUserResponse> {
 		const { isNew = false, expiresOn } = params;
 		const token = await this.auth();
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
 		const monthAfter = addMonths(today, 1);
-		const expire = isNew || !expiresOn ? monthAfter.toISOString() : addDays(expiresOn, 1).toISOString();
+		const expire = isNew || !expiresOn ? monthAfter.toISOString() : addDays(new Date(expiresOn), 1).toISOString();
 		const newUser: PasarguardUserBody = {
 			username,
 			status: 'active',

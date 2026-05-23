@@ -5,7 +5,6 @@ import { dict } from '../dict';
 import { BotIncomingMessagesClient } from '../entities/bot-incoming-messages/client';
 import { getUserContactKeyboard, getUserKeyboard } from '../entities/users/users.buttons';
 import { UsersClient } from '../entities/users/users.client';
-import { type VPNUser } from '../entities/users/users.repository';
 import { CmdCode, CommandScope, UserRequest, VPNUserCommand } from '../enums';
 import env from '../env';
 import { globalHandler, type CommandDetailCompressed, type CommandDetails } from '../global.handler';
@@ -16,6 +15,7 @@ import { paymentsHelpMessage } from './payments.commands';
 import { plansHelpMessage } from './plans.commands';
 import { serversHelpMessage } from './servers.commands';
 import { userHelpMessage } from './users.commands';
+import { VPNUser } from '../entities/users/users.types';
 const usersClient = new UsersClient();
 const incomingMessagesClient = new BotIncomingMessagesClient();
 const mainCommandsList = {
@@ -52,7 +52,7 @@ bot.onText(/\/start\s*(.*)/, async (msg: Message, match) => {
 			const mg = `${dict.hello[lang]}, ${msg?.from?.first_name}! ${dict.welcome[lang]}`;
 			await bot.sendMessage(msg.chat.id, mg);
 			await bot.sendMessage(msg.chat.id, dict.start[lang](user.telegramId), {
-				reply_markup: getUserKeyboard(lang, user.telegramId),
+				reply_markup: getUserKeyboard(lang),
 			});
 			usersClient.createAction(user.id, msg.text, '');
 			usersClient.captureDelivery(user.id, mg);

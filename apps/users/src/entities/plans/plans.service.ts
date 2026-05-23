@@ -1,4 +1,3 @@
-import { Plan } from '@prisma/client';
 import { InlineKeyboardButton, Message, User as TGUser } from 'node-telegram-bot-api';
 import { basename } from 'path';
 import bot from '../../bot';
@@ -11,7 +10,7 @@ import { setActiveStep } from '../../utils';
 import { getUserKeyboard } from '../users/users.buttons';
 import { UsersClient } from '../users/users.client';
 import { PlansClient } from './plans.client';
-import { PlansContext } from './plans.types';
+import { Plan, PlansContext } from './plans.types';
 export class PlansService {
 	constructor(
 		private client: PlansClient = new PlansClient(),
@@ -96,7 +95,7 @@ export class PlansService {
 		bot.editMessageText(finalMessage, {
 			message_id: message.message_id,
 			chat_id: message.chat.id,
-			reply_markup: getUserKeyboard(lang, user.telegramId),
+			reply_markup: getUserKeyboard(lang),
 		});
 		globalHandler.finishCommand();
 	}

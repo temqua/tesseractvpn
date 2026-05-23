@@ -1,6 +1,7 @@
-import { Device, User, VPNProtocol, VpnServer } from '@prisma/client';
-import { CmdCode, UpdateUserPropsMap, VPNUserCommand } from '../../enums';
+import { Device, UserRole, VPNProtocol, VpnServer } from '@prisma/client';
 import { Message, User as TGUser } from 'node-telegram-bot-api';
+import { CmdCode, UpdateUserPropsMap, VPNUserCommand } from '../../enums';
+import { Payment } from '../payments/payments.types';
 
 export interface UsersContext {
 	[CmdCode.Command]: VPNUserCommand;
@@ -37,7 +38,7 @@ export interface CreatePasarguardUserParams {
 	from?: TGUser;
 	isAdmin?: boolean;
 	isNew?: boolean;
-	expiresOn?: Date;
+	expiresOn?: string;
 }
 
 export interface CreateUserDto {
@@ -50,6 +51,7 @@ export interface CreateUserDto {
 	lastName?: string;
 	languageCode?: string;
 	payerId?: number | null;
+	price?: number;
 	referrerId?: number | null;
 	devices?: Device[];
 }
@@ -88,3 +90,40 @@ export interface UserServerDTO {
 	server: VpnServer;
 	user: User;
 }
+
+export type User = {
+	id: number;
+	username: string;
+	password: string | null;
+	telegramId: string | null;
+	telegramLink: string | null;
+	createdAt: string;
+	firstName: string | null;
+	lastName: string | null;
+	languageCode: string | null;
+	price: number;
+	free: boolean;
+	active: boolean;
+	bank: string | null;
+	currency: string;
+	subLink: string | null;
+	pasarguardUsername: string | null;
+	pasarguardId: number | null;
+	rwLink: string | null;
+	rwUsername: string | null;
+	rwId: number | null;
+	rwUUID: string | null;
+	payerId: number | null;
+	referrerId: number | null;
+	muted: boolean | null;
+	role: UserRole;
+	devices: Device[];
+};
+
+export type VPNUser = User & {
+	payer: User | null;
+	payments: Payment[];
+	dependants: User[];
+	referrer: User | null;
+	referrals: User[];
+};

@@ -1,6 +1,6 @@
-import { Payment, Plan } from '@prisma/client';
 import { CmdCode, PaymentCommand } from '../../enums';
-import { VPNUser } from '../users/users.repository';
+import { Plan } from '../plans/plans.types';
+import { VPNUser } from '../users/users.types';
 
 export interface PaymentsContext {
 	[CmdCode.Command]: PaymentCommand;
@@ -12,9 +12,9 @@ export interface CreatePaymentDto {
 
 	amount: number;
 
-	monthsCount: number;
+	monthsCount: number | null;
 
-	expiresOn: string;
+	expiresOn: string | null;
 
 	planId?: number | null;
 
@@ -29,3 +29,16 @@ export interface PaymentForSheet extends Payment {
 	user: VPNUser;
 	plan: Plan;
 }
+
+export type Payment = {
+	id: string;
+	currency: string;
+	userId: number;
+	paymentDate: string;
+	amount: number;
+	monthsCount: number | null;
+	expiresOn: string | null;
+	parentPaymentId: string | null;
+	planId: number | null;
+	plan: Plan;
+};

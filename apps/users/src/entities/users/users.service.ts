@@ -1,4 +1,4 @@
-import { Device, User, VPNProtocol } from '@prisma/client';
+import { Device, VPNProtocol } from '@prisma/client';
 import { parseISO, subDays } from 'date-fns';
 import type { InlineKeyboardButton, Message, SendBasicOptions, User as TGUser } from 'node-telegram-bot-api';
 import { basename } from 'path';
@@ -40,13 +40,14 @@ import {
 	skipButton,
 } from './users.buttons';
 import { UsersClient } from './users.client';
-import { type VPNUser } from './users.repository';
 import {
 	CreatePasarguardUserParams,
 	CreateUserDto,
+	User,
 	UserCreateCommandContext,
 	UsersContext,
 	UserUpdateCommandContext,
+	VPNUser,
 } from './users.types';
 
 export class UsersService {
@@ -143,8 +144,15 @@ export class UsersService {
 		if (this.createSteps.telegramId) {
 			if (message?.user_shared) {
 				this.params.set('telegram_id', message.user_shared.user_id.toString());
+				const exists = await this.client.getByTelegramId(message.user_shared.user_id.toString());
+				if (exists) {
+					await bot.sendMessage(chatId, 'User already exists in system');
+					this.params.clear();
+					this.resetCreateSteps();
+					globalHandler.finishCommand();
+					return;
+				}
 			}
-
 			await bot.sendMessage(chatId, 'Enter new username');
 
 			this.setCreateStep('username');
@@ -218,18 +226,46 @@ export class UsersService {
 		const username = params.get('username');
 
 		try {
-			const newUser: User = await this.client.create({
+			const body: CreateUserDto = {
 				username,
 				firstName: params.get('first_name'),
 				telegramId: params.get('telegram_id'),
 				telegramLink: params.get('telegram_link'),
 				lastName: params.get('last_name'),
 				payerId: params.get('payer_id'),
-			});
+			};
+			const payerId = this.params.get('payer_id');
+			if (payerId) {
+				const parent = await this.client.getById(payerId);
+				if (parent) {
+					body.price = parent.price;
+				}
+			}
+			const newUser: User = await this.client.create(body);
 			await bot.sendMessage(chatId, `User ${newUser.username} has been successfully created`);
 			let finalUser = newUser;
 			if (params.get('remnawave')) {
 				finalUser = await this.createRWUser(newUser.username, newUser.id);
+			}
+			if (payerId) {
+				const parent = await this.client.getById(payerId);
+				if (parent) {
+					if (parent.dependants.length >= 4 && parent.payments.length) {
+						const lastPayment = parent.payments[0];
+						const payment = await this.paymentsClient.create({
+							amount: 0,
+							expiresOn: lastPayment?.expiresOn,
+							monthsCount: lastPayment.monthsCount,
+							parentPaymentId: lastPayment.id,
+							planId: lastPayment.planId,
+							userId: newUser.id,
+						});
+						await bot.sendMessage(
+							chatId,
+							`Successfully added payment ${payment?.id} for new user ${newUser.username}. Parent payment: ${lastPayment.id} with amount ${lastPayment.amount}`,
+						);
+					}
+				}
 			}
 			await this.sendNewUserMenu(chatId, finalUser);
 		} catch (error) {
@@ -789,14 +825,14 @@ currently have a trial period `,
 			bot.editMessageText(dict.installation_guide[lang](user.rwLink), {
 				chat_id: message.chat.id,
 				message_id: message.message_id,
-				reply_markup: getUserKeyboard(lang, user.telegramId),
+				reply_markup: getUserKeyboard(lang),
 			});
 			this.client.captureDelivery(user.id, dict.installation_guide[lang](user.rwLink));
 		} else {
 			bot.editMessageText(dict.no_sub[lang], {
 				message_id: message.message_id,
 				chat_id: message.chat.id,
-				reply_markup: getUserKeyboard(lang, user.telegramId),
+				reply_markup: getUserKeyboard(lang),
 			});
 			this.client.captureDelivery(user.id, dict.no_sub[lang]);
 		}
@@ -833,7 +869,7 @@ currently have a trial period `,
 				message_id: message.message_id,
 				chat_id: message.chat.id,
 				parse_mode: 'MarkdownV2',
-				reply_markup: getUserKeyboard(lang, from.id),
+				reply_markup: getUserKeyboard(lang),
 			});
 		} catch (err) {
 			logger.error(err);
@@ -992,20 +1028,20 @@ currently have a trial period `,
 				await bot.editMessageText(dict.deleted_sub[lang], {
 					message_id: message.message_id,
 					chat_id: message.chat.id,
-					reply_markup: getUserKeyboard(lang, user.telegramId),
+					reply_markup: getUserKeyboard(lang),
 				});
 			} else {
 				await bot.editMessageText(dict.delete_sub_error[lang](env.CHANNEL_URL), {
 					message_id: message.message_id,
 					chat_id: message.chat.id,
-					reply_markup: getUserKeyboard(lang, user.telegramId),
+					reply_markup: getUserKeyboard(lang),
 				});
 			}
 		} catch (error) {
 			await bot.editMessageText(`Ошибка удаления ${error.message}`, {
 				message_id: message.message_id,
 				chat_id: message.chat.id,
-				reply_markup: getUserKeyboard(lang, user.telegramId),
+				reply_markup: getUserKeyboard(lang),
 			});
 		}
 	}
@@ -1284,7 +1320,7 @@ Created at ${record.assignedAt}`,
 		bot.editMessageText(dict.start[lang](from.id), {
 			message_id: message.message_id,
 			chat_id: message.chat.id,
-			reply_markup: getUserKeyboard(lang, from.id),
+			reply_markup: getUserKeyboard(lang),
 		});
 	}
 
@@ -1354,7 +1390,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 			const userInfo = this.params.get('user_info') ?? '';
 			const mesId = this.paymentRequestParams.get('msg_id');
 			bot.editMessageText(dict.payment_request[lang], {
-				reply_markup: getUserKeyboard(lang, user.telegramId),
+				reply_markup: getUserKeyboard(lang),
 				message_id: mesId,
 				chat_id: message.chat.id,
 			});
@@ -1518,8 +1554,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 			lastName: fr.last_name,
 			languageCode: fr.language_code,
 		};
-
-		if (!isNaN(context.ref) && isFinite(context.ref)) {
+		if (context.ref && !isNaN(context.ref) && isFinite(context.ref)) {
 			const refUser = await this.client.getByTelegramId(context.ref);
 			if (refUser) {
 				createBody.referrerId = Number(refUser.id);
@@ -1541,15 +1576,15 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 
 			const messg = dict.installation_guide[lang](finalUser.rwLink);
 			if (newUser.telegramId) {
-				await this.sendAndCaptureMessage(newUser.telegramId, newUser.id, dict.request_approved[lang]);
-				await this.sendAndCaptureMessage(newUser.telegramId, newUser.id, messg);
+				await this.sendAndCaptureMessage(Number(newUser.telegramId), newUser.id, dict.request_approved[lang]);
+				await this.sendAndCaptureMessage(Number(newUser.telegramId), newUser.id, messg);
 				await this.sendAndCaptureMessage(
-					newUser.telegramId,
+					Number(newUser.telegramId),
 					newUser.id,
 					dict.payment_intro[lang](finalUser.price, finalUser.currency),
 				);
 				await bot.sendMessage(newUser.telegramId, dict.start[lang](newUser.telegramId), {
-					reply_markup: getUserKeyboard(lang, newUser.telegramId),
+					reply_markup: getUserKeyboard(lang),
 				});
 				this.client.captureDelivery(newUser.id, dict.start[lang](newUser.telegramId));
 			}
@@ -1581,7 +1616,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 		bot.editMessageText(msg, {
 			chat_id: message.chat.id,
 			message_id: message.message_id,
-			reply_markup: getUserKeyboard(lang, user.telegramId),
+			reply_markup: getUserKeyboard(lang),
 		});
 		this.client.captureDelivery(user.id, msg);
 	}
@@ -1842,7 +1877,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 				},
 			});
 		}
-		if (user.referrerId != null) {
+		if (user.referrer != null) {
 			bot.sendMessage(chatId, 'Referrer', {
 				reply_markup: {
 					inline_keyboard: [
@@ -1862,7 +1897,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 				},
 			});
 		}
-		if (user.payerId != null) {
+		if (user.payer != null) {
 			await bot.sendMessage(chatId, 'Payer', {
 				reply_markup: {
 					inline_keyboard: [
@@ -1966,7 +2001,7 @@ Created At: ${formatDate(user.createdAt)}\n`;
 			await bot.editMessageText(dict.createSubError[lang], {
 				message_id: message.message_id,
 				chat_id: message.chat.id,
-				reply_markup: getUserKeyboard(lang, from.id),
+				reply_markup: getUserKeyboard(lang),
 			});
 			return null;
 		}

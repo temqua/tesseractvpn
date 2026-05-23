@@ -21,3 +21,16 @@ export interface CreatePlanDto {
 
 	monthsCount: number;
 }
+
+export type Plan = {
+	name: string;
+	id: number;
+	createdAt: string;
+	price: number;
+	currency: string;
+	amount: number;
+	months: number;
+	minCount: number;
+	maxCount: number;
+	legacy: boolean | null;
+};

@@ -1,6 +1,5 @@
-import { Payment } from '@prisma/client';
 import client from '../../api-client';
-import { CreatePaymentDto, PaymentForSheet, PaymentSumDto } from './payments.types';
+import { CreatePaymentDto, Payment, PaymentForSheet, PaymentSumDto } from './payments.types';
 
 export class PaymentsClient {
 	async getAll(): Promise<Payment[]> {

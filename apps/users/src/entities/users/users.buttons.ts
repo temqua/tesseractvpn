@@ -486,7 +486,7 @@ export const createBackToMenuButton = (lang: string): InlineKeyboardMarkup => {
 	};
 };
 
-export const getUserKeyboard = (lang = 'ru', telegramId: number): InlineKeyboardMarkup => {
+export const getUserKeyboard = (lang = 'ru'): InlineKeyboardMarkup => {
 	return {
 		inline_keyboard: [
 			[

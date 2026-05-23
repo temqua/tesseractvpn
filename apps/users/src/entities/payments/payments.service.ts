@@ -1,6 +1,5 @@
-import type { Payment, Plan } from '@prisma/client';
-import { addDays, addMonths } from 'date-fns';
-import type { InlineKeyboardMarkup, Message, User as TGUser } from 'node-telegram-bot-api';
+import { addDays, addMonths, parse } from 'date-fns';
+import type { Message, User as TGUser } from 'node-telegram-bot-api';
 import { basename } from 'path';
 import bot from '../../bot';
 import { getFrequestPaymentAmountsKeyboard, getYesNoKeyboard } from '../../buttons';
@@ -13,13 +12,13 @@ import { formatDate, setActiveStep, uuid32to36 } from '../../utils';
 import { PlansClient } from '../plans/plans.client';
 import { NalogService } from '../users/nalog.service';
 import { PasarguardService } from '../users/pasarguard.service';
+import { RemnawaveService } from '../users/rw.service';
 import { acceptKeyboard, getUserKeyboard } from '../users/users.buttons';
 import { UsersClient } from '../users/users.client';
-import { type VPNUser } from '../users/users.repository';
-import { UsersContext } from '../users/users.types';
+import { UsersContext, VPNUser } from '../users/users.types';
 import { PaymentsClient } from './payments.client';
-import { PaymentsContext } from './payments.types';
-import { RemnawaveService } from '../users/rw.service';
+import { Payment, PaymentsContext } from './payments.types';
+import { Plan } from '../plans/plans.types';
 type AvailableFields = 'amount' | 'from' | 'to' | 'user' | 'nalog' | 'expires' | 'months' | 'dependants' | 'plan';
 export class PaymentsService {
 	constructor(
@@ -78,7 +77,7 @@ export class PaymentsService {
 					parse_mode: 'MarkdownV2',
 					message_id: message.message_id,
 					chat_id: message.chat.id,
-					reply_markup: getUserKeyboard(lang, from.id),
+					reply_markup: getUserKeyboard(lang),
 				});
 				this.usersClient.captureDelivery(userId, p);
 			} catch (err) {
@@ -88,7 +87,7 @@ export class PaymentsService {
 			await bot.editMessageText(dict.payments_not_found[lang], {
 				message_id: message.message_id,
 				chat_id: message.chat.id,
-				reply_markup: getUserKeyboard(lang, from.id),
+				reply_markup: getUserKeyboard(lang),
 			});
 			this.usersClient.captureDelivery(userId, dict.payments_not_found[lang]);
 		}
@@ -501,7 +500,7 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 				try {
 					await bot.sendMessage(user.telegramId, dict.payment_processed['ru']);
 				} catch (err) {
-					logger.error(err);
+					logger.error(`${err}`);
 				}
 			}
 			if (nalog) {
@@ -531,12 +530,12 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 						);
 						if (env.BOT_ENV !== 'local') {
 							await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
-								expire: addDays(childResult.expiresOn, 1).toISOString(),
+								expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
 							});
 							if (dep.rwUUID) {
 								await this.rwService.updateUser({
 									uuid: dep.rwUUID,
-									expireAt: addDays(childResult.expiresOn, 1).toISOString(),
+									expireAt: addDays(new Date(childResult.expiresOn), 1).toISOString(),
 								});
 							}
 						}
@@ -549,13 +548,13 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 			}
 			if (env.BOT_ENV !== 'local' && user.pasarguardId) {
 				await this.pasarguardService.updateUser(`${user.username}_${user.id}`, {
-					expire: addDays(result.expiresOn, 1).toISOString(),
+					expire: addDays(new Date(result.expiresOn), 1).toISOString(),
 				});
 			}
 			if (user.rwUUID) {
 				await this.rwService.updateUser({
 					uuid: user.rwUUID,
-					expireAt: addDays(result.expiresOn, 1).toISOString(),
+					expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
 				});
 			}
 		} catch (err) {

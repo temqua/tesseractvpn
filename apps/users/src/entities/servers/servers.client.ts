@@ -1,7 +1,7 @@
 import { VpnServer } from '@prisma/client';
 import client from '../../api-client';
 import { CreateServerDto } from './servers.types';
-import { VPNUser } from '../users/users.repository';
+import { VPNUser } from '../users/users.types';
 
 export class ServersClient {
 	async getAll(): Promise<VpnServer[]> {

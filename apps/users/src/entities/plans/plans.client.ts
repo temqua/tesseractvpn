@@ -1,6 +1,5 @@
-import { Plan } from '@prisma/client';
 import client from '../../api-client';
-import { CreatePlanDto } from './plans.types';
+import { CreatePlanDto, Plan } from './plans.types';
 
 export class PlansClient {
 	async getAll(params?: { price?: number; amount?: number; count?: number }): Promise<Plan[]> {

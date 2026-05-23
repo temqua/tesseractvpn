@@ -1,8 +1,7 @@
-import { Payment } from '@prisma/client';
 import client from '../../api-client';
 import logger from '../../logger';
-import { VPNUser } from './users.repository';
-import { CreateUserDto, UpdateUserDto, UserQueryDto, UserServerDTO } from './users.types';
+import { Payment } from '../payments/payments.types';
+import { CreateUserDto, UpdateUserDto, UserQueryDto, UserServerDTO, VPNUser } from './users.types';
 
 export class UsersClient {
 	async list(dto?: UserQueryDto): Promise<VPNUser[]> {
@@ -24,7 +23,7 @@ export class UsersClient {
 		return result as VPNUser[];
 	}
 
-	async getByTelegramId(telegramId: string): Promise<VPNUser> {
+	async getByTelegramId(telegramId: string | number): Promise<VPNUser> {
 		const params = new URLSearchParams();
 		params.append('telegramId', telegramId.toString());
 		const result = (await client.get(`/users?${params}`)) as VPNUser[];

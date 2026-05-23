@@ -23,7 +23,7 @@ export class AuthClient {
 	}
 
 	async logout() {
-		const response = await fetch('/api/auth/logout', {
+		const response = await fetch(location.origin + '/api/auth/logout', {
 			method: 'POST',
 		});
 		const isJson = response.headers.get('Content-Type')?.includes('application/json');

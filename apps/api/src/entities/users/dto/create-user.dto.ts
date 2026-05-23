@@ -12,7 +12,8 @@ export class CreateUserDto {
   telegramLink?: string;
   languageCode?: string;
   lastName?: string;
-  payerId: number | null;
+  payerId?: number | null;
+  price?: number;
   devices?: Device[];
   password?: string;
 }
