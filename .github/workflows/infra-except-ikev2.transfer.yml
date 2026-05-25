@@ -92,5 +92,5 @@ jobs:
               run: |
                   ssh ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} '
                     cd ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}
-                    docker compose up -d
+                    docker compose up wg_service openvpn_service -d
                   '
