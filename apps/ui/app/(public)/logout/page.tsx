@@ -13,7 +13,7 @@ export default function LogoutPage() {
 			})
 			.finally(() => {
 				localStorage.removeItem(authSessionKey);
-				redirect('/', RedirectType.replace);
+				redirect('/login', RedirectType.replace);
 			});
 	}, []);
 

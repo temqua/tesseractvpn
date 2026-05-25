@@ -43,6 +43,6 @@ export async function auth(state: AuthFormState, formData: FormData) {
 export async function signOut() {
 	const result = await authClient.logout();
 	if (result.success) {
-		redirect('/', RedirectType.replace);
+		redirect('/login', RedirectType.replace);
 	}
 }
