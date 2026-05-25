@@ -17,6 +17,7 @@ on:
                     - norway
                     - sweden
                     - austria
+                    - france
 jobs:
     build-deploy:
         runs-on: ubuntu-latest
