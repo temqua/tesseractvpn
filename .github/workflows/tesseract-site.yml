@@ -24,24 +24,33 @@ jobs:
             - name: Setup Bun
               uses: oven-sh/setup-bun@v1
               with:
-               bun-version: latest
+                  bun-version: latest
 
             - name: Install dependencies
               working-directory: apps/site
-              run: bun install --frozen-lockfile           
-              
+              run: bun install --frozen-lockfile
+
             - name: Build site
               working-directory: apps/site
-              run: bun run build            
-              
+              run: bun run build
+
             - name: Create tar archive
               working-directory: apps/site
-              run: | 
-                TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-                echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
-                tar -czf site_${TIMESTAMP}.tar.gz -C build .              
+              run: |
+                  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                  echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+                  tar -czf site_${TIMESTAMP}.tar.gz -C build .
 
-            - name: Upload and deploy
+            - name: Upload archive
               working-directory: apps/site
               run: |
-                scp site_${TIMESTAMP}.tar.gz ${{ secrets.SITE_SERVER_USERNAME }}@${{ secrets.SITE_SERVER_HOST }}:${{ secrets.SITE_DIR }}/site_${TIMESTAMP}.tar.gz
+                  scp site_${TIMESTAMP}.tar.gz ${{ secrets.SITE_SERVER_USERNAME }}@${{ secrets.SITE_SERVER_HOST }}:${{ secrets.SITE_BUILDS_DIR }}/site_${TIMESTAMP}.tar.gz
+
+            - name: Update
+              run: |
+                  ssh ${{ secrets.SITE_SERVER_USERNAME }}@${{ secrets.SITE_SERVER_HOST }} '
+                    tar -czf ${{ secrets.SITE_PREVIOUS_DIR }}/site_old_$(date +%Y%m%d_%H%M%S).tar.gz -C ${{ secrets.SITE_DIR }}
+                    rm -rf ${{ secrets.SITE_DIR }}
+                    mkdir -p ${{ secrets.SITE_DIR }}
+                    tar -xzf ${{ secrets.SITE_BUILDS_DIR }}/site_${TIMESTAMP}.tar.gz -C ${{ secrets.SITE_DIR }}
+                  '

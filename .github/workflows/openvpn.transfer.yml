@@ -1,4 +1,4 @@
-name: Build & Deploy OpenVPN Management Service 
+name: Build & Deploy OpenVPN Management Service
 
 on:
     workflow_dispatch:
