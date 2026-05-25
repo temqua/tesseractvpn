@@ -1,0 +1,47 @@
+name: Build & Deploy website
+
+on:
+    workflow_dispatch:
+
+jobs:
+    build-deploy:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup SSH
+              uses: webfactory/ssh-agent@v0.9.1
+              with:
+                  ssh-private-key: ${{ secrets.SITE_SERVER_SSH_KEY }}
+
+            - name: Add server to known hosts
+              run: |
+                  mkdir -p ~/.ssh
+                  ssh-keyscan -H ${{ secrets.SITE_SERVER_HOST }} >> ~/.ssh/known_hosts
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v1
+              with:
+               bun-version: latest
+
+            - name: Install dependencies
+              working-directory: apps/site
+              run: bun install --frozen-lockfile           
+              
+            - name: Build site
+              working-directory: apps/site
+              run: bun run build            
+              
+            - name: Create tar archive
+              working-directory: apps/site
+              run: | 
+                TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+                tar -czf site_${TIMESTAMP}.tar.gz -C build .              
+
+            - name: Upload and deploy
+              working-directory: apps/site
+              run: |
+                scp site_${TIMESTAMP}.tar.gz ${{ secrets.SITE_SERVER_USERNAME }}@${{ secrets.SITE_SERVER_HOST }}:${{ secrets.SITE_DIR }}/site_${TIMESTAMP}.tar.gz
