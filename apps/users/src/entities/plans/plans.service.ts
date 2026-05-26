@@ -310,7 +310,7 @@ export class PlansService {
 		if (minCount > 15 || minCount < 1) {
 			throw new Error('People count must be in range between 1 and 15');
 		}
-		if (minCount > 15 || minCount < 1) {
+		if (maxCount > 15 || maxCount < 1) {
 			throw new Error('People count must be in range between 1 and 15');
 		}
 		if (maxCount < minCount) {
