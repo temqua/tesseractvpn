@@ -304,7 +304,7 @@ export class PlansService {
 		if (isNaN(monthsCount)) {
 			throw new Error('Enter valid months count number');
 		}
-		if (price < 50 || price > 150) {
+		if (price < 50 || price > 200) {
 			throw new Error('Price must be between 50 and 150');
 		}
 		if (minCount > 15 || minCount < 1) {
