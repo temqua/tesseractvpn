@@ -20,7 +20,7 @@ export async function createAction(state: ExpenseFormState, formData: FormData) 
 		const response: Response = await expensesClient.create({
 			amount: Number(formData.get('amount')),
 			category: formData.get('category') as ExpenseCategory,
-			description: formData.get('description') as string,
+			description: formData.get('description') ?? '',
 		});
 		const data: IExpense & IErrorBody = await response.json();
 		if (response.ok) {

@@ -18,6 +18,28 @@ interface IExpenseForm {
 	category: string;
 }
 
+const baseColumns: IColumn<IExpense>[] = [
+	{
+		label: 'ID',
+		prop: 'id',
+		searchable: true,
+	},
+	{
+		label: 'Payment Date',
+		prop: 'paymentDate',
+		searchable: true,
+	},
+	{
+		label: 'Amount',
+		prop: 'amount',
+		searchable: true,
+	},
+	{
+		label: 'Category',
+		prop: 'category',
+	},
+];
+
 export default function ExpensesClientSide({ data }: { data: IExpense[] }) {
 	const [searchFilters, setSearchFilters] = useState<IExpenseForm>({
 		id: '',
@@ -31,25 +53,7 @@ export default function ExpensesClientSide({ data }: { data: IExpense[] }) {
 	queryClient.setQueryData(['expenses-all'], data);
 
 	const columns: IColumn<IExpense>[] = [
-		{
-			label: 'ID',
-			prop: 'id',
-			searchable: true,
-		},
-		{
-			label: 'Payment Date',
-			prop: 'paymentDate',
-			searchable: true,
-		},
-		{
-			label: 'Amount',
-			prop: 'amount',
-			searchable: true,
-		},
-		{
-			label: 'Category',
-			prop: 'category',
-		},
+		...baseColumns,
 		{
 			label: 'Actions',
 			actions: row => {

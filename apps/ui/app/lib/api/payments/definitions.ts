@@ -9,3 +9,14 @@ export interface IPayment {
 	parentPaymentId: string | null;
 	planId: number | null;
 }
+
+export interface ICreatePaymentDto {
+	userId: number;
+	amount: number;
+	monthsCount: number;
+	expiresOn: string;
+	planId?: number | null;
+	parentPaymentId?: string | null;
+}
+
+export type IUpdatePaymentDto = Partial<ICreatePaymentDto>;
