@@ -1,5 +1,4 @@
 'use client';
-import { toast } from '@/app/components/toast';
 import apiClient from '../api-client';
 import { ICreateExpenseDTO, IExpense, IUpdateExpenseDto } from './definitions';
 
@@ -19,13 +18,9 @@ export class ExpensesClient {
 	}
 
 	async update(id: string, dto: IUpdateExpenseDto) {
-		const response = await apiClient.patch(`/api/v1/expenses/${id}`, {
+		return await apiClient.patch(`/api/v1/expenses/${id}`, {
 			body: JSON.stringify(dto),
 		});
-		if (response.ok) {
-			toast.success(`Expense ${id} has been successfully updated`);
-		}
-		return await response.json();
 	}
 
 	async delete(id: string) {

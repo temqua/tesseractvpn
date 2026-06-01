@@ -67,7 +67,7 @@ export function getUpdateAction(id: string) {
 				paymentDate: formData.get('paymentDate') as string,
 			});
 			if (response.ok) {
-				toast.success(`Expense has been successfully created`);
+				toast.success(`Expense ${id} has been successfully updated`);
 			}
 			const data: IErrorBody & IExpense = await response.json();
 			return {
