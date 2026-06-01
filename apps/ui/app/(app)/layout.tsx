@@ -5,6 +5,7 @@ import Sidebar from '../components/sidebar';
 import styles from './layout.module.css';
 import { Suspense } from 'react';
 import ContentArea from '../components/content-area';
+import { Toaster } from 'react-hot-toast';
 const queryClient = new QueryClient();
 
 export default function AppLayout({
@@ -14,6 +15,10 @@ export default function AppLayout({
 }>) {
 	return (
 		<QueryClientProvider client={queryClient}>
+			<div>
+				<Toaster />
+			</div>
+
 			<Header />
 			<div className={styles.root}>
 				<Sidebar />

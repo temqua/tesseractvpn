@@ -15,4 +15,6 @@ export interface ICreateExpenseDTO {
 	description: string;
 }
 
-export type IUpdateExpenseDto = Partial<ICreateExpenseDTO>;
+export type IUpdateExpenseDto = Partial<ICreateExpenseDTO> & {
+	paymentDate: string;
+};

@@ -22,10 +22,9 @@ export default function PaymentClientSide({ data, id }: { data: IPayment; id: st
 				<label htmlFor="paymentDate">Payment date</label>
 				<Input
 					value={paymentDate}
-					// onChange={event => setPaymentDate(event.target.value)}
+					onChange={event => setPaymentDate(event.target.value)}
 					id="paymentDate"
 					name="paymentDate"
-					readOnly
 					placeholder="Payment date"
 				/>
 			</div>

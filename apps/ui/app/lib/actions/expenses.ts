@@ -4,10 +4,11 @@ import { ExpenseCategory, IExpense } from '../api/expenses/definitions';
 import { IErrorBody } from '../definitions.global';
 import { ExpenseFormSchema, ExpenseFormState } from '@/features/expenses/lib/definitions';
 import { treeifyError } from 'zod';
+import { toast } from '@/app/components/toast';
 
 export async function createAction(state: ExpenseFormState, formData: FormData) {
 	const validatedFields = ExpenseFormSchema.safeParse({
-		amount: formData.get('amount'),
+		amount: Number(formData.get('amount')),
 		category: formData.get('category'),
 		description: formData.get('description'),
 	});
@@ -22,6 +23,9 @@ export async function createAction(state: ExpenseFormState, formData: FormData) 
 			category: formData.get('category') as ExpenseCategory,
 			description: formData.get('description') ?? '',
 		});
+		if (response.ok) {
+			toast.success(`Expense has been successfully created`);
+		}
 		const data: IExpense & IErrorBody = await response.json();
 		if (response.ok) {
 			return {
@@ -56,13 +60,18 @@ export function getUpdateAction(id: string) {
 			};
 		}
 		try {
-			const response: IErrorBody & IExpense = await expensesClient.update(id, {
+			const response = await expensesClient.update(id, {
 				amount: Number(formData.get('amount')),
 				category: formData.get('category') as ExpenseCategory,
 				description: formData.get('description') as string,
+				paymentDate: formData.get('paymentDate') as string,
 			});
+			if (response.ok) {
+				toast.success(`Expense has been successfully created`);
+			}
+			const data: IErrorBody & IExpense = await response.json();
 			return {
-				data: response,
+				data,
 			};
 		} catch (err) {
 			return {

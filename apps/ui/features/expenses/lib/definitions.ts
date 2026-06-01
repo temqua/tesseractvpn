@@ -8,6 +8,7 @@ export const ExpenseFormSchema = z.object({
 	category: z.enum(['Servers', 'Nalog'], {
 		error: 'Expense category must be Servers or Nalog',
 	}),
+	paymentDate: z.string().optional(),
 });
 
 export type ExpenseFormState =
@@ -23,6 +24,9 @@ export type ExpenseFormState =
 						errors: string[];
 					};
 					category?: {
+						errors: string[];
+					};
+					paymentDate?: {
 						errors: string[];
 					};
 				};

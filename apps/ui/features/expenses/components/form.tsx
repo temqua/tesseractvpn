@@ -18,12 +18,6 @@ export default function ExpenseClientSide({ data, id }: { data: IExpense; id: st
 	const [amount, setAmount] = useState(data?.amount);
 	const [category, setCategory] = useState(data?.category);
 	const [description, setDescription] = useState(data?.description);
-	// if (isPending) {
-	// 	return <div>Loading...</div>;
-	// }
-	// if (error) {
-	// 	return <div>Error {error.message}</div>;
-	// }
 	return (
 		<form action={formAction}>
 			<div className="flex flex-col">
@@ -36,6 +30,7 @@ export default function ExpenseClientSide({ data, id }: { data: IExpense; id: st
 					placeholder="Payment date"
 				/>
 			</div>
+			{state?.errors?.properties?.paymentDate && <p>{state.errors?.properties.paymentDate?.errors.join()}</p>}
 			<div className="flex flex-col">
 				<label htmlFor="amount">Amount</label>
 				<Input

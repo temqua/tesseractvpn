@@ -9,6 +9,7 @@ export const PaymentFormSchema = z.object({
 	expiresOn: z.string(),
 	planId: z.number().nullable().optional(),
 	parentPaymentId: z.string().nullable().optional(),
+	paymentDate: z.string().optional(),
 });
 
 export type PaymentFormState =
@@ -33,6 +34,9 @@ export type PaymentFormState =
 						errors: string[];
 					};
 					parentPaymentId?: {
+						errors: string[];
+					};
+					paymentDate?: {
 						errors: string[];
 					};
 				};

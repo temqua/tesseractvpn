@@ -1,6 +1,7 @@
 import env from '@/app/lib/env';
 import { authSessionKey } from './auth';
 import { cookies } from 'next/headers';
+import { redirect, RedirectType } from 'next/navigation';
 
 export interface IErrorBody {
 	message?: string;
@@ -15,8 +16,8 @@ class SSRClient {
 			throw new Error('There is no user session cookie set');
 		}
 		const token = record.value;
-		console.time(`${params.method} Request to ${process.env.NEXT_PUBLIC_API_URL}${url}`);
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+		console.time(`${params.method} Request to ${env.NEXT_PUBLIC_API_URL}${url}`);
+		const response = await fetch(`${env.NEXT_PUBLIC_API_URL}${url}`, {
 			...params,
 			headers: {
 				'Content-Type': 'application/json',
@@ -28,6 +29,9 @@ class SSRClient {
 			throw new Error(`Internal server error. Server-side request error: ` + error2.message);
 		});
 		console.timeEnd(`${params.method} Request to ${env.API_URL}${url}`);
+		if (response.status === 401) {
+			redirect('/login', RedirectType.replace);
+		}
 		const isJson = response.headers.get('Content-Type')?.includes('application/json');
 		if (!response.ok && response.body && isJson) {
 			const errorBody: IErrorBody = await response.json();

@@ -44,27 +44,24 @@ class ApiClient {
 	}
 
 	async post(url: string, params?: RequestInit) {
-		const response = await this.request(url, {
+		return await this.request(url, {
 			method: 'POST',
 			...params,
 		});
-		return response;
 	}
 
 	async patch(url: string, params?: RequestInit) {
-		const response = await this.request(url, {
+		return await this.request(url, {
 			method: 'PATCH',
 			...params,
 		});
-		return await response.json();
 	}
 
 	async put(url: string, params?: RequestInit) {
-		const response = await this.request(url, {
+		return await this.request(url, {
 			method: 'PUT',
 			...params,
 		});
-		return await response.json();
 	}
 
 	async delete(url: string, params?: RequestInit) {
