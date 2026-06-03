@@ -15,6 +15,7 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { ExpenseCategory } from '@prisma/client';
 import type { Request } from 'express';
+import { ExpenseListDto } from './dto/list-dto';
 
 @Controller('expenses')
 export class ExpensesController {
@@ -27,8 +28,8 @@ export class ExpensesController {
   }
 
   @Get()
-  async findAll(@Query('category') category?: ExpenseCategory) {
-    return await this.expensesService.list(category);
+  async findAll(@Query() dto?: ExpenseListDto) {
+    return await this.expensesService.list(dto);
   }
 
   @Get('/sum')

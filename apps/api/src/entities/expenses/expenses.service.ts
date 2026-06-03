@@ -9,6 +9,7 @@ import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { ExpensesRepository } from './expenses.repository';
 import { exportToSheet } from '../../utils';
 import env from '../../env';
+import { ExpenseListDto } from './dto/list-dto';
 
 @Injectable()
 export class ExpensesService {
@@ -40,8 +41,8 @@ export class ExpensesService {
     return expense;
   }
 
-  async list(category?: ExpenseCategory) {
-    return await this.repository.list(category);
+  async list(dto?: ExpenseListDto) {
+    return await this.repository.list(dto);
   }
 
   async update(id: string, updateExpenseDto: UpdateExpenseDto) {

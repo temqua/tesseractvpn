@@ -1,7 +1,16 @@
-import { ExpenseCategory } from '@prisma/client';
+import { Expense, ExpenseCategory } from '@prisma/client';
 import { DatabaseService } from '../../database.service';
 import { Injectable } from '@nestjs/common';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { ExpenseListDto } from './dto/list-dto';
+
+type ExpenseSearchParams = {
+  skip?: number;
+  take?: number;
+  where?: {
+    category?: ExpenseCategory;
+  };
+};
 
 @Injectable()
 export class ExpensesRepository {
@@ -29,14 +38,18 @@ export class ExpensesRepository {
     });
   }
 
-  async list(category?: ExpenseCategory) {
-    const params = category
+  async list(dto?: ExpenseListDto) {
+    const params: ExpenseSearchParams | undefined = dto
       ? {
-          where: {
-            category,
-          },
+          skip: Number(dto.skip),
+          take: Number(dto.take),
         }
       : undefined;
+    if (params && dto?.category) {
+      params.where = {
+        category: dto.category,
+      };
+    }
     return await this.databaseService.client.expense.findMany(params);
   }
 
