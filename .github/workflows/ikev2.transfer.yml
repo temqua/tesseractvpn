@@ -13,10 +13,11 @@ on:
                     - neth
                     - brazil
                     - msk
-                    - greece
                     - norway
                     - sweden
                     - austria
+                    - switzerland
+                    - india
 
 jobs:
     build-deploy:

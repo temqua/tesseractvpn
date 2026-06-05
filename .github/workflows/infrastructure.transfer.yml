@@ -13,11 +13,11 @@ on:
                     - neth
                     - brazil
                     - msk
-                    - greece
                     - norway
                     - sweden
                     - austria
                     - france
+                    - switzerland
 jobs:
     build-deploy:
         runs-on: ubuntu-latest
