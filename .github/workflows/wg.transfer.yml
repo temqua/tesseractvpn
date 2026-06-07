@@ -32,7 +32,7 @@ on:
                     - swiss-subs
                     - turkey
                     - france
-                    - swiss
+                    - switzerland
                     - india
 
 jobs:
