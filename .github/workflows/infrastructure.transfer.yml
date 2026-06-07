@@ -18,6 +18,8 @@ on:
                     - austria
                     - france
                     - switzerland
+                    - spain
+
 jobs:
     build-deploy:
         runs-on: ubuntu-latest

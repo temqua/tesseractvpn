@@ -18,6 +18,7 @@ on:
                     - austria
                     - switzerland
                     - india
+                    - spain
 
 jobs:
     build-deploy:

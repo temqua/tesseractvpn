@@ -32,6 +32,8 @@ on:
                     - france
                     - switzerland
                     - india
+                    - spain
+
 jobs:
     build-deploy:
         runs-on: ubuntu-latest
