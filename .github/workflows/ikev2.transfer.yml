@@ -19,6 +19,7 @@ on:
                     - switzerland
                     - india
                     - spain
+                    - france
 
 jobs:
     build-deploy:
