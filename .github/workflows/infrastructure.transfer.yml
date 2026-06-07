@@ -17,7 +17,7 @@ on:
                     - sweden
                     - austria
                     - france
-                    - switzerland
+                    - swiss
 jobs:
     build-deploy:
         runs-on: ubuntu-latest
