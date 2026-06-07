@@ -12,28 +12,16 @@ on:
                     - austria
                     - msk
                     - neth
-                    - norway
                     - sweden
                     - us2
-                    - croatia
-                    - de-subs
+                    - de
                     - fin
-                    - fin2-subs
-                    - fin3-subs
-                    - fin4-subs
-                    - norway-subs
-                    - neth-subs
-                    - neth2-subs
-                    - neth3-subs
-                    - spain-subs
-                    - sweden-subs
-                    - swiss-subs
                     - turkey
                     - france
                     - switzerland
                     - india
                     - spain
-
+                    - brazil
 jobs:
     build-deploy:
         runs-on: ubuntu-latest
