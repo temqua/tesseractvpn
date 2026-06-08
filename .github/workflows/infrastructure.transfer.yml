@@ -19,6 +19,7 @@ on:
                     - switzerland
                     - spain
                     - de
+                    - fin
 
 jobs:
     build-deploy:

@@ -22,6 +22,8 @@ on:
                     - india
                     - spain
                     - brazil
+                    - fin
+
 jobs:
     build-deploy:
         runs-on: ubuntu-latest
