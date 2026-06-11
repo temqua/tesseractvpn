@@ -386,6 +386,17 @@ export class UsersRepository {
     });
   }
 
+  async clearAll() {
+    return await this.databaseService.client.user.update({
+      data: {
+        rwId: null,
+        rwLink: null,
+        rwUsername: null,
+        rwUUID: null,
+      },
+    });
+  }
+
   async getLastUserPayment(userId: number): Promise<Payment | null> {
     return await this.databaseService.client.payment.findFirst({
       where: {

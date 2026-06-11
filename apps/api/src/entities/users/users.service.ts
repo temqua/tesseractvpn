@@ -175,6 +175,10 @@ export class UsersService {
     return await this.repository.deleteSubscription(userId);
   }
 
+  async clearAll() {
+    return await this.repository.clearAll();
+  }
+
   async export() {
     const data = await this.repository.findAll();
     const preparedData = data.map((row) => {

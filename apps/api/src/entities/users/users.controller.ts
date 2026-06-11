@@ -104,6 +104,11 @@ export class UsersController {
     return await this.usersService.deleteSubscription(Number(userId));
   }
 
+  @Delete('/clear-all')
+  async clearAll() {
+    return await this.usersService.clearAll();
+  }
+
   @Post('/export')
   async export() {
     return await this.usersService.export();
