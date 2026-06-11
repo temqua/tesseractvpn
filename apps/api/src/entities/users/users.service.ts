@@ -117,6 +117,13 @@ export class UsersService {
     return await this.repository.listUserServerRecords(userId, serverId);
   }
 
+  async createForAll() {
+    const users = await this.repository.findAllActive();
+    for (const user of users) {
+      await this.createSubscription(user.id);
+    }
+  }
+
   async createSubscription(userId: number) {
     const user = await this.repository.findOne(userId);
 
@@ -134,7 +141,7 @@ export class UsersService {
     const resp = result?.response;
     const addToSquad = await this.rwService.updateUser({
       uuid: resp.uuid,
-      activeInternalSquads: ['f99e56f3-f961-44a1-b919-930643c0fc09'],
+      activeInternalSquads: ['df0af3dd-572e-43e5-a8a0-e84103392eca'],
     });
     return await this.repository.createSubscription(
       userId,

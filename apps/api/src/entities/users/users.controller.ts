@@ -30,14 +30,23 @@ export class UsersController {
     return await this.usersService.findAll(query);
   }
 
-  @Get('/unpaid')
+  @Get('unpaid')
   async findUnpaid() {
     return await this.usersService.findUnpaid();
   }
 
-  @Get('/trial')
+  @Get('trial')
   async findTrial() {
     return await this.usersService.findTrial();
+  }
+
+  @Post('create-all')
+  async createAll() {
+    return await this.usersService.createForAll();
+  }
+  @Delete('clear-all')
+  async clearAll() {
+    return await this.usersService.clearAll();
   }
 
   @Get('/:id/payments')
@@ -102,11 +111,6 @@ export class UsersController {
   @Delete('/:id/subscription')
   async deleteSubscription(@Param('id') userId: string) {
     return await this.usersService.deleteSubscription(Number(userId));
-  }
-
-  @Delete('/clear-all')
-  async clearAll() {
-    return await this.usersService.clearAll();
   }
 
   @Post('/export')

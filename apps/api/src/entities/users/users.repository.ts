@@ -31,6 +31,17 @@ export class UsersRepository {
     });
   }
 
+  async findAllActive() {
+    return await this.databaseService.client.user.findMany({
+      omit: {
+        password: true,
+      },
+      where: {
+        active: true,
+      },
+    });
+  }
+
   async findOne(id: number) {
     return await this.databaseService.client.user.findFirst({
       where: {
@@ -387,7 +398,7 @@ export class UsersRepository {
   }
 
   async clearAll() {
-    return await this.databaseService.client.user.update({
+    return await this.databaseService.client.user.updateMany({
       data: {
         rwId: null,
         rwLink: null,
