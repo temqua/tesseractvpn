@@ -40,6 +40,10 @@ export const userCommandsList = {
 		regexp: /\/user\s+pay/,
 		docs: '/user pay — user payment command',
 	},
+	getUserByContact: {
+		regexp: /@share/,
+		docs: '@share — get user by contact',
+	},
 	findUser: {
 		regexp: /@(.*)/,
 		docs: '@<id/username> — get user by id/username',
@@ -49,6 +53,26 @@ export const userCommandsList = {
 export const userHelpMessage = Object.values(userCommandsList)
 	.map(c => c.docs)
 	.join('\n');
+
+bot.onText(userCommandsList.getUserByContact.regexp, async (msg: Message) => {
+	if (!isAdmin(msg)) {
+		return;
+	}
+	if (globalHandler.hasActiveCommand()) {
+		return;
+	}
+	globalHandler.execute(
+		{
+			scope: CommandScope.Users,
+			context: {
+				[CmdCode.Command]: VPNUserCommand.GetByTelegramId,
+			},
+		},
+		{
+			message: msg,
+		} as TelegramBot.CallbackQuery,
+	);
+});
 
 bot.onText(userCommandsList.findUser.regexp, async (msg: Message, match: RegExpMatchArray | null) => {
 	if (!isAdmin(msg)) {

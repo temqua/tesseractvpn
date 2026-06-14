@@ -184,6 +184,18 @@ export const getUserMenu = (userId: number, isChildUser: boolean = false) => {
 				}),
 			},
 		],
+		[
+			{
+				text: 'Send Message',
+				callback_data: JSON.stringify({
+					[CmdCode.Scope]: CommandScope.Users,
+					[CmdCode.Context]: {
+						[CmdCode.Command]: VPNUserCommand.SendMessage,
+						id: userId,
+					},
+				}),
+			},
+		],
 		[createChildBtn],
 	];
 	// if (!isChildUser) {

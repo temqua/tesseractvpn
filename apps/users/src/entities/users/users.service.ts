@@ -1621,6 +1621,21 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 		this.client.captureDelivery(user.id, msg);
 	}
 
+	async sendMessage(message: Message, context: UsersContext, start = false) {
+		if (start) {
+			bot.sendMessage(message.chat.id, 'Введите текст сообщения');
+			return;
+		}
+		try {
+			const user = await this.client.getById(context.id);
+			bot.sendMessage(user.telegramId, message.text);
+		} catch (err) {
+			bot.sendMessage(message.chat.id, `Ошибка во время отправки сообщения пользователя ${err}`);
+		} finally {
+			globalHandler.finishCommand();
+		}
+	}
+
 	private async createUserServer(userId: string, serverId: string, protocol: VPNProtocol, username: string) {
 		return await this.usersServersClient.create(Number(userId), Number(serverId), protocol, username);
 	}
