@@ -22,9 +22,34 @@ async function sendDump() {
 	dump(fileName).then(() => {
 		send(fileName);
 	});
+	const rwFileName = `rw_db_${date.getFullYear()}_${date.getMonth() + 1}_${date.getDate()}_${date.getHours()}_${date.getMinutes()}.backup`;
+
+	dumpRemnawave(rwFileName).then(() => {
+		send(rwFileName);
+	});
 }
 
 async function dump(fileName: string) {
+	try {
+		const { stdout, stderr } = await exec(
+			`PGPASSWORD="${env.DB_PWD}" pg_dump --file "${fileName}" -U "${env.DB_USER}" --host "${env.DB_HOST}" --port "${env.DB_PORT}" -d "${env.DB_NAME}" --format=c --blobs --encoding "UTF8" --verbose --schema "public"`,
+		);
+		if (stderr) {
+			const errorMsg = `stderr: ${stderr}`;
+			logger.error(errorMsg);
+			await bot.sendMessage(env.ADMIN_USER_ID, errorMsg);
+			return;
+		}
+		await bot.sendMessage(env.ADMIN_USER_ID, stdout);
+		logger.success('dump has been successfully created');
+	} catch (error) {
+		const errorMsg = `Error while creating vpn database dump: ${error}`;
+		logger.error(errorMsg);
+		await bot.sendMessage(env.ADMIN_USER_ID, errorMsg);
+	}
+}
+
+async function dumpRemnawave(fileName: string) {
 	try {
 		const { stdout, stderr } = await exec(
 			`PGPASSWORD="${env.DB_PWD}" pg_dump --file "${fileName}" -U "${env.DB_USER}" --host "${env.DB_HOST}" --port "${env.DB_PORT}" -d "${env.DB_NAME}" --format=c --blobs --encoding "UTF8" --verbose --schema "public"`,

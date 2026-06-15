@@ -8,6 +8,12 @@ const env = cleanEnv(process.env, {
 	DB_NAME: str({ default: '' }),
 	DB_USER: str({ default: '' }),
 	DB_PWD: str({ default: '' }),
+
+	RW_HOST: str({ default: '' }),
+	RW_PORT: str({ default: '' }),
+	RW_USER: str({ default: '' }),
+	RW_PWD: str({ default: '' }),
+	RW_NAME: str({ default: '' }),
 });
 
 export default env;
