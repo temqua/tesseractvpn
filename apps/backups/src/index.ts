@@ -52,7 +52,7 @@ async function dump(fileName: string) {
 async function dumpRemnawave(fileName: string) {
 	try {
 		const { stdout, stderr } = await exec(
-			`PGPASSWORD="${env.DB_PWD}" pg_dump --file "${fileName}" -U "${env.DB_USER}" --host "${env.DB_HOST}" --port "${env.DB_PORT}" -d "${env.DB_NAME}" --format=c --blobs --encoding "UTF8" --verbose --schema "public"`,
+			`PGPASSWORD="${env.RW_PWD}" pg_dump --file "${fileName}" -U "${env.RW_USER}" --host "${env.RW_HOST}" --port "${env.RW_PORT}" -d "${env.RW_NAME}" --format=c --blobs --encoding "UTF8" --verbose --schema "public"`,
 		);
 		if (stderr) {
 			const errorMsg = `stderr: ${stderr}`;
