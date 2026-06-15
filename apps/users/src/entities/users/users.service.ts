@@ -2046,7 +2046,7 @@ ${env.PAYMENT_CARDS}`
 		const createdRWUser = await this.rwService.createUser(`${username}_${id}`);
 		const addToSquad = await this.rwService.updateUser({
 			uuid: createdRWUser.response.uuid,
-			activeInternalSquads: ['f99e56f3-f961-44a1-b919-930643c0fc09'],
+			activeInternalSquads: ['df0af3dd-572e-43e5-a8a0-e84103392eca'],
 		});
 		return await this.client.update(id, {
 			rwLink: createdRWUser.response.subscriptionUrl,
