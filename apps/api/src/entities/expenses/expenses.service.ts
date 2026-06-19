@@ -68,7 +68,7 @@ export class ExpensesService {
   }
 
   async export() {
-    const expensesData = await this.repository.list();
+    const { data: expensesData } = await this.repository.list();
     const preparedExpensesData = expensesData.map((row) => {
       return [
         row.id ?? '',

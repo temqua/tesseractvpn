@@ -1,4 +1,4 @@
-import { ExpenseCategory } from '@prisma/client';
+import { Expense, ExpenseCategory } from '@prisma/client';
 import { CmdCode, ExpenseCommand } from '../../enums';
 
 export interface ExpensesContext {
@@ -23,4 +23,9 @@ export interface CreateExpenseDto {
 
 export interface ExpenseSumDto {
 	amount: string;
+}
+
+export interface ExpenseListData {
+	data: Expense[];
+	count: number;
 }

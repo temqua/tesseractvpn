@@ -1,15 +1,15 @@
 import { Expense, ExpenseCategory } from '@prisma/client';
 import client from '../../api-client';
-import { CreateExpenseDto, ExpenseSumDto } from './expenses.types';
+import { CreateExpenseDto, ExpenseListData, ExpenseSumDto } from './expenses.types';
 
 export class ExpensesClient {
-	async getAll(category?: ExpenseCategory): Promise<Expense[]> {
+	async getAll(category?: ExpenseCategory): Promise<ExpenseListData> {
 		const params = new URLSearchParams();
 		if (category) {
 			params.append('category', category);
 		}
 		const result = await client.get(`/expenses?${params}`);
-		return result as Expense[];
+		return result as ExpenseListData;
 	}
 
 	async getById(id: string): Promise<Expense | null> {

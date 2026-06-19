@@ -3,7 +3,9 @@ import apiClient from '../api-client';
 import { ICreateExpenseDTO, IExpense, IUpdateExpenseDto } from './definitions';
 
 export class ExpensesClient {
-	async getAll(): Promise<IExpense[]> {
+	async getAll(params): Promise<{
+		data: IExpense[];
+	}> {
 		return await apiClient.get('/api/v1/expenses');
 	}
 

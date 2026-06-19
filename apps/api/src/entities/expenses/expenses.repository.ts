@@ -39,18 +39,29 @@ export class ExpensesRepository {
   }
 
   async list(dto?: ExpenseListDto) {
-    const params: ExpenseSearchParams | undefined = dto
-      ? {
-          skip: Number(dto.skip),
-          take: Number(dto.take),
-        }
-      : undefined;
-    if (params && dto?.category) {
+    const where = dto?.category ? { category: dto.category } : undefined;
+    const params: ExpenseSearchParams = {
+      skip: dto?.skip ? Number(dto.skip) : undefined,
+      take: dto?.take ? Number(dto.take) : undefined,
+      where,
+    };
+
+    const countParams = {
+      where,
+    };
+    if (dto?.category) {
       params.where = {
         category: dto.category,
       };
     }
-    return await this.databaseService.client.expense.findMany(params);
+    const [data, count] = await this.databaseService.client.$transaction([
+      this.databaseService.client.expense.findMany(params),
+      this.databaseService.client.expense.count(countParams),
+    ]);
+    return {
+      data,
+      count,
+    };
   }
 
   async sum() {
