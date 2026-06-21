@@ -81,15 +81,21 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 					>
 						1
 					</Button>
-					<Button
-						onClick={() => {
-							onChangePage?.(totalPages);
-						}}
-					>
-						{totalPages}
-					</Button>
-					<Button onClick={handlePreviousPage}>🡰</Button>
-					<Button onClick={handleNextPage}>🡲</Button>
+					{totalPages > 1 ? (
+						<>
+							<Button
+								onClick={() => {
+									onChangePage?.(totalPages);
+								}}
+							>
+								{totalPages}
+							</Button>
+							<Button onClick={handlePreviousPage}>🡰</Button>
+							<Button onClick={handleNextPage}>🡲</Button>
+						</>
+					) : (
+						''
+					)}
 				</div>
 				<div>
 					<Select value={take} onChange={event => onChangeTake?.(Number(event.target.value))}>

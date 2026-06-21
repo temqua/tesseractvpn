@@ -9,6 +9,7 @@ import { deleteAction } from '@/app/lib/actions/expenses';
 import { expensesClient } from '@/app/lib/api/expenses/client';
 import { IExpense } from '@/app/lib/api/expenses/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
+import { debounce } from '@/app/lib/utils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -40,7 +41,7 @@ const baseColumns: IColumn<IExpense>[] = [
 	},
 ];
 
-export default function ExpensesClientSide({ data }: { data: IExpense[] }) {
+export default function ExpensesClientSide({ data, count }: { data: IExpense[]; count: number }) {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [isModalOpened, setModalOpened] = useState(false);
 	const searchParams = useSearchParams();
@@ -89,16 +90,23 @@ export default function ExpensesClientSide({ data }: { data: IExpense[] }) {
 			},
 		},
 	];
-	const setFilter = (key: keyof IExpenseForm, value: string) => {
+	const setFilter = (key: keyof IExpenseForm, value: string, operation: string) => {
 		setSearchBy(key);
 		setSearchValue(value);
 	};
+	const debouncedSetFilter = debounce(setFilter, 1000);
 	const searchRow = (
 		<>
 			<th>
-				<Input type="search" placeholder={'ID'} onChange={event => setFilter('id', event.target.value)}></Input>
+				<Input
+					type="search"
+					placeholder={'ID'}
+					onChange={event => debouncedSetFilter('id', event.target.value)}
+				></Input>
 			</th>
-			<th></th>
+			<th>
+				{/* <Input type="date" placeholder={'Date'} onChange={event => setFilter('paymentDate', event.target.value)}></Input> */}
+			</th>
 			<th></th>
 			<th>
 				<Select onChange={event => setFilter('category', event.target.value)}>
@@ -127,6 +135,7 @@ export default function ExpensesClientSide({ data }: { data: IExpense[] }) {
 					take={take}
 					searchRow={searchRow}
 					columns={columns}
+					count={count}
 					data={fetched?.data ?? []}
 					onChangePage={input => {
 						setPage(input);
