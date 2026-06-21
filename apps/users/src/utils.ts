@@ -37,3 +37,5 @@ export function uuid32to36(u: string): string {
 		u.slice(20)
 	).toLowerCase();
 }
+
+export const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);

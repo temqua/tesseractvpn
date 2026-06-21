@@ -8,7 +8,7 @@ import { deleteAction } from '@/app/lib/actions/payments';
 import { IPayment } from '@/app/lib/api/payments/definitions';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const baseColumns: IColumn<IPayment>[] = [
 	{
@@ -76,8 +76,6 @@ export default function PaymentsClientSide({ data }: { data: IPayment[] }) {
 	});
 	const [isModalOpened, setModalOpened] = useState(false);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const queryClient = useQueryClient();
-	queryClient.setQueryData(['payments-all'], data);
 	const setFilter = (key: keyof IPaymentForm, value: string) => {
 		setSearchFilters(prev => ({
 			...prev,
@@ -105,20 +103,18 @@ export default function PaymentsClientSide({ data }: { data: IPayment[] }) {
 			},
 		},
 	];
-	const filteredData = useMemo(() => {
-		return data.filter(row => {
-			return (
-				String(row.id).includes(searchFilters.id) &&
-				String(row.paymentDate).toLowerCase().includes(searchFilters.paymentDate.toLowerCase()) &&
-				String(row.amount).includes(searchFilters.amount) &&
-				String(row.monthsCount).includes(searchFilters.monthsCount) &&
-				String(row.expiresOn).includes(searchFilters.expiresOn) &&
-				String(row.userId).includes(searchFilters.userId) &&
-				String(row.planId).includes(searchFilters.planId) &&
-				String(row.parentPaymentId).includes(searchFilters.parentPaymentId)
-			);
-		});
-	}, [data, searchFilters]);
+	const filteredData = data.filter(row => {
+		return (
+			String(row.id).includes(searchFilters.id) &&
+			String(row.paymentDate).toLowerCase().includes(searchFilters.paymentDate.toLowerCase()) &&
+			String(row.amount).includes(searchFilters.amount) &&
+			String(row.monthsCount).includes(searchFilters.monthsCount) &&
+			String(row.expiresOn).includes(searchFilters.expiresOn) &&
+			String(row.userId).includes(searchFilters.userId) &&
+			String(row.planId).includes(searchFilters.planId) &&
+			String(row.parentPaymentId).includes(searchFilters.parentPaymentId)
+		);
+	});
 	const searchRow = (
 		<>
 			{columns
@@ -135,6 +131,10 @@ export default function PaymentsClientSide({ data }: { data: IPayment[] }) {
 			<th></th>
 		</>
 	);
+	const queryClient = useQueryClient();
+	useEffect(() => {
+		queryClient.setQueryData(['payments-all'], data);
+	});
 	return (
 		<div>
 			<ContentArea>
