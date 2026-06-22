@@ -21,7 +21,7 @@ export async function createAction(state: ExpenseFormState, formData: FormData) 
 		const response: Response = await expensesClient.create({
 			amount: Number(formData.get('amount')),
 			category: formData.get('category') as ExpenseCategory,
-			description: formData.get('description') ?? '',
+			description: (formData.get('description') as string) ?? '',
 		});
 		if (response.ok) {
 			toast.success(`Expense has been successfully created`);

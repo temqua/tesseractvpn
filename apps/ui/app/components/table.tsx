@@ -1,8 +1,7 @@
-import { JSX, useEffect, useState } from 'react';
-import styles from './table.module.css';
-import { Select } from './select';
+import { JSX, useEffect } from 'react';
 import { Button } from './button';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Select } from './select';
+import styles from './table.module.css';
 
 interface TableProps<T extends Record<keyof T, React.ReactNode> = object>
 	extends React.TableHTMLAttributes<HTMLTableElement> {
@@ -49,11 +48,11 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 		return <tr key={index}>{cells}</tr>;
 	});
 
-	function handlePreviousPage(event) {
+	function handlePreviousPage(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
 		onChangePage?.(p => Math.max(1, p - 1));
 	}
 
-	function handleNextPage(event) {
+	function handleNextPage(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
 		onChangePage?.(p => Math.min(totalPages, p + 1));
 	}
 

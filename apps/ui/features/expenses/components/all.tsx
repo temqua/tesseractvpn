@@ -90,7 +90,7 @@ export default function ExpensesClientSide({ data, count }: { data: IExpense[]; 
 			},
 		},
 	];
-	const setFilter = (key: keyof IExpenseForm, value: string, operation: string) => {
+	const setFilter = (key: keyof IExpenseForm, value: string, operation?: string) => {
 		setSearchBy(key);
 		setSearchValue(value);
 	};

@@ -25,10 +25,10 @@ export async function createAction(state: PaymentFormState, formData: FormData) 
 		const response: Response = await paymentsClient.create({
 			amount: Number(formData.get('amount')),
 			monthsCount: Number(formData.get('monthsCount')),
-			expiresOn: formData.get('expiresOn'),
-			parentPaymentId: formData.get('parentPaymentId'),
-			planId: formData.get('planId'),
-			userId: formData.get('userId'),
+			expiresOn: formData.get('expiresOn') as string,
+			parentPaymentId: formData.get('parentPaymentId') as string,
+			planId: Number(formData.get('planId')),
+			userId: Number(formData.get('userId')),
 		});
 		if (response.ok) {
 			toast.success(`Payment has been successfully created`);
@@ -75,10 +75,10 @@ export function getUpdateAction(id: string) {
 			const response = await paymentsClient.update(id, {
 				amount: Number(formData.get('amount')),
 				monthsCount: Number(formData.get('monthsCount')),
-				expiresOn: formData.get('expiresOn'),
+				expiresOn: formData.get('expiresOn') as string,
 				// parentPaymentId: formData.get('parentPaymentId'),
 				// planId: Number(formData.get('planId')),
-				paymentDate: formData.get('paymentDate'),
+				paymentDate: formData.get('paymentDate') as string,
 				userId: Number(formData.get('userId')),
 			});
 			if (response.ok) {

@@ -19,4 +19,6 @@ export interface ICreatePaymentDto {
 	parentPaymentId?: string | null;
 }
 
-export type IUpdatePaymentDto = Partial<ICreatePaymentDto>;
+export interface IUpdatePaymentDto extends Partial<ICreatePaymentDto> {
+	paymentDate: string;
+}

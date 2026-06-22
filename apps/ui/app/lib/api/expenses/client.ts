@@ -6,8 +6,9 @@ import { ICreateExpenseDTO, IExpense, IUpdateExpenseDto } from './definitions';
 export class ExpensesClient {
 	async getAll(listParams: IListParams): Promise<{
 		data: IExpense[];
+		total: number;
 	}> {
-		const params = new URLSearchParams(listParams);
+		const params = new URLSearchParams(listParams as Record<string, string>);
 		return await apiClient.get(`/api/v1/expenses?${params}`);
 	}
 
