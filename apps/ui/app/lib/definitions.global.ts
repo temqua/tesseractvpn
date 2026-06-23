@@ -6,7 +6,4 @@ export interface IErrorBody {
 export interface IListParams {
 	take?: number;
 	page?: number;
-	filterBy?: string;
-	filterValue?: string;
-	filterOperation?: string;
 }

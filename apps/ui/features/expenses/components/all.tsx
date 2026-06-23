@@ -45,7 +45,7 @@ export default function ExpensesClientSide({ data, count }: { data: IExpense[]; 
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [isModalOpened, setModalOpened] = useState(false);
 	const searchParams = useSearchParams();
-	const [searchBy, setSearchBy] = useState('');
+	const [searchBy, setSearchBy] = useState('' as keyof IExpenseForm);
 	const [searchValue, setSearchValue] = useState('');
 	const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
 
@@ -53,7 +53,7 @@ export default function ExpensesClientSide({ data, count }: { data: IExpense[]; 
 	const { data: fetched } = useQuery({
 		queryKey: ['expenses', page, take, searchBy, searchValue],
 		queryFn: () => {
-			const params: IListParams = { page, take };
+			const params: IListParams & Partial<IExpenseForm> = { page, take };
 			if (searchBy) {
 				params[searchBy] = searchValue;
 			}
@@ -83,7 +83,7 @@ export default function ExpensesClientSide({ data, count }: { data: IExpense[]; 
 			},
 		},
 	];
-	const setFilter = (key: keyof IExpenseForm, value: string, operation?: string) => {
+	const setFilter = (key: keyof IExpenseForm, value: string) => {
 		setSearchBy(key);
 		setSearchValue(value);
 	};
