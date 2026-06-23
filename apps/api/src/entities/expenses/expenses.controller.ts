@@ -20,7 +20,6 @@ import { ExpenseListDto } from './dto/list-dto';
 @Controller('expenses')
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
-  private logger = new Logger('ExpensesController');
 
   @Post()
   async create(@Body() createExpenseDto: CreateExpenseDto) {
@@ -39,10 +38,6 @@ export class ExpensesController {
 
   @Get(':id')
   async findOne(@Param('id') id: string, @Req() req: Request) {
-    const ip = req.ip;
-    const ips = req.ips;
-    this.logger.log(ip);
-    this.logger.log(ips);
     return await this.expensesService.findOne(id);
   }
 

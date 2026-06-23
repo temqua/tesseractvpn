@@ -55,20 +55,13 @@ export default function ExpensesClientSide({ data, count }: { data: IExpense[]; 
 		queryFn: () => {
 			const params: IListParams = { page, take };
 			if (searchBy) {
-				params.filterBy = searchBy;
-			}
-			if (searchValue) {
-				params.filterValue = searchValue;
-			}
-			if (searchBy && searchBy === 'id') {
-				params.filterOperation = 'contains';
+				params[searchBy] = searchValue;
 			}
 			return expensesClient.getAll(params);
 		},
 
 		placeholderData: page === 1 ? { data, total: data.length } : undefined,
 	});
-	console.log('fetched :>> ', fetched);
 	const columns: IColumn<IExpense>[] = [
 		...baseColumns,
 		{

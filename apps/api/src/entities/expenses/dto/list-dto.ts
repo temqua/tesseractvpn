@@ -1,18 +1,16 @@
 import { ExpenseCategory } from '@prisma/client';
-import { IsNumber, IsString } from 'class-validator';
-
-export class ExpenseListDto {
-  @IsNumber()
-  take: number;
-  @IsNumber()
-  skip: number;
+import { IsString } from 'class-validator';
+import { BaseListDto } from 'src/dto/base-dto';
+export class ExpenseListDto extends BaseListDto {
+  @IsString()
+  id?: string;
 
   @IsString()
-  filterBy?: string;
+  from?: string;
 
   @IsString()
-  filterValue?: string;
+  to?: string;
 
   @IsString()
-  filterOperation?: string;
+  category?: ExpenseCategory;
 }

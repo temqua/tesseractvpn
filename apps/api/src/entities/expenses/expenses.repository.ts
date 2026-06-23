@@ -1,15 +1,22 @@
-import { Expense, ExpenseCategory } from '@prisma/client';
-import { DatabaseService } from '../../database.service';
 import { Injectable } from '@nestjs/common';
-import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { ExpenseCategory } from '@prisma/client';
+import { endOfDay, parse, startOfDay } from 'date-fns';
+import { DatabaseService } from '../../database.service';
 import { ExpenseListDto } from './dto/list-dto';
+import { UpdateExpenseDto } from './dto/update-expense.dto';
+
+type ExpenseWhereClause = {
+  id?: {
+    contains?: string;
+  };
+  paymentDate?: object;
+  category?: ExpenseCategory;
+};
 
 type ExpenseSearchParams = {
   skip?: number;
   take?: number;
-  where?: {
-    category?: ExpenseCategory;
-  };
+  where?: ExpenseWhereClause;
 };
 
 @Injectable()
@@ -39,15 +46,22 @@ export class ExpensesRepository {
   }
 
   async list(dto?: ExpenseListDto) {
-    const where = dto?.filterBy
-      ? {
-          [dto.filterBy]: dto?.filterOperation
-            ? {
-                [dto.filterOperation]: dto.filterValue,
-              }
-            : dto.filterValue,
-        }
-      : undefined;
+    const where: ExpenseWhereClause = {};
+    if (dto?.id) {
+      where.id = {
+        contains: dto.id,
+      };
+    }
+
+    if (dto?.from && dto?.to) {
+      where.paymentDate = {
+        gte: startOfDay(parse(dto.from, 'yyyy-MM-dd', new Date())),
+        lte: endOfDay(parse(dto.to, 'yyyy-MM-dd', new Date())),
+      };
+    }
+    if (dto?.category) {
+      where.category = dto?.category;
+    }
     const params: ExpenseSearchParams = {
       skip: dto?.skip ? Number(dto.skip) : undefined,
       take: dto?.take ? Number(dto.take) : undefined,
@@ -57,6 +71,7 @@ export class ExpensesRepository {
     const countParams = {
       where,
     };
+    console.log('params :>> ', params);
     const [data, count] = await this.databaseService.client.$transaction([
       this.databaseService.client.expense.findMany(params),
       this.databaseService.client.expense.count(countParams),
