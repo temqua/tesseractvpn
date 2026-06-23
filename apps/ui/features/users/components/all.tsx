@@ -52,7 +52,7 @@ export default function UsersClientSide({ data }: { data: IVPNUser[] }) {
 	return (
 		<div>
 			<ContentArea>
-				<Table columns={columns} data={data} />
+				<Table columns={columns} data={data} take={25} count={0} page={1} />
 			</ContentArea>
 		</div>
 	);

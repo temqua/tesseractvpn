@@ -8,7 +8,7 @@ interface TableProps<T extends Record<keyof T, React.ReactNode> = object>
 	columns: IColumn<T>[];
 	data: T[];
 	searchRow?: JSX.Element;
-	count: number;
+	count?: number;
 	page: number;
 	take: number;
 	onChangePage?: (page: number | ((prevState: number) => number)) => void;
@@ -73,15 +73,15 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 		<div className="flex flex-col">
 			<div className="pagination">
 				<div className="flex">
-					<Button
-						onClick={() => {
-							onChangePage?.(1);
-						}}
-					>
-						1
-					</Button>
 					{totalPages > 1 ? (
 						<>
+							<Button
+								onClick={() => {
+									onChangePage?.(1);
+								}}
+							>
+								1
+							</Button>
 							<Button
 								onClick={() => {
 									onChangePage?.(totalPages);

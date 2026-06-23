@@ -12,8 +12,8 @@ export default function PaymentClientSide({ data, id }: { data: IPayment; id: st
 
 	const [paymentDate, setPaymentDate] = useState(data?.paymentDate);
 	const [amount, setAmount] = useState(data?.amount);
-	const [monthsCount, setMonthsCount] = useState(data?.monthsCount);
-	const [expiresOn, setExpiresOn] = useState(data?.expiresOn);
+	const [monthsCount, setMonthsCount] = useState(data?.monthsCount ?? undefined);
+	const [expiresOn, setExpiresOn] = useState(data?.expiresOn ?? undefined);
 	const [userId, setUserID] = useState(data?.userId);
 	const [planId, setPlanID] = useState(data?.planId);
 	return (

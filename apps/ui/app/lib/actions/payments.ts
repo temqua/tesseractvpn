@@ -84,7 +84,7 @@ export function getUpdateAction(id: string) {
 			if (response.ok) {
 				toast.success(`Payment ${id} has been successfully updated`);
 			}
-			const data: IErrorBody & IExpense = await response.json();
+			const data: IErrorBody & IPayment = await response.json();
 			return {
 				data: data,
 			};

@@ -103,18 +103,18 @@ export default function PaymentsClientSide({ data }: { data: IPayment[] }) {
 			},
 		},
 	];
-	const filteredData = data.filter(row => {
-		return (
-			String(row.id).includes(searchFilters.id) &&
-			String(row.paymentDate).toLowerCase().includes(searchFilters.paymentDate.toLowerCase()) &&
-			String(row.amount).includes(searchFilters.amount) &&
-			String(row.monthsCount).includes(searchFilters.monthsCount) &&
-			String(row.expiresOn).includes(searchFilters.expiresOn) &&
-			String(row.userId).includes(searchFilters.userId) &&
-			String(row.planId).includes(searchFilters.planId) &&
-			String(row.parentPaymentId).includes(searchFilters.parentPaymentId)
-		);
-	});
+	// const filteredData = data.filter(row => {
+	// 	return (
+	// 		String(row.id).includes(searchFilters.id) &&
+	// 		String(row.paymentDate).toLowerCase().includes(searchFilters.paymentDate.toLowerCase()) &&
+	// 		String(row.amount).includes(searchFilters.amount) &&
+	// 		String(row.monthsCount).includes(searchFilters.monthsCount) &&
+	// 		String(row.expiresOn).includes(searchFilters.expiresOn) &&
+	// 		String(row.userId).includes(searchFilters.userId) &&
+	// 		String(row.planId).includes(searchFilters.planId) &&
+	// 		String(row.parentPaymentId).includes(searchFilters.parentPaymentId)
+	// 	);
+	// });
 	const searchRow = (
 		<>
 			{columns
@@ -141,7 +141,7 @@ export default function PaymentsClientSide({ data }: { data: IPayment[] }) {
 				<div>
 					<Link href={`/payments/new`}>ADD</Link>
 				</div>
-				<Table searchRow={searchRow} columns={columns} data={filteredData} />
+				<Table searchRow={searchRow} columns={columns} data={data} count={0} take={25} page={1} />
 			</ContentArea>
 			<div>
 				<Dialog
