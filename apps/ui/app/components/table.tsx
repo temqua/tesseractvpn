@@ -8,7 +8,7 @@ interface TableProps<T extends Record<keyof T, React.ReactNode> = object>
 	columns: IColumn<T>[];
 	data: T[];
 	searchRow?: JSX.Element;
-	count?: number;
+	count: number;
 	page: number;
 	take: number;
 	onChangePage?: (page: number | ((prevState: number) => number)) => void;
