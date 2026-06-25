@@ -1,13 +1,10 @@
 'use client';
-import { IListParams } from '../../definitions.global';
+import { IListParams, ListResponse } from '../../definitions.global';
 import apiClient from '../api-client';
 import { ICreateExpenseDTO, IExpense, IUpdateExpenseDto } from './definitions';
 
 export class ExpensesClient {
-	async getAll(listParams: IListParams): Promise<{
-		data: IExpense[];
-		total: number;
-	}> {
+	async getAll(listParams: IListParams): Promise<ListResponse<IExpense>> {
 		const params = new URLSearchParams(listParams as Record<string, string>);
 		return await apiClient.get(`/api/v1/expenses?${params}`);
 	}

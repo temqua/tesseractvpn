@@ -53,14 +53,14 @@ export default function ExpensesClientSide({ data, count }: { data: IExpense[]; 
 	const { data: fetched } = useQuery({
 		queryKey: ['expenses', page, take, searchBy, searchValue],
 		queryFn: () => {
-			const params: IListParams & Partial<IExpenseForm> = { page, take };
+			const params: IListParams & Partial<IExpenseForm> = { skip: (page - 1) * take, take };
 			if (searchBy) {
 				params[searchBy] = searchValue;
 			}
 			return expensesClient.getAll(params);
 		},
 
-		placeholderData: page === 1 ? { data, total: data.length } : undefined,
+		placeholderData: page === 1 ? { data, count: data.length } : undefined,
 	});
 	const columns: IColumn<IExpense>[] = [
 		...baseColumns,
@@ -115,8 +115,9 @@ export default function ExpensesClientSide({ data, count }: { data: IExpense[]; 
 	useEffect(() => {
 		queryClient.setQueryData(['expenses', page, take, searchBy, searchValue], {
 			data,
+			count,
 		});
-	}, [data, queryClient]);
+	}, [data, count, queryClient]);
 	return (
 		<div>
 			<ContentArea>
@@ -128,7 +129,7 @@ export default function ExpensesClientSide({ data, count }: { data: IExpense[]; 
 					take={take}
 					searchRow={searchRow}
 					columns={columns}
-					count={count}
+					count={fetched?.count ?? 0}
 					data={fetched?.data ?? []}
 					onChangePage={input => {
 						setPage(input);

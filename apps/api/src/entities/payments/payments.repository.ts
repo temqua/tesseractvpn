@@ -2,8 +2,22 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Payment } from '@prisma/client';
-import { endOfDay, startOfDay } from 'date-fns';
+import { endOfDay, parse, startOfDay } from 'date-fns';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { PaymentListDto } from './dto/list-dto';
+
+type PaymentWhereClause = {
+  id?: {
+    contains: string;
+  };
+  from?: string;
+  to?: string;
+  userId?: number;
+  paymentDate?: {
+    gte: Date;
+    lte: Date;
+  };
+};
 
 @Injectable()
 export class PaymentsRepository {
@@ -23,8 +37,39 @@ export class PaymentsRepository {
     });
   }
 
-  async findAll() {
-    return await this.databaseService.client.payment.findMany();
+  async findAll(dto?: PaymentListDto) {
+    const where: PaymentWhereClause = {};
+    if (dto?.id) {
+      where.id = {
+        contains: dto?.id,
+      };
+    }
+    if (dto?.from && dto?.to) {
+      where.paymentDate = {
+        gte: startOfDay(parse(dto.from, 'yyyy-MM-dd', new Date())),
+        lte: endOfDay(parse(dto.to, 'yyyy-MM-dd', new Date())),
+      };
+    }
+    if (dto?.userId) {
+      where.userId = Number(dto?.userId);
+    }
+
+    const params = {
+      skip: dto?.skip ? Number(dto.skip) : undefined,
+      take: dto?.take ? Number(dto.take) : undefined,
+      where,
+    };
+    const countParams = {
+      where,
+    };
+    const [data, count] = await this.databaseService.client.$transaction([
+      this.databaseService.client.payment.findMany(params),
+      this.databaseService.client.payment.count(countParams),
+    ]);
+    return {
+      data,
+      count,
+    };
   }
 
   async findOne(id: string) {

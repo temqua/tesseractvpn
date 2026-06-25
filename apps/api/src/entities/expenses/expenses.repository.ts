@@ -71,7 +71,6 @@ export class ExpensesRepository {
     const countParams = {
       where,
     };
-    console.log('params :>> ', params);
     const [data, count] = await this.databaseService.client.$transaction([
       this.databaseService.client.expense.findMany(params),
       this.databaseService.client.expense.count(countParams),

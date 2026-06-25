@@ -37,7 +37,7 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 }: TableProps<T>) {
 	const headers = columns.map((column, i) => <th key={i}>{column.label}</th>);
 
-	const totalPages = Math.max(1, Math.ceil(data.length / take));
+	const totalPages = Math.max(1, Math.ceil(count / take));
 	const items = data.map((row, index) => {
 		const cells = columns.map((c, ci) => {
 			if (c.actions) {

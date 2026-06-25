@@ -5,5 +5,10 @@ export interface IErrorBody {
 
 export interface IListParams {
 	take?: number;
-	page?: number;
+	skip?: number;
+}
+
+export interface ListResponse<T> {
+	data: T[];
+	count: number;
 }

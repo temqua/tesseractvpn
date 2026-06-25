@@ -3,8 +3,8 @@ import { CreatePaymentDto, Payment, PaymentForSheet, PaymentSumDto } from './pay
 
 export class PaymentsClient {
 	async getAll(): Promise<Payment[]> {
-		const result = await client.get(`/payments`);
-		return result as Payment[];
+		const { data } = await client.get(`/payments`);
+		return data as Payment[];
 	}
 
 	async getAllForSheet() {
@@ -54,12 +54,12 @@ export class PaymentsClient {
 			params.append('to', to);
 		}
 		const result = await client.get(`/payments?${params}`);
-		return result as Payment[];
+		return result.data as Payment[];
 	}
 
 	async getAllByUserId(userId: number): Promise<Payment[]> {
-		const result = await client.get(`/payments?user_id=${userId}`);
-		return result as Payment[];
+		const result = await client.get(`/payments?userId=${userId}`);
+		return result.data as Payment[];
 	}
 
 	async export() {

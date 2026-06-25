@@ -5,10 +5,14 @@ import Dialog from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
 import { deleteAction } from '@/app/lib/actions/payments';
+import { paymentsClient } from '@/app/lib/api/payments/client';
 import { IPayment } from '@/app/lib/api/payments/definitions';
-import { useQueryClient } from '@tanstack/react-query';
+import { IListParams } from '@/app/lib/definitions.global';
+import { debounce } from '@/app/lib/utils';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const baseColumns: IColumn<IPayment>[] = [
 	{
@@ -63,25 +67,20 @@ interface IPaymentForm {
 	parentPaymentId?: string;
 }
 
-export default function PaymentsClientSide({ data }: { data: IPayment[] }) {
-	const [searchFilters, setSearchFilters] = useState<Partial<IPaymentForm>>({
-		id: '',
-		paymentDate: '',
-		amount: '',
-		monthsCount: '',
-		expiresOn: '',
-		userId: '',
-		planId: '',
-		parentPaymentId: '',
-	});
+export default function PaymentsClientSide({ data, count }: { data: IPayment[]; count: number }) {
 	const [isModalOpened, setModalOpened] = useState(false);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+
+	const searchParams = useSearchParams();
+	const [searchBy, setSearchBy] = useState('' as keyof IPaymentForm);
+	const [searchValue, setSearchValue] = useState('');
+	const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
 	const setFilter = (key: keyof IPaymentForm, value: string) => {
-		setSearchFilters(prev => ({
-			...prev,
-			[key]: value,
-		}));
+		setSearchBy(key);
+		setSearchValue(value);
 	};
+	const debouncedSetFilter = debounce(setFilter, 1000);
+	const [take, setTake] = useState(Number(searchParams.get('take')) || 25);
 	const columns: IColumn<IPayment>[] = [
 		...baseColumns,
 		{
@@ -103,45 +102,61 @@ export default function PaymentsClientSide({ data }: { data: IPayment[] }) {
 			},
 		},
 	];
-	// const filteredData = data.filter(row => {
-	// 	return (
-	// 		String(row.id).includes(searchFilters.id) &&
-	// 		String(row.paymentDate).toLowerCase().includes(searchFilters.paymentDate.toLowerCase()) &&
-	// 		String(row.amount).includes(searchFilters.amount) &&
-	// 		String(row.monthsCount).includes(searchFilters.monthsCount) &&
-	// 		String(row.expiresOn).includes(searchFilters.expiresOn) &&
-	// 		String(row.userId).includes(searchFilters.userId) &&
-	// 		String(row.planId).includes(searchFilters.planId) &&
-	// 		String(row.parentPaymentId).includes(searchFilters.parentPaymentId)
-	// 	);
-	// });
+	const { data: fetched } = useQuery({
+		queryKey: ['payments', page, take, searchBy, searchValue],
+		queryFn: () => {
+			const params: IListParams & Partial<IPaymentForm> = { skip: (page - 1) * take, take };
+			if (searchBy) {
+				params[searchBy] = searchValue;
+			}
+			return paymentsClient.getAll(params);
+		},
+
+		placeholderData: page === 1 ? { data, count: data.length } : undefined,
+	});
 	const searchRow = (
 		<>
+			<th key={'id'}>
+				<Input
+					type="search"
+					placeholder={'ID'}
+					onChange={event => debouncedSetFilter('id', event.target.value)}
+				></Input>
+			</th>
 			{columns
-				.filter(c => c.searchable)
+				.filter(c => c.prop !== 'id')
 				.map(c => (
-					<th key={c.prop ?? c.label}>
-						<Input
-							type="search"
-							placeholder={c.label}
-							onChange={event => setFilter(c.prop as keyof IPaymentForm, event.target.value)}
-						></Input>
-					</th>
+					<th key={c.prop}></th>
 				))}
-			<th></th>
 		</>
 	);
 	const queryClient = useQueryClient();
 	useEffect(() => {
-		queryClient.setQueryData(['payments-all'], data);
-	});
+		queryClient.setQueryData(['payments', page, take, searchBy, searchValue], {
+			data,
+			count,
+		});
+	}, [data, count]);
 	return (
 		<div>
 			<ContentArea>
 				<div>
 					<Link href={`/payments/new`}>ADD</Link>
 				</div>
-				<Table searchRow={searchRow} columns={columns} data={data} count={0} take={25} page={1} />
+				<Table
+					searchRow={searchRow}
+					columns={columns}
+					data={fetched?.data ?? []}
+					count={fetched?.count ?? 0}
+					page={page}
+					take={take}
+					onChangePage={input => {
+						setPage(input);
+					}}
+					onChangeTake={input => {
+						setTake(input);
+					}}
+				/>
 			</ContentArea>
 			<div>
 				<Dialog

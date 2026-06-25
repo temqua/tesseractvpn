@@ -1,12 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { parse } from 'date-fns';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentsRepository } from './payments.repository';
-import { SearchPaymentDto } from './payments.types';
 
 import env from '../../env';
 import { exportToSheet } from '../../utils';
+import { PaymentListDto } from './dto/list-dto';
 @Injectable()
 export class PaymentsService {
   constructor(private repository: PaymentsRepository) {}
@@ -15,20 +14,20 @@ export class PaymentsService {
     return await this.repository.create(createPaymentDto);
   }
 
-  async findAll(dto: SearchPaymentDto) {
-    if (dto.userId) {
-      return await this.repository.getAllByUserId(Number(dto.userId));
-    }
-    if (dto.from && dto.to) {
-      return await this.repository.getByDateRange(
-        parse(dto.from, 'yyyy-MM-dd', new Date()),
-        parse(dto.to, 'yyyy-MM-dd', new Date()),
-      );
-    }
-    if (dto.sheet === 'true') {
+  async findAll(dto?: PaymentListDto) {
+    // if (dto?.userId) {
+    //   return await this.repository.getAllByUserId(Number(dto.userId));
+    // }
+    // if (dto?.from && dto?.to) {
+    //   return await this.repository.getByDateRange(
+    //     parse(dto.from, 'yyyy-MM-dd', new Date()),
+    //     parse(dto.to, 'yyyy-MM-dd', new Date()),
+    //   );
+    // }
+    if (dto?.sheet === 'true') {
       return await this.repository.getAllForSheet();
     }
-    return await this.repository.findAll();
+    return await this.repository.findAll(dto);
   }
 
   async findOne(id: string) {

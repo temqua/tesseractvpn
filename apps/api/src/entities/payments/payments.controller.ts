@@ -11,6 +11,7 @@ import {
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentsService } from './payments.service';
+import { PaymentListDto } from './dto/list-dto';
 
 @Controller('payments')
 export class PaymentsController {
@@ -22,13 +23,8 @@ export class PaymentsController {
   }
 
   @Get()
-  async findAll(
-    @Query('user_id') userId?: string,
-    @Query('from') from?: string,
-    @Query('to') to?: string,
-    @Query('sheet') sheet?: string,
-  ) {
-    return await this.paymentsService.findAll({ userId, from, to, sheet });
+  async findAll(@Query() dto?: PaymentListDto) {
+    return await this.paymentsService.findAll(dto);
   }
 
   @Get('/sum')
