@@ -10,6 +10,7 @@
 
 .grid td {
 	display: flex;
+	align-items: center;
 	padding-left: 0.5rem;
 }
 
@@ -21,4 +22,8 @@
 	min-height: 35px;
 	background-color: #384353;
 	padding-left: 0.5rem;
+}
+
+.grid th:has(input) {
+	padding: 0.5rem;
 }
