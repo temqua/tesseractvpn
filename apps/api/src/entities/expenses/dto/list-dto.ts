@@ -1,6 +1,6 @@
 import { ExpenseCategory } from '@prisma/client';
 import { IsString } from 'class-validator';
-import { BaseListDto } from 'src/dto/base-dto';
+import { BaseListDto } from '../../../dto/base-dto';
 export class ExpenseListDto extends BaseListDto {
   @IsString()
   id?: string;

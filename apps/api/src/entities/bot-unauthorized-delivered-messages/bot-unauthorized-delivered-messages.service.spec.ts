@@ -1,12 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BotUnauthorizedDeliveredMessagesService } from './bot-unauthorized-delivered-messages.service';
+import { DatabaseModule } from '../../database.module';
+import { BotUnauthorizedDeliveredMessagesRepository } from './bot-unauthorized-delivered-messages.repository';
 
 describe('BotUnauthorizedDeliveredMessagesService', () => {
   let service: BotUnauthorizedDeliveredMessagesService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [BotUnauthorizedDeliveredMessagesService],
+      imports: [DatabaseModule],
+      providers: [
+        BotUnauthorizedDeliveredMessagesService,
+        BotUnauthorizedDeliveredMessagesRepository,
+      ],
     }).compile();
 
     service = module.get<BotUnauthorizedDeliveredMessagesService>(

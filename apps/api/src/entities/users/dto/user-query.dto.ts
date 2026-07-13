@@ -6,7 +6,7 @@ import {
   IsString,
 } from 'class-validator';
 import { OrderDirection } from '../../../enums';
-import { BaseListDto } from 'src/dto/base-dto';
+import { BaseListDto } from '../../../dto/base-dto';
 
 export enum OrderByUserField {
   Username = 'username',
@@ -41,4 +41,10 @@ export class UserQueryDto extends BaseListDto {
   @IsOptional()
   @IsEnum(OrderDirection)
   paymentsOrder?: OrderDirection;
+
+  @IsNumber()
+  expiresAfterDays?: number;
+
+  @IsBoolean()
+  trial?: boolean;
 }

@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-import { BaseListDto } from 'src/dto/base-dto';
+import { BaseListDto } from '../../../dto/base-dto';
 
 export class PaymentListDto extends BaseListDto {
   @IsString()
