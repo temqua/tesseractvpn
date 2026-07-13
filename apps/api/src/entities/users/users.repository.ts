@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Payment, Prisma, User, VPNProtocol } from '@prisma/client';
-import { subDays } from 'date-fns';
+import { addDays, subDays } from 'date-fns';
 import { DatabaseService } from '../../database.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -42,16 +42,22 @@ export class UsersRepository {
     if (dto?.active) {
       where.active = dto.active;
     }
-    if (dto?.unpaid) {
+    if (dto?.trial !== undefined) {
+      where.createdAt = dto.trial
+        ? {
+            gt: subDays(new Date(), 3),
+          }
+        : {
+            lt: subDays(new Date(), 3),
+          };
+    }
+    if (dto?.expiresAfterDays !== undefined) {
       where.payments = {
         none: {
           expiresOn: {
-            gt: new Date(),
+            gt: addDays(new Date(), dto.expiresAfterDays),
           },
         },
-      };
-      where.createdAt = {
-        lt: subDays(new Date(), 3),
       };
     }
     const params = {
@@ -80,7 +86,6 @@ export class UsersRepository {
         referrals: true,
       },
     };
-    console.log('params :>> ', params);
     const countParams = {
       where,
     };
