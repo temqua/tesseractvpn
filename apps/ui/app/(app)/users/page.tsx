@@ -6,6 +6,9 @@ export default async function UsersPage() {
 	// 	queryKey: ['users-all'],
 	// 	queryFn: () => usersClient.getAll(),
 	// });
-	const data = await usersSSRClient.getAll();
-	return <UsersClientSide data={data}></UsersClientSide>;
+	const response = await usersSSRClient.getAll({
+		skip: 0,
+		take: 25,
+	});
+	return <UsersClientSide data={response.data} count={response.count}></UsersClientSide>;
 }

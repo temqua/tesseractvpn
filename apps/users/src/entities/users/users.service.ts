@@ -45,6 +45,7 @@ import {
 	CreateUserDto,
 	User,
 	UserCreateCommandContext,
+	UserQueryDto,
 	UsersContext,
 	UserUpdateCommandContext,
 	VPNUser,
@@ -1627,7 +1628,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 			return;
 		}
 		try {
-			const user = await this.client.getById(context.id);
+			const user = await this.client.getById(Number(context.id));
 			bot.sendMessage(user.telegramId, message.text);
 		} catch (err) {
 			bot.sendMessage(message.chat.id, `Ошибка во время отправки сообщения пользователя ${err}`);
@@ -1711,14 +1712,20 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 	}
 
 	private async getPossiblePayers(message: Message, context: UsersContext, userId: string) {
-		const response = await this.client.list({
+		const params: UserQueryDto = {
 			orderBy: 'firstName',
 			orderDirection: 'asc',
-		});
-		const possibleUsers = response.filter(user => user.id !== Number(userId));
-		const users = context.accept
-			? possibleUsers
-			: possibleUsers?.filter(u => u.username.startsWith(message?.text ?? ''));
+		};
+		if (message.text) {
+			params.username = message.text;
+		}
+		if (message.user_shared?.user_id) {
+			params.telegramId = message.user_shared?.user_id.toString();
+		}
+		const response = await this.client.list(params);
+
+		const users = response.filter(user => user.id !== Number(userId));
+
 		if (!users) {
 			await bot.sendMessage(message.chat.id, `No payers found in system for user ${userId}`);
 			return;
@@ -1753,14 +1760,19 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 	}
 
 	private async getPossibleReferrers(message: Message, context: UsersContext, userId: string) {
-		const response = await this.client.list({
+		const params: UserQueryDto = {
 			orderBy: 'firstName',
 			orderDirection: 'asc',
-		});
-		const possibleReferrers = response.filter(user => user.id !== Number(userId));
-		const users = context.accept
-			? possibleReferrers
-			: possibleReferrers?.filter(u => u.username.startsWith(message?.text ?? ''));
+		};
+		if (message.text) {
+			params.username = message.text;
+		}
+		if (message.user_shared?.user_id) {
+			params.telegramId = message.user_shared?.user_id.toString();
+		}
+		const response = await this.client.list(params);
+
+		const users = response.filter(user => user.id !== Number(userId));
 		if (!users) {
 			await bot.sendMessage(message.chat.id, `No referrers found in system for user ${userId}`);
 			return;

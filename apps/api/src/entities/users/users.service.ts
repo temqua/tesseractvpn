@@ -34,22 +34,7 @@ export class UsersService {
   }
 
   async findAll(dto: UserQueryDto) {
-    if (dto.username) {
-      return await this.repository.findByUsername(dto.username);
-    }
-    if (dto.firstName) {
-      return await this.repository.findByFirstName(dto.firstName);
-    }
-    if (dto.telegramId) {
-      return await this.repository.getByTelegramId(dto.telegramId);
-    }
-    if (dto.orderBy) {
-      return await this.repository.findAll({
-        by: dto.orderBy,
-        direction: dto.orderDirection ?? 'asc',
-      });
-    }
-    return await this.repository.findAll();
+    return await this.repository.findAll(dto);
   }
 
   async findOne(id: number) {
@@ -187,7 +172,7 @@ export class UsersService {
   }
 
   async export() {
-    const data = await this.repository.findAll();
+    const { data } = await this.repository.findAll();
     const preparedData = data.map((row) => {
       return [
         row.firstName ?? '',

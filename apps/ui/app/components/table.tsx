@@ -1,4 +1,4 @@
-import { JSX, useEffect } from 'react';
+import { JSX, useEffect, useMemo } from 'react';
 import { Button } from './button';
 import { Select } from './select';
 import styles from './table.module.css';
@@ -37,7 +37,10 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 }: TableProps<T>) {
 	const headers = columns.map((column, i) => <th key={i}>{column.label}</th>);
 
-	const totalPages = Math.max(1, Math.ceil(count / take));
+	const totalPages = useMemo(() => Math.max(1, Math.ceil(count / take)), [count, take]);
+	console.log('totalPages :>> ', totalPages);
+	console.log('count :>> ', count);
+	console.log('take :>> ', take);
 	const items = data.map((row, index) => {
 		const cells = columns.map((c, ci) => {
 			if (c.actions) {
@@ -56,9 +59,9 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 		onChangePage?.(p => Math.min(totalPages, p + 1));
 	}
 
-	useEffect(() => {
-		onChangePage?.(page);
-	}, [page, onChangePage]);
+	// useEffect(() => {
+	// 	onChangePage?.(page);
+	// }, [page, onChangePage]);
 
 	useEffect(() => {
 		onChangePage?.(1);
@@ -71,10 +74,11 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 	}, [page, totalPages]);
 	return (
 		<div className="flex flex-col">
-			<div className="pagination">
+			<div className={styles.pagination}>
 				<div className="flex">
 					{totalPages > 1 ? (
 						<>
+							<Button onClick={handlePreviousPage}>🡰</Button>
 							<Button
 								onClick={() => {
 									onChangePage?.(1);
@@ -89,7 +93,6 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 							>
 								{totalPages}
 							</Button>
-							<Button onClick={handlePreviousPage}>🡰</Button>
 							<Button onClick={handleNextPage}>🡲</Button>
 						</>
 					) : (
@@ -104,7 +107,7 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 					</Select>
 				</div>
 			</div>
-			<table className={styles.grid} style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }} {...rest}>
+			<table className={styles.table} style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }} {...rest}>
 				<thead>
 					<tr>{headers}</tr>
 					<tr>{searchRow}</tr>

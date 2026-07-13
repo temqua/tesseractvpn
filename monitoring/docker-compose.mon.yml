@@ -1,0 +1,26 @@
+services:
+    grafana:
+        image: grafana/grafana
+        container_name: grafana
+        network_mode: host
+        volumes:
+            - grafana-storage:/var/lib/grafana # Сохраняем данные Grafana
+            - /etc/ssl/certs/grafana:/etc/ssl/certs/grafana:ro # Твои SSL-серты
+        environment:
+            - GF_SERVER_PROTOCOL=https
+            - GF_SERVER_CERT_FILE=/etc/ssl/certs/grafana/cert.pem
+            - GF_SERVER_CERT_KEY=/etc/ssl/certs/grafana/key.pem
+        restart: unless-stopped
+
+    prometheus:
+        image: prom/prometheus
+        container_name: prometheus
+        network_mode: host
+        volumes:
+            - ./prometheus/config:/etc/prometheus
+            - ./prometheus/data:/prometheus
+        command: ['--config.file=/etc/prometheus/prometheus.yml', '--web.listen-address=:9090']
+        restart: unless-stopped
+
+volumes:
+    grafana-storage:

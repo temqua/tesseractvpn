@@ -1,20 +1,22 @@
-.grid {
+.table {
 	display: grid;
+	max-width: 100vw;
+	overflow-x: scroll;
 }
 
-.grid thead,
-.grid tbody,
-.grid tr {
+.table thead,
+.table tbody,
+.table tr {
 	display: contents;
 }
 
-.grid td {
+.table td {
 	display: flex;
 	align-items: center;
 	padding-left: 0.5rem;
 }
 
-.grid th {
+.table th {
 	position: sticky;
 	top: 0;
 	display: flex;
@@ -24,6 +26,11 @@
 	padding-left: 0.5rem;
 }
 
-.grid th:has(input) {
+.table th:has(input) {
 	padding: 0.5rem;
+}
+
+.pagination {
+	display: flex;
+	justify-content: space-between;
 }

@@ -1,4 +1,5 @@
 import client from '../../api-client';
+import { ListResponse } from '../../definitions';
 import logger from '../../logger';
 import { Payment } from '../payments/payments.types';
 import { CreateUserDto, UpdateUserDto, UserQueryDto, UserServerDTO, VPNUser } from './users.types';
@@ -9,7 +10,6 @@ export class UsersClient {
 		if (dto?.firstName) {
 			params.append('firstName', dto.firstName);
 		}
-
 		if (dto?.username) {
 			params.append('username', dto.username);
 		}
@@ -19,18 +19,21 @@ export class UsersClient {
 		if (dto?.orderDirection) {
 			params.append('orderDirection', dto.orderDirection);
 		}
-		const result = await client.get(`/users?${params}`);
-		return result as VPNUser[];
+		if (dto?.telegramId) {
+			params.append('telegramId', dto.telegramId);
+		}
+		const result = (await client.get(`/users?${params}`)) as ListResponse<VPNUser>;
+		return result?.data;
 	}
 
-	async getByTelegramId(telegramId: string | number): Promise<VPNUser> {
+	async getByTelegramId(telegramId: string | number): Promise<VPNUser | null> {
 		const params = new URLSearchParams();
 		params.append('telegramId', telegramId.toString());
-		const result = (await client.get(`/users?${params}`)) as VPNUser[];
-		if (!result?.length) {
+		const result = (await client.get(`/users?${params}`)) as ListResponse<VPNUser>;
+		if (!result?.data?.length) {
 			return null;
 		}
-		return result[0] as VPNUser;
+		return result?.data[0];
 	}
 
 	async getById(id: number): Promise<VPNUser> {
@@ -41,8 +44,8 @@ export class UsersClient {
 	async getByUsername(username: string): Promise<VPNUser> {
 		const params = new URLSearchParams();
 		params.append('username', username);
-		const result = await client.get(`/users?${params}`);
-		return <VPNUser>result;
+		const result = (await client.get(`/users?${params}`)) as ListResponse<VPNUser>;
+		return result.data[0];
 	}
 
 	async getUnpaid(): Promise<VPNUser[]> {

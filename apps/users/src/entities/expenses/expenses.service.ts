@@ -65,7 +65,7 @@ export class ExpensesService {
 
 	async list(message: Message) {
 		this.log('list');
-		const { data: expenses, count } = await this.client.getAll();
+		const expenses = await this.client.getAll();
 		for (const expense of expenses) {
 			await bot.sendMessage(
 				message.chat.id,

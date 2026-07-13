@@ -1,23 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { Payment } from '@prisma/client';
+import { Payment, Prisma } from '@prisma/client';
 import { endOfDay, parse, startOfDay } from 'date-fns';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentListDto } from './dto/list-dto';
-
-type PaymentWhereClause = {
-  id?: {
-    contains: string;
-  };
-  from?: string;
-  to?: string;
-  userId?: number;
-  paymentDate?: {
-    gte: Date;
-    lte: Date;
-  };
-};
 
 @Injectable()
 export class PaymentsRepository {
@@ -38,7 +25,7 @@ export class PaymentsRepository {
   }
 
   async findAll(dto?: PaymentListDto) {
-    const where: PaymentWhereClause = {};
+    const where: Prisma.PaymentWhereInput = {};
     if (dto?.id) {
       where.id = {
         contains: dto?.id,

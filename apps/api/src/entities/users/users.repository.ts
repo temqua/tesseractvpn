@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Payment, User, VPNProtocol } from '@prisma/client';
+import { Payment, Prisma, User, VPNProtocol } from '@prisma/client';
 import { subDays } from 'date-fns';
 import { DatabaseService } from '../../database.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserOrderParams, VPNUser } from './users.types';
+import { UserQueryDto } from './dto/user-query.dto';
 
 @Injectable()
 export class UsersRepository {
@@ -18,17 +19,79 @@ export class UsersRepository {
     });
   }
 
-  async findAll(orderParams?: UserOrderParams) {
-    return await this.databaseService.client.user.findMany({
+  async findAll(dto?: UserQueryDto) {
+    const where: Prisma.UserWhereInput = {};
+    if (dto?.id) {
+      where.id = Number(dto.id);
+    }
+    if (dto?.username) {
+      where.username = {
+        mode: 'insensitive',
+        contains: dto.username,
+      };
+    }
+    if (dto?.telegramId) {
+      where.telegramId = dto.telegramId;
+    }
+    if (dto?.firstName) {
+      where.firstName = {
+        mode: 'insensitive',
+        contains: dto.firstName,
+      };
+    }
+    if (dto?.active) {
+      where.active = dto.active;
+    }
+    if (dto?.unpaid) {
+      where.payments = {
+        none: {
+          expiresOn: {
+            gt: new Date(),
+          },
+        },
+      };
+      where.createdAt = {
+        lt: subDays(new Date(), 3),
+      };
+    }
+    const params = {
+      skip: dto?.skip ? Number(dto.skip) : undefined,
+      take: dto?.take ? Number(dto.take) : undefined,
+      where,
       omit: {
         password: true,
       },
-      orderBy: orderParams
-        ? {
-            [orderParams.by]: orderParams.direction,
-          }
-        : undefined,
-    });
+      orderBy:
+        dto?.orderBy && dto?.orderDirection
+          ? {
+              [dto.orderBy]: dto.orderDirection,
+            }
+          : undefined,
+      include: {
+        payer: true,
+        payments: {
+          orderBy: {
+            paymentDate:
+              dto?.paymentsOrder ?? ('desc' as Prisma.SortOrder | undefined),
+          },
+        },
+        dependants: true,
+        referrer: true,
+        referrals: true,
+      },
+    };
+    console.log('params :>> ', params);
+    const countParams = {
+      where,
+    };
+    const [data, count] = await this.databaseService.client.$transaction([
+      this.databaseService.client.user.findMany(params),
+      this.databaseService.client.user.count(countParams),
+    ]);
+    return {
+      data,
+      count,
+    };
   }
 
   async findAllActive() {
@@ -97,47 +160,6 @@ export class UsersRepository {
     });
   }
 
-  async getByTelegramId(telegramId: string): Promise<VPNUser[]> {
-    return await this.databaseService.client.user.findMany({
-      where: {
-        telegramId,
-      },
-      include: {
-        payer: true,
-        payments: {
-          orderBy: {
-            paymentDate: 'desc',
-          },
-        },
-        dependants: true,
-        referrer: true,
-        referrals: true,
-      },
-    });
-  }
-
-  async findByUsername(username: string): Promise<VPNUser[]> {
-    return await this.databaseService.client.user.findMany({
-      where: {
-        username: {
-          mode: 'insensitive',
-          contains: username,
-        },
-      },
-      include: {
-        payer: true,
-        payments: {
-          orderBy: {
-            paymentDate: 'desc',
-          },
-        },
-        dependants: true,
-        referrer: true,
-        referrals: true,
-      },
-    });
-  }
-
   async findUniqueByUsername(username: string): Promise<VPNUser | null> {
     return await this.databaseService.client.user.findUnique({
       where: {
@@ -161,28 +183,6 @@ export class UsersRepository {
     return await this.databaseService.client.user.findUnique({
       where: {
         username,
-      },
-      include: {
-        payer: true,
-        payments: {
-          orderBy: {
-            paymentDate: 'desc',
-          },
-        },
-        dependants: true,
-        referrer: true,
-        referrals: true,
-      },
-    });
-  }
-
-  async findByFirstName(firstName: string): Promise<VPNUser[]> {
-    return await this.databaseService.client.user.findMany({
-      where: {
-        firstName: {
-          mode: 'insensitive',
-          contains: firstName,
-        },
       },
       include: {
         payer: true,

@@ -1,23 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ExpenseCategory } from '@prisma/client';
+import { ExpenseCategory, Prisma } from '@prisma/client';
 import { endOfDay, parse, startOfDay } from 'date-fns';
 import { DatabaseService } from '../../database.service';
 import { ExpenseListDto } from './dto/list-dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
-
-type ExpenseWhereClause = {
-  id?: {
-    contains?: string;
-  };
-  paymentDate?: object;
-  category?: ExpenseCategory;
-};
-
-type ExpenseSearchParams = {
-  skip?: number;
-  take?: number;
-  where?: ExpenseWhereClause;
-};
 
 @Injectable()
 export class ExpensesRepository {
@@ -46,7 +32,7 @@ export class ExpensesRepository {
   }
 
   async list(dto?: ExpenseListDto) {
-    const where: ExpenseWhereClause = {};
+    const where: Prisma.ExpenseWhereInput = {};
     if (dto?.id) {
       where.id = {
         contains: dto.id,
@@ -62,7 +48,7 @@ export class ExpensesRepository {
     if (dto?.category) {
       where.category = dto?.category;
     }
-    const params: ExpenseSearchParams = {
+    const params = {
       skip: dto?.skip ? Number(dto.skip) : undefined,
       take: dto?.take ? Number(dto.take) : undefined,
       where,
