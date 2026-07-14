@@ -33,18 +33,12 @@ export class UserQueryDto extends BaseListDto {
   @IsOptional()
   @IsEnum(OrderDirection)
   orderDirection?: OrderDirection;
-  @IsBoolean()
-  active?: boolean;
-  @IsBoolean()
-  unpaid?: boolean;
+  active?: string;
+  free?: string;
   @IsString()
   @IsOptional()
   @IsEnum(OrderDirection)
   paymentsOrder?: OrderDirection;
-
-  @IsNumber()
-  expiresAfterDays?: number;
-
-  @IsBoolean()
-  trial?: boolean;
+  expiresAfterDays?: string;
+  trial?: string;
 }

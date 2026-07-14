@@ -1,5 +1,5 @@
 import { Device, VPNProtocol } from '@prisma/client';
-import { parseISO, subDays } from 'date-fns';
+import { differenceInDays, parseISO } from 'date-fns';
 import type { InlineKeyboardButton, Message, SendBasicOptions, User as TGUser } from 'node-telegram-bot-api';
 import { basename } from 'path';
 import bot from '../../bot';
@@ -67,6 +67,7 @@ export class UsersService {
 
 	params = new Map();
 	createKeyParams = new Map();
+	TRIAL_PERIOD = 3;
 	createSteps: { [key: string]: boolean } = {
 		telegramId: false,
 		username: false,
@@ -672,13 +673,32 @@ export class UsersService {
 
 	async showUnpaid(message: Message) {
 		this.log('showUnpaid');
-		const fetchedUsers = await this.client.getUnpaid();
-		const users = fetchedUsers.map(u => ({
+		const oldtimersPromise = this.client.list({
+			expiresAfterDays: this.TRIAL_PERIOD,
+			trial: false,
+			active: true,
+			free: false,
+		});
+		const trialPromise = this.client.list({
+			trial: true,
+			active: true,
+			free: false,
+		});
+		const [fetchedUsers, fetchedTrial] = await Promise.all([oldtimersPromise, trialPromise]);
+		const oldtimers = fetchedUsers.map(u => ({
 			...u,
 			createdAt: parseISO(u.createdAt),
 		}));
-		const days3Ago = subDays(new Date(), 3);
-		for (const user of users) {
+		const trialUsers = fetchedTrial.map(u => ({
+			...u,
+			createdAt: parseISO(u.createdAt),
+		}));
+		// const fetchedUsers = await this.client.getUnpaid();
+		// const users = fetchedUsers.map(u => ({
+		// 	...u,
+		// 	createdAt: parseISO(u.createdAt),
+		// }));
+		for (const user of oldtimers) {
 			if (user.payments.length) {
 				const lastPayment = user.payments[0];
 				await bot.sendMessage(
@@ -692,67 +712,65 @@ export class UsersService {
 						parse_mode: 'MarkdownV2',
 					},
 				);
-			} else if (user.createdAt > days3Ago) {
-				await bot.sendMessage(
-					message.chat.id,
-					`User ${user.username} ${user.telegramLink ?? ''} created at ${formatDate(user.createdAt)} has to pay soon`,
-				);
 			}
 		}
-		if (users.length) {
-			const trialUsers = users.filter(user => user.createdAt > days3Ago);
-			const oldtimers = users.filter(user => user.createdAt < days3Ago);
+		for (const trial of trialUsers) {
 			await bot.sendMessage(
 				message.chat.id,
-				`Users 
+				`User ${trial.username} ${trial.telegramLink ?? ''} created at ${formatDate(trial.createdAt)} has to pay soon`,
+			);
+		}
+		await bot.sendMessage(
+			message.chat.id,
+			`Users 
 ${oldtimers.map(u => `${u.username} ${u.telegramLink ?? ''}`).join('\n')} 
 have no payments for next month.`,
-			);
-			const oldtimersButtons: InlineKeyboardButton[][] = oldtimers.map(user => {
-				return [
-					{
-						text: user.username,
-						callback_data: JSON.stringify({
-							[CmdCode.Scope]: CommandScope.Users,
-							[CmdCode.Context]: {
-								[CmdCode.Command]: VPNUserCommand.GetById,
-								id: user.id,
-							},
-						}),
-					},
-				];
-			});
-			await bot.sendMessage(message.chat.id, 'Select oldtimer user', {
-				reply_markup: {
-					inline_keyboard: oldtimersButtons,
+		);
+		const oldtimersButtons: InlineKeyboardButton[][] = oldtimers.map(user => {
+			return [
+				{
+					text: user.username,
+					callback_data: JSON.stringify({
+						[CmdCode.Scope]: CommandScope.Users,
+						[CmdCode.Context]: {
+							[CmdCode.Command]: VPNUserCommand.GetById,
+							id: user.id,
+						},
+					}),
 				},
-			});
-			await bot.sendMessage(
-				message.chat.id,
-				`Users 
+			];
+		});
+		await bot.sendMessage(message.chat.id, 'Select oldtimer user', {
+			reply_markup: {
+				inline_keyboard: oldtimersButtons,
+			},
+		});
+		await bot.sendMessage(
+			message.chat.id,
+			`Users 
 ${trialUsers.map(u => `${u.username} ${u.telegramLink ?? ''}`).join('\n')} 
 have to pay soon.`,
-			);
-			const trialUsersButtons: InlineKeyboardButton[][] = trialUsers.map(user => {
-				return [
-					{
-						text: user.username,
-						callback_data: JSON.stringify({
-							[CmdCode.Scope]: CommandScope.Users,
-							[CmdCode.Context]: {
-								[CmdCode.Command]: VPNUserCommand.GetById,
-								id: user.id,
-							},
-						}),
-					},
-				];
-			});
-			await bot.sendMessage(message.chat.id, 'Select trial user', {
-				reply_markup: {
-					inline_keyboard: trialUsersButtons,
+		);
+		const trialUsersButtons: InlineKeyboardButton[][] = trialUsers.map(user => {
+			return [
+				{
+					text: user.username,
+					callback_data: JSON.stringify({
+						[CmdCode.Scope]: CommandScope.Users,
+						[CmdCode.Context]: {
+							[CmdCode.Command]: VPNUserCommand.GetById,
+							id: user.id,
+						},
+					}),
 				},
-			});
-		} else {
+			];
+		});
+		await bot.sendMessage(message.chat.id, 'Select trial user', {
+			reply_markup: {
+				inline_keyboard: trialUsersButtons,
+			},
+		});
+		if (!oldtimers.length) {
 			await bot.sendMessage(message.chat.id, 'All users paid the bills 👍');
 		}
 
@@ -761,7 +779,11 @@ have to pay soon.`,
 
 	async showTrial(message: Message) {
 		this.log('trial');
-		const users = await this.client.getTrial();
+		const users = await this.client.list({
+			trial: true,
+			active: true,
+			free: false,
+		});
 		if (users.length) {
 			await bot.sendMessage(
 				message.chat.id,
@@ -796,16 +818,50 @@ currently have a trial period `,
 
 	async notifyUnpaid() {
 		this.log('notifyUnpaid');
-		const fetchedUsers = await this.client.getUnpaid();
-		const users = fetchedUsers.map(u => ({
+		const oldtimersPromise = this.client.list({
+			expiresAfterDays: this.TRIAL_PERIOD,
+			trial: false,
+			free: false,
+			active: true,
+		});
+		const trialPromise = this.client.list({
+			trial: true,
+			free: false,
+			active: true,
+		});
+		const [fetchedUsers, fetchedTrial] = await Promise.all([oldtimersPromise, trialPromise]);
+		const oldtimers = fetchedUsers.map(u => ({
 			...u,
 			createdAt: parseISO(u.createdAt),
 		}));
-		for (const user of users) {
-			if (user.telegramId && !user.muted) {
-				const isTrial = user.createdAt < subDays(new Date(), 3);
+		const trial = fetchedTrial.map(u => ({
+			...u,
+			createdAt: parseISO(u.createdAt),
+		}));
+		for (const user of oldtimers) {
+			if (user.telegramId && !user.muted && user.payments.length) {
 				try {
-					const msg = dict.expired[user.languageCode](isTrial);
+					const lastPaymentExpiresOn = parseISO(user.payments[0].expiresOn);
+					const diff = differenceInDays(lastPaymentExpiresOn, new Date());
+					const msg =
+						diff <= 0
+							? dict.expired[user.languageCode](false)
+							: dict.expiresAfter[user.languageCode](diff, false);
+					bot.sendMessage(user.telegramId, msg);
+					this.client.captureDelivery(user.id, msg);
+				} catch (err) {
+					logger.error(err);
+				}
+			}
+		}
+		for (const user of trial) {
+			if (user.telegramId && !user.muted) {
+				try {
+					const diff = differenceInDays(new Date(), user.createdAt);
+					const msg =
+						diff >= this.TRIAL_PERIOD
+							? dict.expired[user.languageCode](true)
+							: dict.expiresAfter[user.languageCode](this.TRIAL_PERIOD - diff, true);
 					bot.sendMessage(user.telegramId, msg);
 					this.client.captureDelivery(user.id, msg);
 				} catch (err) {

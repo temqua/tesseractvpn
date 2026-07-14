@@ -78,6 +78,11 @@ export class UserQueryDto {
 	firstName?: string;
 	orderBy?: 'username' | 'firstName';
 	orderDirection?: 'asc' | 'desc';
+	active?: boolean;
+	paymentsOrder?: 'asc' | 'desc';
+	expiresAfterDays?: number;
+	trial?: boolean;
+	free?: boolean;
 }
 
 export interface UserServerDTO {

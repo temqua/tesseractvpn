@@ -224,6 +224,12 @@ Your referral link: https://t.me/tesseract_users_bot?start=${refId}`,
 		ru: (link: string) => `Ваша подписка и инструкция по ссылке ${link}`,
 		en: (link: string) => `Your subscription and guide here ${link}`,
 	},
+	expiresAfter: {
+		ru: (days: number, isTrial: boolean) =>
+			`До окончания ${isTrial ? 'пробного периода' : 'подписки'} осталось дней: ${days}`,
+		en: (days: number, isTrial: boolean) =>
+			`You have ${days} ${days === 1 ? 'day' : 'days'} until your ${isTrial ? 'trial' : 'subscription'} expires`,
+	},
 	expired: {
 		ru: (
 			isTrial: boolean,

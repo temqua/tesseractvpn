@@ -22,6 +22,18 @@ export class UsersClient {
 		if (dto?.telegramId) {
 			params.append('telegramId', dto.telegramId);
 		}
+		if (dto?.expiresAfterDays !== undefined) {
+			params.append('expiresAfterDays', dto.expiresAfterDays.toString());
+		}
+		if (dto?.trial !== undefined) {
+			params.append('trial', dto.trial.toString());
+		}
+		if (dto?.active !== undefined) {
+			params.append('active', dto.active.toString());
+		}
+		if (dto?.free !== undefined) {
+			params.append('free', dto.free.toString());
+		}
 		const result = (await client.get(`/users?${params}`)) as ListResponse<VPNUser>;
 		return result?.data;
 	}

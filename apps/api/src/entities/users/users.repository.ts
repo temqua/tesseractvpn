@@ -4,8 +4,8 @@ import { addDays, subDays } from 'date-fns';
 import { DatabaseService } from '../../database.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserOrderParams, VPNUser } from './users.types';
 import { UserQueryDto } from './dto/user-query.dto';
+import { VPNUser } from './users.types';
 
 @Injectable()
 export class UsersRepository {
@@ -39,23 +39,28 @@ export class UsersRepository {
         contains: dto.firstName,
       };
     }
-    if (dto?.active) {
-      where.active = dto.active;
+    if (dto?.active !== undefined) {
+      where.active = dto.active === 'true';
+    }
+    if (dto?.free !== undefined) {
+      where.free = dto.free === 'true';
     }
     if (dto?.trial !== undefined) {
-      where.createdAt = dto.trial
-        ? {
-            gt: subDays(new Date(), 3),
-          }
-        : {
-            lt: subDays(new Date(), 3),
-          };
+      where.createdAt =
+        dto.trial === 'true'
+          ? {
+              gt: subDays(new Date(), 3),
+            }
+          : {
+              lt: subDays(new Date(), 3),
+            };
     }
     if (dto?.expiresAfterDays !== undefined) {
+      const gt = addDays(new Date(), Number(dto.expiresAfterDays));
       where.payments = {
         none: {
           expiresOn: {
-            gt: addDays(new Date(), dto.expiresAfterDays),
+            gt: gt,
           },
         },
       };
