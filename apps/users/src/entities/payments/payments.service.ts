@@ -547,15 +547,27 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 				}
 			}
 			if (env.BOT_ENV !== 'local' && user.pasarguardId) {
-				await this.pasarguardService.updateUser(`${user.username}_${user.id}`, {
-					expire: addDays(new Date(result.expiresOn), 1).toISOString(),
-				});
+				try {
+					await this.pasarguardService.updateUser(`${user.username}_${user.id}`, {
+						expire: addDays(new Date(result.expiresOn), 1).toISOString(),
+					});
+				} catch (err) {
+					const ms = `Request to pasarguard failed ${err}`;
+					logger.error(ms);
+					await bot.sendMessage(chatId, ms);
+				}
 			}
-			if (user.rwUUID) {
-				await this.rwService.updateUser({
-					uuid: user.rwUUID,
-					expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
-				});
+			if (env.BOT_ENV !== 'local' && user.rwUUID) {
+				try {
+					await this.rwService.updateUser({
+						uuid: user.rwUUID,
+						expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
+					});
+				} catch (err) {
+					const ms = `Request to remnawave failed ${err}`;
+					logger.error(ms);
+					await bot.sendMessage(chatId, ms);
+				}
 			}
 		} catch (err) {
 			const errMessage = `Ошибка при обработке платежа для пользователя ${user.username} ${err}`;
