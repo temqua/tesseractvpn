@@ -33,7 +33,6 @@ interface IUserForm {
 	id: string;
 	username: string;
 	firstName: string;
-	lastName?: string;
 }
 
 export default function UsersClientSide({ data, count }: { data: IVPNUser[]; count?: number }) {
@@ -73,7 +72,7 @@ export default function UsersClientSide({ data, count }: { data: IVPNUser[]; cou
 		queryKey: ['users', page, take, searchFilters],
 		queryFn: () => {
 			const params: IListParams & Partial<IUserForm> = { skip: (page - 1) * take, take };
-			for (const key of Object.keys(searchFilters)) {
+			for (const key of Object.keys(searchFilters) as (keyof IUserForm)[]) {
 				if (searchFilters[key] !== '') {
 					params[key] = searchFilters[key];
 				}
