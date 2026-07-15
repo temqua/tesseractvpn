@@ -529,14 +529,29 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 							},
 						);
 						if (env.BOT_ENV !== 'local') {
-							await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
-								expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
-							});
+							if (dep.pasarguardId) {
+								try {
+									await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
+										expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
+									});
+								} catch (err) {
+									const ms = `Request to pasarguard failed ${err}`;
+									logger.error(ms);
+									await bot.sendMessage(chatId, ms);
+								}
+							}
+
 							if (dep.rwUUID) {
-								await this.rwService.updateUser({
-									uuid: dep.rwUUID,
-									expireAt: addDays(new Date(childResult.expiresOn), 1).toISOString(),
-								});
+								try {
+									await this.rwService.updateUser({
+										uuid: dep.rwUUID,
+										expireAt: addDays(new Date(childResult.expiresOn), 1).toISOString(),
+									});
+								} catch (err) {
+									const ms = `Request to remnawave failed ${err}`;
+									logger.error(ms);
+									await bot.sendMessage(chatId, ms);
+								}
 							}
 						}
 					} else {
@@ -546,27 +561,29 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 					}
 				}
 			}
-			if (env.BOT_ENV !== 'local' && user.pasarguardId) {
-				try {
-					await this.pasarguardService.updateUser(`${user.username}_${user.id}`, {
-						expire: addDays(new Date(result.expiresOn), 1).toISOString(),
-					});
-				} catch (err) {
-					const ms = `Request to pasarguard failed ${err}`;
-					logger.error(ms);
-					await bot.sendMessage(chatId, ms);
+			if (env.BOT_ENV !== 'local') {
+				if (user.pasarguardId) {
+					try {
+						await this.pasarguardService.updateUser(`${user.username}_${user.id}`, {
+							expire: addDays(new Date(result.expiresOn), 1).toISOString(),
+						});
+					} catch (err) {
+						const ms = `Request to pasarguard failed ${err}`;
+						logger.error(ms);
+						await bot.sendMessage(chatId, ms);
+					}
 				}
-			}
-			if (env.BOT_ENV !== 'local' && user.rwUUID) {
-				try {
-					await this.rwService.updateUser({
-						uuid: user.rwUUID,
-						expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
-					});
-				} catch (err) {
-					const ms = `Request to remnawave failed ${err}`;
-					logger.error(ms);
-					await bot.sendMessage(chatId, ms);
+				if (user.rwUUID) {
+					try {
+						await this.rwService.updateUser({
+							uuid: user.rwUUID,
+							expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
+						});
+					} catch (err) {
+						const ms = `Request to remnawave failed ${err}`;
+						logger.error(ms);
+						await bot.sendMessage(chatId, ms);
+					}
 				}
 			}
 		} catch (err) {
