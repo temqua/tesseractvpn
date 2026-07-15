@@ -5,9 +5,9 @@ import { JobsService } from './jobs.service';
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
-  @Post('/:id/execute')
+  @Post('/:name/execute')
   @HttpCode(HttpStatus.OK)
-  async execute(@Param('id') id: string) {
-    return await this.jobsService.execute(id);
+  async execute(@Param('name') name: string) {
+    return await this.jobsService.execute(name);
   }
 }

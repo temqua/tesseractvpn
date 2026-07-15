@@ -15,6 +15,13 @@ const env = cleanEnv(process.env, {
   SHEET_ID: str({ default: '' }),
   JWT_SECRET: str({ default: '' }),
   SALT_ROUNDS: num({ default: 10 }),
+  SERVICE_TOKEN: str({ default: '' }),
+  HOST_URL: str({ default: 'http://172.17.0.1' }),
+  IKE_RECEIVER_PORT: num({ default: 8090 }),
+  WG_RECEIVER_PORT: num({ default: 8091 }),
+  OVPN_RECEIVER_PORT: num({ default: 8092 }),
+  BOT_TOKEN: str({ default: '' }),
+  JOBS_CHAT_ID: str({ default: '' }),
 });
 
 export default env;

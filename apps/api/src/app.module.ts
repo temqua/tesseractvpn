@@ -14,6 +14,9 @@ import { UsersActionsModule } from './entities/users/users-actions/users-actions
 import { UsersModule } from './entities/users/users.module';
 import { LogHttpExceptionFilter } from './log-exceptions-filter';
 import { JobsModule } from './entities/jobs/jobs.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TelegramModule } from './entities/telegram/telegram.module';
+import { DatabaseModule } from './database.module';
 
 @Module({
   imports: [
@@ -30,6 +33,9 @@ import { JobsModule } from './entities/jobs/jobs.module';
     BotUnauthorizedUserActionsModule,
     BotUnauthorizedDeliveredMessagesModule,
     JobsModule,
+    TelegramModule,
+    ScheduleModule.forRoot(),
+    DatabaseModule,
   ],
   providers: [
     {
