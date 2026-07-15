@@ -27,18 +27,7 @@ export class DeactivateUnpaidJob implements Job {
     const usersWithKeys = await this.databaseService.client.user.findMany({
       where: {
         free: false,
-        active: true,
-
-        payments: {
-          none: {
-            expiresOn: {
-              gt: subDays(new Date(), 10),
-            },
-          },
-        },
-        createdAt: {
-          lt: subDays(new Date(), 3),
-        },
+        active: false,
         servers: {
           some: {},
         },
@@ -51,11 +40,12 @@ export class DeactivateUnpaidJob implements Job {
         },
       },
     });
-    await this.databaseService.client.user.updateMany({
+
+    const updated = await this.databaseService.client.user.updateManyAndReturn({
       where: {
         free: false,
         active: true,
-
+        payerId: null,
         payments: {
           none: {
             expiresOn: {
@@ -71,6 +61,12 @@ export class DeactivateUnpaidJob implements Job {
         active: false,
       },
     });
+
+    for (const user of updated) {
+      const deactivatedMsg = `User ${user.username} has been deactivated`;
+      this.logger.log(deactivatedMsg);
+      this.telegramService.send(deactivatedMsg);
+    }
     for (const user of usersWithKeys) {
       for (const key of user.servers) {
         if (env.APP_ENV !== 'local') {
