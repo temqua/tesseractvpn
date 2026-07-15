@@ -13,6 +13,7 @@ import { DeliveredMessagesModule } from './entities/users/delivered-messages/del
 import { UsersActionsModule } from './entities/users/users-actions/users-actions.module';
 import { UsersModule } from './entities/users/users.module';
 import { LogHttpExceptionFilter } from './log-exceptions-filter';
+import { JobsModule } from './entities/jobs/jobs.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { LogHttpExceptionFilter } from './log-exceptions-filter';
     AuthModule,
     BotUnauthorizedUserActionsModule,
     BotUnauthorizedDeliveredMessagesModule,
+    JobsModule,
   ],
   providers: [
     {
