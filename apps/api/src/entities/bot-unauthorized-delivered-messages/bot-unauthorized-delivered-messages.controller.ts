@@ -1,14 +1,16 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
 import { BotUnauthorizedDeliveredMessagesService } from './bot-unauthorized-delivered-messages.service';
 import { CreateBotUnauthorizedDeliveredMessageDto } from './dto/create-bot-unauthorized-delivered-message.dto';
+import { DeliveredMessagesQueryDto } from './dto/delivered-messages-query-dto';
 import { UpdateBotUnauthorizedDeliveredMessageDto } from './dto/update-bot-unauthorized-delivered-message.dto';
 
 @Controller('bot-unauthorized-delivered-messages')
@@ -23,8 +25,8 @@ export class BotUnauthorizedDeliveredMessagesController {
   }
 
   @Get()
-  async findAll() {
-    return await this.botUnauthorizedDeliveredMessagesService.findAll();
+  async findAll(@Query() dto: DeliveredMessagesQueryDto) {
+    return await this.botUnauthorizedDeliveredMessagesService.findAll(dto);
   }
 
   @Get(':id')

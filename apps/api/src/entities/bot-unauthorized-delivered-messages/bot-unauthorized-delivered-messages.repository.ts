@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database.service';
 import { CreateBotUnauthorizedDeliveredMessageDto } from './dto/create-bot-unauthorized-delivered-message.dto';
 import { UpdateBotUnauthorizedDeliveredMessageDto } from './dto/update-bot-unauthorized-delivered-message.dto';
+import { DeliveredMessagesQueryDto } from './dto/delivered-messages-query-dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class BotUnauthorizedDeliveredMessagesRepository {
@@ -40,8 +42,31 @@ export class BotUnauthorizedDeliveredMessagesRepository {
     );
   }
 
-  async findAll() {
-    return await this.databaseService.client.botUnauthorizedMessageDelivery.findMany();
+  async findAll(dto: DeliveredMessagesQueryDto) {
+    const where: Prisma.BotUnauthorizedMessageDeliveryWhereInput = {};
+    if (dto?.id) {
+      where.id = Number(dto.id);
+    }
+    const params = {
+      skip: dto?.skip ? Number(dto.skip) : undefined,
+      take: dto?.take ? Number(dto.take) : undefined,
+      where,
+    };
+    const countParams = {
+      where,
+    };
+    const [data, count] = await this.databaseService.client.$transaction([
+      this.databaseService.client.botUnauthorizedMessageDelivery.findMany(
+        params,
+      ),
+      this.databaseService.client.botUnauthorizedMessageDelivery.count(
+        countParams,
+      ),
+    ]);
+    return {
+      data,
+      count,
+    };
   }
 
   async getById(id: number) {
