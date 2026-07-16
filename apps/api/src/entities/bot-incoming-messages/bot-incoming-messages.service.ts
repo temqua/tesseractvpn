@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBotIncomingMessageDto } from './dto/create-bot-incoming-message.dto';
 import { UpdateBotIncomingMessageDto } from './dto/update-bot-incoming-message.dto';
 import { BotIncomingMessagesRepository } from './bot-incoming-messages.repository';
+import { IncomingMessagesQueryDto } from './dto/incoming-messages-query.dto';
 
 @Injectable()
 export class BotIncomingMessagesService {
@@ -11,8 +12,8 @@ export class BotIncomingMessagesService {
     return await this.repository.create(dto);
   }
 
-  async findAll() {
-    return await this.repository.findAll();
+  async findAll(dto?: IncomingMessagesQueryDto) {
+    return await this.repository.findAll(dto);
   }
 
   async findOne(id: number) {

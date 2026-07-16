@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { BotIncomingMessagesService } from './bot-incoming-messages.service';
 import { CreateBotIncomingMessageDto } from './dto/create-bot-incoming-message.dto';
 import { UpdateBotIncomingMessageDto } from './dto/update-bot-incoming-message.dto';
+import { IncomingMessagesQueryDto } from './dto/incoming-messages-query.dto';
 
 @Controller('bot-incoming-messages')
 export class BotIncomingMessagesController {
@@ -27,8 +29,8 @@ export class BotIncomingMessagesController {
   }
 
   @Get()
-  async findAll() {
-    return await this.botIncomingMessagesService.findAll();
+  async findAll(@Query() dto?: IncomingMessagesQueryDto) {
+    return await this.botIncomingMessagesService.findAll(dto);
   }
 
   @Get(':id')

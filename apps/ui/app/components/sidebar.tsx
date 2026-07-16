@@ -10,6 +10,16 @@ export default function Sidebar() {
 				<SidebarItem active={pathname === '/users'} href="/users" label="Users" />
 				<SidebarItem active={pathname === '/payments'} href="/payments" label="Payments" />
 				<SidebarItem active={pathname === '/expenses'} href="/expenses" label="Expenses" />
+				<SidebarItem
+					active={pathname === '/bot-incoming-messages'}
+					href="/bot-incoming-messages"
+					label="Incoming Messages"
+				/>
+				<SidebarItem
+					active={pathname === '/bot-delivered-messages'}
+					href="/bot-delivered-messages"
+					label="Delivered Messages"
+				/>
 			</nav>
 			<div className={styles['sidebar-bottom']}>
 				<div>
