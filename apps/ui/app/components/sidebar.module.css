@@ -3,13 +3,16 @@
 	flex-direction: column;
 	height: 100%;
 	justify-content: space-between;
-	padding-left: 0.5rem;
-	padding-right: 0.5rem;
+	padding-left: 0.25rem;
+	padding-right: 0.25rem;
+
+	@media (min-width: 1024px) {
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+	}
 }
 
 .sidebar-main {
-	position: sticky;
-	top: 0;
 	display: flex;
 	flex-direction: column;
 	border-radius: 0.25rem;
@@ -17,8 +20,16 @@
 	@media (prefers-color-scheme: dark) {
 		background-color: #1e2c36;
 	}
+
+	@media (min-width: 1024px) {
+		position: sticky;
+		top: 0;
+	}
 }
+
 .sidebar-bottom {
-	position: sticky;
-	bottom: 0;
+	@media (min-width: 1024px) {
+		position: sticky;
+		bottom: 0;
+	}
 }

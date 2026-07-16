@@ -8,11 +8,11 @@ import { deleteAction } from '@/app/lib/actions/payments';
 import { paymentsClient } from '@/app/lib/api/payments/client';
 import { IPayment } from '@/app/lib/api/payments/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
-import { debounce } from '@/app/lib/utils';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useUpdateParams } from '@/app/lib/use-update-params';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 const baseColumns: IColumn<IPayment>[] = [
 	{
@@ -67,20 +67,29 @@ interface IPaymentForm {
 	parentPaymentId?: string;
 }
 
-export default function PaymentsClientSide({ data, count }: { data: IPayment[]; count: number }) {
+interface IPaymentsPageProps {
+	initialData: IPayment[];
+	count?: number;
+}
+
+export default function PaymentsClientSide({ initialData, count }: IPaymentsPageProps) {
 	const [isModalOpened, setModalOpened] = useState(false);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
-
 	const searchParams = useSearchParams();
-	const [searchBy, setSearchBy] = useState('' as keyof IPaymentForm);
-	const [searchValue, setSearchValue] = useState('');
-	const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
-	const setFilter = (key: keyof IPaymentForm, value: string) => {
-		setSearchBy(key);
-		setSearchValue(value);
-	};
-	const debouncedSetFilter = debounce(setFilter, 1000);
-	const [take, setTake] = useState(Number(searchParams.get('take')) || 25);
+	const id = searchParams.get('id') || '';
+	const page = Number(searchParams.get('page')) || 1;
+	const take = Number(searchParams.get('take')) || 25;
+	const updateParams = useUpdateParams(useRouter(), usePathname());
+	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const debouncedUpdateFilter = useCallback(
+		(key: string, value: string) => {
+			if (debounceTimer.current) clearTimeout(debounceTimer.current);
+			debounceTimer.current = setTimeout(() => {
+				updateParams({ [key]: value, page: 1 }); // сброс страницы при новом фильтре
+			}, 500);
+		},
+		[updateParams],
+	);
 	const columns: IColumn<IPayment>[] = [
 		...baseColumns,
 		{
@@ -102,41 +111,54 @@ export default function PaymentsClientSide({ data, count }: { data: IPayment[]; 
 			},
 		},
 	];
+
 	const { data: fetched } = useQuery({
-		queryKey: ['payments', page, take, searchBy, searchValue],
+		queryKey: ['payments', page, take, id],
 		queryFn: () => {
 			const params: IListParams & Partial<IPaymentForm> = { skip: (page - 1) * take, take };
-			if (searchBy) {
-				params[searchBy] = searchValue;
-			}
+			if (id) params.id = id;
+
 			return paymentsClient.getAll(params);
 		},
-
-		placeholderData: page === 1 ? { data, count: data.length } : undefined,
+		placeholderData: keepPreviousData,
+		initialData: page === 1 ? { data: initialData, count: count ?? 0 } : undefined,
 	});
-	const searchRow = (
-		<>
-			<th key={'id'}>
-				<Input
-					type="search"
-					placeholder={'ID'}
-					onChange={event => debouncedSetFilter('id', event.target.value)}
-				></Input>
-			</th>
-			{columns
-				.filter(c => c.prop !== 'id')
-				.map(c => (
-					<th key={c.prop}></th>
-				))}
-		</>
+	const searchRow = useMemo(
+		() => (
+			<>
+				<th>
+					<Input
+						type="search"
+						placeholder={'ID'}
+						onChange={event => debouncedUpdateFilter('id', event.target.value)}
+					></Input>
+				</th>
+				{columns
+					.filter(c => c.prop !== 'id')
+					.map(c => (
+						<th></th>
+					))}
+			</>
+		),
+		[debouncedUpdateFilter],
+	);
+
+	const handlePageChange = useCallback(
+		(newPage: number | ((p: number) => number)) => {
+			const resolved = typeof newPage === 'function' ? newPage(page) : newPage;
+			updateParams({ page: resolved });
+		},
+		[page, updateParams],
+	);
+
+	const handleTakeChange = useCallback(
+		(newTake: number | ((t: number) => number)) => {
+			const resolved = typeof newTake === 'function' ? newTake(take) : newTake;
+			updateParams({ take: resolved, page: 1 });
+		},
+		[take, updateParams],
 	);
 	const queryClient = useQueryClient();
-	useEffect(() => {
-		queryClient.setQueryData(['payments', page, take, searchBy, searchValue], {
-			data,
-			count,
-		});
-	}, [data, count]);
 	return (
 		<div>
 			<ContentArea>
@@ -150,12 +172,8 @@ export default function PaymentsClientSide({ data, count }: { data: IPayment[]; 
 					count={fetched?.count ?? 0}
 					page={page}
 					take={take}
-					onChangePage={input => {
-						setPage(input);
-					}}
-					onChangeTake={input => {
-						setTake(input);
-					}}
+					onChangePage={handlePageChange}
+					onChangeTake={handleTakeChange}
 				/>
 			</ContentArea>
 			<div>

@@ -30,7 +30,23 @@
 	padding: 0.5rem;
 }
 
+.pagination-wrapper {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column-reverse;
+
+	@media (min-width: 1024px) {
+		flex-direction: row;
+		justify-content: flex-end;
+		align-items: center;
+	}
+}
+
 .pagination {
 	display: flex;
-	justify-content: space-between;
+	gap: 0.5rem;
+}
+
+.pagination button {
+	cursor: pointer;
 }

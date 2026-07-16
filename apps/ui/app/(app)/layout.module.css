@@ -1,7 +1,9 @@
 .root {
 	display: grid;
 	padding-top: 1.5rem;
+	height: 100%;
 	background-color: #f2f3f9;
+
 	@media (min-width: 1024px) {
 		grid-template-columns: 200px 1fr;
 	}
@@ -19,5 +21,11 @@
 }
 
 .content {
-	padding-inline: 10px;
+	height: 100%;
+	padding-inline: 0.25rem;
+
+	@media (min-width: 1024px) {
+		padding-inline: 0.5rem;
+		grid-template-columns: 200px 1fr;
+	}
 }

@@ -87,7 +87,7 @@ export class DeactivateUnpaidJob implements Job {
               this.telegramService.send(errMessage);
             }
           }
-          this.databaseService.client.serversUsers.delete({
+          await this.databaseService.client.serversUsers.delete({
             where: {
               id: key.id,
             },

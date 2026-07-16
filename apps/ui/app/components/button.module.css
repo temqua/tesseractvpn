@@ -1,0 +1,15 @@
+.button {
+	display: flex;
+	/* height: 20px; */
+	align-items: center;
+
+	padding: 16px;
+
+	&[disabled] {
+		background-color: grey;
+		opacity: 0.5;
+		color: white;
+		cursor: not-allowed;
+	}
+	/* flex h-10 items-center  */
+}

@@ -1,129 +1,132 @@
 'use client';
 import ContentArea from '@/app/components/content-area';
 import { Input } from '@/app/components/input';
+import { Select } from '@/app/components/select';
 import Table, { IColumn } from '@/app/components/table';
 import { usersClient } from '@/app/lib/api/users/client';
 import { IVPNUser } from '@/app/lib/api/users/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
-import { debounce } from '@/app/lib/utils';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useUpdateParams } from '@/app/lib/use-update-params';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 const columns: IColumn<IVPNUser>[] = [
-	{
-		label: 'ID',
-		prop: 'id',
-	},
-	{
-		label: 'Username',
-		prop: 'username',
-	},
-	{
-		label: 'First name',
-		prop: 'firstName',
-	},
-	{
-		label: 'Last name',
-		prop: 'lastName',
-	},
+	{ label: 'ID', prop: 'id' },
+	{ label: 'Username', prop: 'username' },
+	{ label: 'First name', prop: 'firstName' },
+	{ label: 'Last name', prop: 'lastName' },
+	{ label: 'Active', prop: 'active' },
+	{ label: 'Free', prop: 'free' },
 ];
 
-interface IUserForm {
-	id: string;
-	username: string;
-	firstName: string;
+interface IUsersPageProps {
+	initialData: IVPNUser[];
+	count?: number;
 }
 
-export default function UsersClientSide({ data, count }: { data: IVPNUser[]; count?: number }) {
-	const [searchFilters, setSearchFilters] = useState<IUserForm>({
-		id: '',
-		username: '',
-		firstName: '',
-	});
+export default function UsersClientSide({ initialData, count }: IUsersPageProps) {
 	const searchParams = useSearchParams();
-	const router = useRouter();
-	const pathname = usePathname();
-	const createQueryString = useCallback(
-		(name: string, value: string) => {
-			const params = new URLSearchParams(searchParams.toString());
-			params.set(name, value);
 
-			return params.toString();
+	const page = Number(searchParams.get('page')) || 1;
+	const take = Number(searchParams.get('take')) || 25;
+	const id = searchParams.get('id') || '';
+	const active = searchParams.get('active') || '';
+	const free = searchParams.get('free') || '';
+	const username = searchParams.get('username') || '';
+	const firstName = searchParams.get('firstName') || '';
+
+	const updateParams = useUpdateParams(useRouter(), usePathname());
+
+	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const debouncedUpdateFilter = useCallback(
+		(key: string, value: string) => {
+			if (debounceTimer.current) clearTimeout(debounceTimer.current);
+			debounceTimer.current = setTimeout(() => {
+				updateParams({ [key]: value, page: 1 }); // сброс страницы при новом фильтре
+			}, 500);
 		},
-		[searchParams],
+		[updateParams],
 	);
 
-	const [deleteId, setDeleteId] = useState<string | null>(null);
-	const [isModalOpened, setModalOpened] = useState(false);
-	// const [searchBy, setSearchBy] = useState('' as keyof IUserForm);
-	// const [searchValue, setSearchValue] = useState('');
-	const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
-	const [take, setTake] = useState(Number(searchParams.get('take')) || 25);
-
-	const setFilter = (key: keyof IUserForm, value: string) => {
-		setSearchFilters(prev => ({
-			...prev,
-			[key]: value,
-		}));
-	};
-	const debouncedSetFilter = debounce(setFilter, 1000);
 	const { data: fetched } = useQuery({
-		queryKey: ['users', page, take, searchFilters],
+		queryKey: ['users', page, take, id, username, firstName, active, free],
 		queryFn: () => {
-			const params: IListParams & Partial<IUserForm> = { skip: (page - 1) * take, take };
-			for (const key of Object.keys(searchFilters) as (keyof IUserForm)[]) {
-				if (searchFilters[key] !== '') {
-					params[key] = searchFilters[key];
-				}
-			}
+			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
+			if (id) params.id = id;
+			if (username) params.username = username;
+			if (firstName) params.firstName = firstName;
+			if (active) params.active = active;
+			if (free) params.free = free;
 			return usersClient.getAll(params);
 		},
-
-		placeholderData: page === 1 ? { data, count: data.length } : undefined,
+		placeholderData: keepPreviousData,
+		initialData: page === 1 ? { data: initialData, count: count ?? 0 } : undefined,
 	});
-	const searchRow = (
-		<>
-			<th key={'id'}>
-				<Input
-					type="search"
-					placeholder={'ID'}
-					onChange={event => debouncedSetFilter('id', event.target.value)}
-				></Input>
-			</th>
-			<th key={'username'}>
-				<Input
-					type="search"
-					placeholder={'Username'}
-					onChange={event => debouncedSetFilter('username', event.target.value)}
-				></Input>
-			</th>
-			<th key={'firstName'}>
-				<Input
-					type="search"
-					placeholder={'First name'}
-					onChange={event => debouncedSetFilter('firstName', event.target.value)}
-				></Input>
-			</th>
-			<th></th>
-		</>
-	);
-	const queryClient = useQueryClient();
 
-	useEffect(() => {
-		queryClient.setQueryData(['users', page, take, searchFilters], {
-			data,
-			count,
-		});
-	}, [data, count, page, take]);
-	// queryClient.setQueryData(['users', page, take], data);
-	// const { error, data } = useSuspenseQuery({
-	//     queryKey: ['users-all'],
-	//     queryFn: () => usersClient.getAll(),
-	// });
-	// if (error) {
-	//     return <div>Error {error.message}</div>;
-	// }
+	const handlePageChange = useCallback(
+		(newPage: number | ((p: number) => number)) => {
+			const resolved = typeof newPage === 'function' ? newPage(page) : newPage;
+			updateParams({ page: resolved });
+		},
+		[page, updateParams],
+	);
+
+	const handleTakeChange = useCallback(
+		(newTake: number | ((t: number) => number)) => {
+			const resolved = typeof newTake === 'function' ? newTake(take) : newTake;
+			updateParams({ take: resolved, page: 1 });
+		},
+		[take, updateParams],
+	);
+
+	const searchRow = useMemo(
+		() => (
+			<>
+				<th>
+					<Input
+						type="search"
+						placeholder="ID"
+						defaultValue={id}
+						onChange={e => debouncedUpdateFilter('id', e.target.value)}
+					/>
+				</th>
+				<th>
+					<Input
+						type="search"
+						placeholder="Username"
+						defaultValue={username}
+						onChange={e => debouncedUpdateFilter('username', e.target.value)}
+					/>
+				</th>
+				<th>
+					<Input
+						type="search"
+						placeholder="First name"
+						defaultValue={firstName}
+						onChange={e => debouncedUpdateFilter('firstName', e.target.value)}
+					/>
+				</th>
+				<th></th>
+				<th>
+					<Select onChange={event => debouncedUpdateFilter('active', event.target.value)}>
+						<option value=""></option>
+						<option value="true">True</option>
+						<option value="false">False</option>
+					</Select>
+				</th>
+				<th>
+					<Select onChange={event => debouncedUpdateFilter('free', event.target.value)}>
+						<option value=""></option>
+						<option value="true">True</option>
+						<option value="false">False</option>
+					</Select>
+				</th>
+			</>
+		),
+		[debouncedUpdateFilter],
+	);
+
 	return (
 		<div>
 			<ContentArea>
@@ -134,15 +137,8 @@ export default function UsersClientSide({ data, count }: { data: IVPNUser[]; cou
 					page={page}
 					take={take}
 					searchRow={searchRow}
-					onChangePage={input => {
-						console.log('input :>> ', input);
-						setPage(input);
-						router.push(pathname + '?' + createQueryString('page', input.toString()));
-					}}
-					onChangeTake={input => {
-						setTake(input);
-						router.push(pathname + '?' + createQueryString('take', input.toString()));
-					}}
+					onChangePage={handlePageChange}
+					onChangeTake={handleTakeChange}
 				/>
 			</ContentArea>
 		</div>

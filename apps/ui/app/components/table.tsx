@@ -1,4 +1,4 @@
-import { JSX, useEffect, useMemo } from 'react';
+import { JSX, SetStateAction, useEffect, useMemo } from 'react';
 import { Button } from './button';
 import { Select } from './select';
 import styles from './table.module.css';
@@ -11,8 +11,8 @@ interface TableProps<T extends Record<keyof T, React.ReactNode> = object>
 	count: number;
 	page: number;
 	take: number;
-	onChangePage?: (page: number | ((prevState: number) => number)) => void;
-	onChangeTake?: (take: number | ((prevState: number) => number)) => void;
+	onChangePage?: (page: number | SetStateAction<number>) => void;
+	onChangeTake?: (take: number | SetStateAction<number>) => void;
 }
 export interface IColumn<T extends Record<keyof T, React.ReactNode> = object> {
 	prop?: keyof T;
@@ -38,15 +38,17 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 	const headers = columns.map((column, i) => <th key={i}>{column.label}</th>);
 
 	const totalPages = useMemo(() => Math.max(1, Math.ceil(count / take)), [count, take]);
-	console.log('totalPages :>> ', totalPages);
-	console.log('count :>> ', count);
-	console.log('take :>> ', take);
 	const items = data.map((row, index) => {
 		const cells = columns.map((c, ci) => {
 			if (c.actions) {
 				return <td key={ci}>{c.actions(row)}</td>;
 			}
-			return <td key={ci}>{c.prop ? row[c.prop] : ''}</td>;
+
+			let cellData = c.prop ? row[c.prop] : '';
+			if (c.prop && typeof row[c.prop] === 'boolean') {
+				cellData = row[c.prop] ? '✅' : '❌';
+			}
+			return <td key={ci}>{cellData}</td>;
 		});
 		return <tr key={index}>{cells}</tr>;
 	});
@@ -59,44 +61,39 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 		onChangePage?.(p => Math.min(totalPages, p + 1));
 	}
 
-	// useEffect(() => {
-	// 	onChangePage?.(page);
-	// }, [page, onChangePage]);
-
-	useEffect(() => {
-		onChangePage?.(1);
-	}, [take]);
-
-	useEffect(() => {
-		if (page > totalPages) {
-			onChangePage?.(totalPages);
-		}
-	}, [page, totalPages]);
 	return (
-		<div className="flex flex-col">
-			<div className={styles.pagination}>
-				<div className="flex">
+		<div className="flex flex-col gap-4">
+			<div className={styles['pagination-wrapper']}>
+				<div>Count: {count}</div>
+				<div className={styles.pagination}>
 					{totalPages > 1 ? (
 						<>
-							<Button onClick={handlePreviousPage}>🡰</Button>
-							<Button
-								onClick={() => {
-									onChangePage?.(1);
-								}}
-							>
+							<Button onClick={handlePreviousPage} disabled={page === 1}>
+								🡰
+							</Button>
+							<Button onClick={() => onChangePage?.(1)} disabled={page === 1}>
 								1
 							</Button>
-							<Button
-								onClick={() => {
-									onChangePage?.(totalPages);
-								}}
-							>
+
+							{/* {totalPages > 2 && <Button onClick={() => onChangePage?.(2)} disabled={page === 2}>
+								2
+							</Button>} */}
+
+							{totalPages > 2 && page > 2 && <span className="self-center px-2">...</span>}
+
+							{page > 1 && page < totalPages && <Button disabled>{page}</Button>}
+
+							{totalPages > 2 && page < totalPages - 1 && <span className="self-center px-2">...</span>}
+
+							<Button onClick={() => onChangePage?.(totalPages)} disabled={page === totalPages}>
 								{totalPages}
 							</Button>
-							<Button onClick={handleNextPage}>🡲</Button>
+							<Button onClick={handleNextPage} disabled={page === totalPages}>
+								🡲
+							</Button>
 						</>
 					) : (
-						''
+						<Button disabled>1</Button>
 					)}
 				</div>
 				<div>
