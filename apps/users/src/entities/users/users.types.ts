@@ -64,6 +64,7 @@ export interface UpdateUserDto extends Partial<CreateUserDto> {
 	rwUsername?: string | null;
 	rwUUID?: string | null;
 	rwId?: number | null;
+	active?: boolean;
 }
 
 export interface SearchUserDto {

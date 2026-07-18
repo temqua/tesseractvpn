@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database.service';
 import { CreateBotUnauthorizedDeliveredMessageDto } from './dto/create-bot-unauthorized-delivered-message.dto';
 import { UpdateBotUnauthorizedDeliveredMessageDto } from './dto/update-bot-unauthorized-delivered-message.dto';
-import { DeliveredMessagesQueryDto } from './dto/delivered-messages-query-dto';
+import { UnauthorizedUsersDeliveredMessagesQueryDto } from './dto/delivered-messages-query-dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -42,7 +42,7 @@ export class BotUnauthorizedDeliveredMessagesRepository {
     );
   }
 
-  async findAll(dto: DeliveredMessagesQueryDto) {
+  async findAll(dto: UnauthorizedUsersDeliveredMessagesQueryDto) {
     const where: Prisma.BotUnauthorizedMessageDeliveryWhereInput = {};
     if (dto?.id) {
       where.id = Number(dto.id);

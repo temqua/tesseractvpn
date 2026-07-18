@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateBotUnauthorizedDeliveredMessageDto } from './dto/create-bot-unauthorized-delivered-message.dto';
 import { UpdateBotUnauthorizedDeliveredMessageDto } from './dto/update-bot-unauthorized-delivered-message.dto';
 import { BotUnauthorizedDeliveredMessagesRepository } from './bot-unauthorized-delivered-messages.repository';
-import { DeliveredMessagesQueryDto } from './dto/delivered-messages-query-dto';
+import { UnauthorizedUsersDeliveredMessagesQueryDto } from './dto/delivered-messages-query-dto';
 
 @Injectable()
 export class BotUnauthorizedDeliveredMessagesService {
@@ -12,7 +12,7 @@ export class BotUnauthorizedDeliveredMessagesService {
     return await this.repository.create(dto);
   }
 
-  async findAll(dto: DeliveredMessagesQueryDto) {
+  async findAll(dto: UnauthorizedUsersDeliveredMessagesQueryDto) {
     return await this.repository.findAll(dto);
   }
 

@@ -1,7 +1,7 @@
 import { IsNumber, IsOptional } from 'class-validator';
-import { BaseListDto } from 'src/dto/base-dto';
+import { BaseListDto } from '../../../dto/base-dto';
 
-export class DeliveredMessagesQueryDto extends BaseListDto {
+export class UnauthorizedUsersDeliveredMessagesQueryDto extends BaseListDto {
   @IsNumber()
   @IsOptional()
   id?: number;

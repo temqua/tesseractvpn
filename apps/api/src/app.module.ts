@@ -17,6 +17,7 @@ import { JobsModule } from './entities/jobs/jobs.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TelegramModule } from './entities/telegram/telegram.module';
 import { DatabaseModule } from './database.module';
+import { BotDeliveredMessagesModule } from './entities/bot-delivered-messages/bot-delivered-messages.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { DatabaseModule } from './database.module';
     TelegramModule,
     ScheduleModule.forRoot(),
     DatabaseModule,
+    BotDeliveredMessagesModule,
   ],
   providers: [
     {

@@ -503,6 +503,16 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 					logger.error(`${err}`);
 				}
 			}
+			if (!user.active) {
+				this.usersClient
+					.update(user.id, {
+						active: true,
+					})
+					.catch(err => {
+						bot.sendMessage(env.ADMIN_USER_ID, `Ошибка при активации юзера ${user.username} ${err}`);
+					});
+			}
+
 			if (nalog) {
 				await this.addPaymentNalog(chatId, user.username, amount, result.id);
 			}
@@ -528,6 +538,18 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 								parse_mode: 'MarkdownV2',
 							},
 						);
+						if (!dep.active) {
+							this.usersClient
+								.update(dep.id, {
+									active: true,
+								})
+								.catch(err => {
+									bot.sendMessage(
+										env.ADMIN_USER_ID,
+										`Ошибка при активации юзера ${user.username} ${err}`,
+									);
+								});
+						}
 						if (env.BOT_ENV !== 'local') {
 							if (dep.pasarguardId) {
 								try {
