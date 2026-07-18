@@ -3,20 +3,20 @@
 import ContentArea from '@/app/components/content-area';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
-import { deliveredMessagesClient } from '@/app/lib/api/bot-delivered-messages/client';
-import { IBotDeliveredMessage } from '@/app/lib/api/bot-delivered-messages/definitions';
+import { unauthorizedDeliveredMessagesClient } from '@/app/lib/api/bot-unauthorized-delivered-messages/client';
+import { IBotUnauthorizedDeliveredMessage } from '@/app/lib/api/bot-unauthorized-delivered-messages/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef } from 'react';
 
-interface IDeliveredMessagesPageProps {
+interface IUnauthorizedDeliveredMessagesPageProps {
 	count: number;
-	initialData: IBotDeliveredMessage[];
+	initialData: IBotUnauthorizedDeliveredMessage[];
 }
 
-const baseColumns: IColumn<IBotDeliveredMessage>[] = [
+const baseColumns: IColumn<IBotUnauthorizedDeliveredMessage>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
@@ -27,25 +27,16 @@ const baseColumns: IColumn<IBotDeliveredMessage>[] = [
 		prop: 'message',
 	},
 	{
-		label: 'User ID',
-		prop: 'userId',
+		label: 'Telegram ID',
+		prop: 'telegramId',
+		searchable: true,
 	},
-	{
-		label: 'Username',
-		prop: 'username',
-	},
-	{
-		label: 'Created At',
-		prop: 'createdAt',
-	},
-	// {
-	// 	label: 'Telegram ID',
-	// 	prop: 'user.telegramId',
-	// 	searchable: true,
-	// },
 ];
 
-export default function DeliveredMessagesClientSide({ initialData, count }: IDeliveredMessagesPageProps) {
+export default function UnauthorizedDeliveredMessagesClientSide({
+	initialData,
+	count,
+}: IUnauthorizedDeliveredMessagesPageProps) {
 	const searchParams = useSearchParams();
 	const id = searchParams.get('id') || '';
 	const telegramId = searchParams.get('telegramId') || '';
@@ -63,32 +54,17 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 		[updateParams],
 	);
 	const { data: fetched } = useQuery({
-		queryKey: ['bot-delivered-messages', page, take, id, telegramId],
+		queryKey: ['bot-unauthorized-delivered-messages', page, take, id, telegramId],
 		queryFn: () => {
 			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
 			if (id) params.id = id;
-			// if (telegramId) params.telegramId = telegramId;
-			return deliveredMessagesClient.getAll(params).then(r => {
-				return {
-					...r,
-					data: r.data.map(
-						record =>
-							({
-								id: record.id,
-								message: record.message,
-								userId: record.userId,
-								createdAt: record.createdAt,
-								username: record.user.username,
-							}) as IBotDeliveredMessage,
-					),
-				};
-			});
+			if (telegramId) params.telegramId = telegramId;
+			return unauthorizedDeliveredMessagesClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
 		initialData: page === 1 ? { data: initialData, count: count ?? 0 } : undefined,
 	});
-
-	const columns: IColumn<IBotDeliveredMessage>[] = [...baseColumns];
+	const columns: IColumn<IBotUnauthorizedDeliveredMessage>[] = [...baseColumns];
 	const searchRow = useMemo(
 		() => (
 			<>
@@ -100,16 +76,13 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 					></Input>
 				</th>
 				<th></th>
-				<th></th>
-				<th></th>
-				<th></th>
-				{/* <th>
+				<th>
 					<Input
 						type="search"
 						placeholder={'Telegram ID'}
 						onChange={event => debouncedUpdateFilter('telegramId', event.target.value)}
 					></Input>
-				</th> */}
+				</th>
 			</>
 		),
 		[debouncedUpdateFilter],

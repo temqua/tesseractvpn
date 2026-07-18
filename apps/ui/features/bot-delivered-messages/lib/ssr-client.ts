@@ -1,15 +1,15 @@
-import { IBotDeliveredMessage } from '@/app/lib/api/bot-unauthorized-delivered-messages/definitions';
+import { IBotDeliveredMessageDTO } from '@/app/lib/api/bot-delivered-messages/definitions';
 import ssrClient from '@/app/lib/api/ssr-client';
 import { IListParams, ListResponse } from '@/app/lib/definitions.global';
 
-export class UnauthorizedDeliveredMessagesSSRClient {
-	async getAll(listParams: IListParams): Promise<ListResponse<IBotDeliveredMessage>> {
+export class DeliveredMessagesSSRClient {
+	async getAll(listParams: IListParams): Promise<ListResponse<IBotDeliveredMessageDTO>> {
 		const params = new URLSearchParams(listParams as Record<string, string>);
-		return await ssrClient.get(`/api/v1/bot-unauthorized-delivered-messages?${params}`);
+		return await ssrClient.get(`/api/v1/bot-delivered-messages?${params}`);
 	}
 
-	async getById(id: string): Promise<IBotDeliveredMessage> {
-		return await ssrClient.get(`/api/v1/bot-unauthorized-delivered-messages/${id}`);
+	async getById(id: string): Promise<IBotDeliveredMessageDTO> {
+		return await ssrClient.get(`/api/v1/bot-delivered-messages/${id}`);
 	}
 }
-export const unauthorizedDeliveredMessagesSSRClient = new UnauthorizedDeliveredMessagesSSRClient();
+export const deliveredMessagesSSRClient = new DeliveredMessagesSSRClient();

@@ -1,5 +1,5 @@
-import UnauthorizedDeliveredMessagesClientSide from '@/features/bot-delivered-messages/components/all';
-import { unauthorizedDeliveredMessagesSSRClient } from '@/features/bot-delivered-messages/lib/ssr-client';
+import UnauthorizedDeliveredMessagesClientSide from '@/features/bot-unauthorized-delivered-messages/components/all';
+import { unauthorizedDeliveredMessagesSSRClient } from '@/features/bot-unauthorized-delivered-messages/lib/ssr-client';
 import { redirect } from 'next/navigation';
 
 export default async function UnauthorizedDeliveredMessagesPage(props: {

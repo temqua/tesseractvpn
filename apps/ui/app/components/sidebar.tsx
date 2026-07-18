@@ -16,6 +16,11 @@ export default function Sidebar() {
 					label="Incoming Messages"
 				/>
 				<SidebarItem
+					active={pathname === '/bot-delivered-messages'}
+					href="/bot-delivered-messages"
+					label="Delivered Messages"
+				/>
+				<SidebarItem
 					active={pathname === '/bot-unauthorized-delivered-messages'}
 					href="/bot-unauthorized-delivered-messages"
 					label="Unauthorized Delivered Messages"
