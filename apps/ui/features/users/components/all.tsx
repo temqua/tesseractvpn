@@ -4,7 +4,7 @@ import { Input } from '@/app/components/input';
 import { Select } from '@/app/components/select';
 import Table, { IColumn } from '@/app/components/table';
 import { usersClient } from '@/app/lib/api/users/client';
-import { IVPNUser, IVPNUserListDTO } from '@/app/lib/api/users/definitions';
+import { IVPNUserListDTO, IVPNUserUI } from '@/app/lib/api/users/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef } from 'react';
 
-const baseColumns: IColumn<IVPNUser>[] = [
+const baseColumns: IColumn<IVPNUserUI>[] = [
 	{ label: 'ID', prop: 'id' },
 	{ label: 'Username', prop: 'username' },
 	{ label: 'First name', prop: 'firstName' },
@@ -50,7 +50,7 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 		[updateParams],
 	);
 
-	const columns = [
+	const columns: IColumn<IVPNUserUI>[] = [
 		...baseColumns,
 		{
 			label: 'Actions',
@@ -80,6 +80,25 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 		placeholderData: keepPreviousData,
 		initialData: page === 1 ? { data: initialData, count: count ?? 0 } : undefined,
 	});
+
+	const prepared: IVPNUserUI[] =
+		fetched?.data.map(u => {
+			return {
+				id: u.id,
+				active: u.active,
+				username: u.username,
+				createdAt: u.createdAt,
+				firstName: u.firstName,
+				lastName: u.lastName,
+				free: u.free,
+				muted: u.muted,
+				price: u.price,
+				telegramId: u.telegramId,
+				telegramLink: u.telegramLink,
+				password: u.password,
+				languageCode: u.languageCode,
+			};
+		}) ?? [];
 
 	const handlePageChange = useCallback(
 		(newPage: number | ((p: number) => number)) => {
@@ -150,7 +169,7 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 			<ContentArea>
 				<Table
 					columns={columns}
-					data={fetched?.data ?? []}
+					data={prepared}
 					count={fetched?.count ?? 0}
 					page={page}
 					take={take}

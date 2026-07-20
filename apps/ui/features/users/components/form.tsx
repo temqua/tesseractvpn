@@ -29,13 +29,13 @@ import { useState } from 'react';
 
 export default function UserClientSide({ user, id }: { user: IVPNUser; id: string }) {
 	const [username, setUsername] = useState(user?.username);
-	const [telegramId, setTelegramId] = useState(user?.telegramId);
-	const [telegramLink, setTelegramLink] = useState(user?.telegramLink);
-	const [firstName, setFirstName] = useState(user?.firstName);
-	const [lastName, setLastName] = useState(user?.lastName);
-	const [price, setPrice] = useState(user?.price);
-	const [free, setFree] = useState(user?.free);
-	const [active, setActive] = useState(user?.active);
+	const [telegramId, setTelegramId] = useState(user?.telegramId ?? '');
+	const [telegramLink, setTelegramLink] = useState(user?.telegramLink ?? '');
+	const [firstName, setFirstName] = useState(user?.firstName ?? '');
+	const [lastName, setLastName] = useState(user?.lastName ?? '');
+	const [price, setPrice] = useState(user?.price.toString());
+	const [free, setFree] = useState<boolean>(user?.free);
+	const [active, setActive] = useState<boolean>(user?.active);
 	return (
 		<form>
 			<div className="flex flex-col">
@@ -101,8 +101,8 @@ export default function UserClientSide({ user, id }: { user: IVPNUser; id: strin
 			<div className="flex flex-col">
 				<label htmlFor="free">Free</label>
 				<Input
-					value={free}
-					onChange={event => setFree(event.target.value)}
+					checked={free}
+					onChange={event => setFree(event.target.checked)}
 					type="checkbox"
 					id="free"
 					name="free"
@@ -112,8 +112,8 @@ export default function UserClientSide({ user, id }: { user: IVPNUser; id: strin
 			<div className="flex flex-col">
 				<label htmlFor="active">Active</label>
 				<Input
-					value={active}
-					onChange={event => setActive(event.target.value)}
+					checked={active}
+					onChange={event => setActive(event.target.checked)}
 					type="checkbox"
 					id="active"
 					name="active"

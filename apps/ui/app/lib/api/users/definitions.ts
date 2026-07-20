@@ -27,7 +27,7 @@ export interface IVPNUserListDTO {
 	referrerId: number | null;
 	muted: boolean | null;
 	payments: IPayment[];
-	dependants: IVPNUser[];
+	dependants: IVPNUserListDTO[];
 	// messageDeliveries: IBotDeliveredMessage[];
 	// role: $Enums.UserRole;
 	// devices: $Enums.Device[];
@@ -62,4 +62,19 @@ export interface IVPNUser {
 	payerId: number | null;
 	referrerId: number | null;
 	muted: boolean | null;
+}
+
+export interface IVPNUserUI {
+	id: number;
+	username: string;
+	password: string | null;
+	telegramId: string | null;
+	telegramLink: string | null;
+	createdAt: string;
+	firstName: string | null;
+	lastName: string | null;
+	languageCode: string | null;
+	price: number;
+	free: boolean;
+	active: boolean;
 }
