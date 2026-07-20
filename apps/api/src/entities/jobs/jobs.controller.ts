@@ -7,7 +7,7 @@ export class JobsController {
 
   @Post('/:name/execute')
   @HttpCode(HttpStatus.OK)
-  async execute(@Param('name') name: string) {
-    return await this.jobsService.execute(name);
+  execute(@Param('name') name: string) {
+    return this.jobsService.execute(name);
   }
 }

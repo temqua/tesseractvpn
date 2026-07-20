@@ -1,12 +1,6 @@
-import {
-  IsBoolean,
-  IsEnum,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import { OrderDirection } from '../../../enums';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { BaseListDto } from '../../../dto/base-dto';
+import { OrderDirection } from '../../../enums';
 
 export enum OrderByUserField {
   Username = 'username',

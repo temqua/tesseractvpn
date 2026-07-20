@@ -4,7 +4,7 @@ import ContentArea from '@/app/components/content-area';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
 import { deliveredMessagesClient } from '@/app/lib/api/bot-delivered-messages/client';
-import { IBotDeliveredMessage } from '@/app/lib/api/bot-delivered-messages/definitions';
+import { IBotDeliveredMessageUI } from '@/app/lib/api/bot-delivered-messages/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
@@ -13,10 +13,10 @@ import { useCallback, useMemo, useRef } from 'react';
 
 interface IDeliveredMessagesPageProps {
 	count: number;
-	initialData: IBotDeliveredMessage[];
+	initialData: IBotDeliveredMessageUI[];
 }
 
-const baseColumns: IColumn<IBotDeliveredMessage>[] = [
+const baseColumns: IColumn<IBotDeliveredMessageUI>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
@@ -79,7 +79,7 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 								userId: record.userId,
 								createdAt: record.createdAt,
 								username: record.user.username,
-							}) as IBotDeliveredMessage,
+							}) as IBotDeliveredMessageUI,
 					),
 				};
 			});
@@ -88,7 +88,7 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 		initialData: page === 1 ? { data: initialData, count: count ?? 0 } : undefined,
 	});
 
-	const columns: IColumn<IBotDeliveredMessage>[] = [...baseColumns];
+	const columns: IColumn<IBotDeliveredMessageUI>[] = [...baseColumns];
 	const searchRow = useMemo(
 		() => (
 			<>

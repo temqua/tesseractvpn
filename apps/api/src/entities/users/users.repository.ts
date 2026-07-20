@@ -130,6 +130,7 @@ export class UsersRepository {
         dependants: true,
         referrer: true,
         referrals: true,
+        messageDeliveries: true,
       },
     });
   }

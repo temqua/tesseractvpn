@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { AuthPayload } from '../../auth.definitions';
 @Injectable()
 export class AuthService {
   constructor(
@@ -31,7 +32,7 @@ export class AuthService {
     if (!match) {
       throw new UnauthorizedException();
     }
-    const payload = { id: user.id, username: user.username };
+    const payload: AuthPayload = { id: user.id, username: user.username };
     return {
       accessToken: await this.jwtService.signAsync(payload),
     };

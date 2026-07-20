@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { ExpenseCategory, PrismaClient } from '@prisma/client';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { PrismaClient, ExpenseCategory } from '@prisma/client';
 import { AppModule } from '../src/app.module';
 import { DatabaseService } from '../src/database.service';
 import {
@@ -10,11 +10,9 @@ import {
   SUM_NALOG,
   SUM_SERVERS,
   SUM_TOTAL,
-  seedExpenses,
   cleanupByIds,
-  cleanupByDescription,
+  seedExpenses,
 } from './expenses-seed';
-
 const AUTH_HEADER = `Bearer ${process.env.API_TOKEN ?? 'test-api-token'}`;
 
 describe('Expenses (e2e)', () => {

@@ -115,6 +115,14 @@
 			"problemMatcher": [],
 			"label": "bun: format",
 			"detail": "bun run prettier --write . - package.json"
+		},
+		{
+			"type": "npm",
+			"script": "test:e2e",
+			"path": "apps/api",
+			"problemMatcher": [],
+			"label": "npm: test:e2e - apps/api",
+			"detail": "jest --config ./test/jest-e2e.json"
 		}
 	]
 }

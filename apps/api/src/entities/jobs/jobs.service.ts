@@ -9,7 +9,7 @@ export class JobsService {
     deactivate_unpaid: DeactivateUnpaidJob,
   };
   constructor(private readonly moduleRef: ModuleRef) {}
-  async execute(name: string) {
+  execute(name: string) {
     const JobClass = this.jobClasses[name];
     if (!JobClass) {
       throw new NotFoundException(`Job "${name}" not found`);

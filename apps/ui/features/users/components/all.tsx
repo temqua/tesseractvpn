@@ -4,14 +4,15 @@ import { Input } from '@/app/components/input';
 import { Select } from '@/app/components/select';
 import Table, { IColumn } from '@/app/components/table';
 import { usersClient } from '@/app/lib/api/users/client';
-import { IVPNUser } from '@/app/lib/api/users/definitions';
+import { IVPNUser, IVPNUserListDTO } from '@/app/lib/api/users/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef } from 'react';
 
-const columns: IColumn<IVPNUser>[] = [
+const baseColumns: IColumn<IVPNUser>[] = [
 	{ label: 'ID', prop: 'id' },
 	{ label: 'Username', prop: 'username' },
 	{ label: 'First name', prop: 'firstName' },
@@ -21,7 +22,7 @@ const columns: IColumn<IVPNUser>[] = [
 ];
 
 interface IUsersPageProps {
-	initialData: IVPNUser[];
+	initialData: IVPNUserListDTO[];
 	count?: number;
 }
 
@@ -48,6 +49,22 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 		},
 		[updateParams],
 	);
+
+	const columns = [
+		...baseColumns,
+		{
+			label: 'Actions',
+			actions: row => {
+				return (
+					<>
+						<Link href={`/users/${row.id}`}>✏️</Link>
+						<Link href={`/users/${row.id}/delivered-messages`}>M</Link>
+						<Link href={`/users/${row.id}/payments`}>💰</Link>
+					</>
+				);
+			},
+		},
+	];
 
 	const { data: fetched } = useQuery({
 		queryKey: ['users', page, take, id, username, firstName, active, free],
@@ -122,6 +139,7 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 						<option value="false">False</option>
 					</Select>
 				</th>
+				<th></th>
 			</>
 		),
 		[debouncedUpdateFilter],
