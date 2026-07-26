@@ -1,5 +1,4 @@
 'use client';
-import env from '@/app/lib/env';
 import { authSessionKey } from './auth';
 
 export interface IErrorBody {
@@ -9,7 +8,8 @@ export interface IErrorBody {
 
 class ApiClient {
 	async request(url: string, params: RequestInit) {
-		const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+		const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}`;
+		console.log('apiUrl :>> ', apiUrl);
 		console.time(`${params.method} Request to ${apiUrl ?? ''}${url}`);
 		const response = await fetch(`${apiUrl ?? ''}${url}`, {
 			...params,
