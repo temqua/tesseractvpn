@@ -25,6 +25,8 @@ jobs:
                   ssh-keyscan -H ${{ secrets.ADMIN_UI_SERVER_HOST }} >> ~/.ssh/known_hosts
 
             - name: Build Docker image
+              env:
+                  NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}            
               run: |
                   docker compose build tesseract-admin-ui --no-cache
 
