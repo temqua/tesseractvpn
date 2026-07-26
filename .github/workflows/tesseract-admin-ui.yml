@@ -24,6 +24,10 @@ jobs:
                   mkdir -p ~/.ssh
                   ssh-keyscan -H ${{ secrets.ADMIN_UI_SERVER_HOST }} >> ~/.ssh/known_hosts
 
+            - name: Generate .env file for build
+              run: |
+                  echo "NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}" > .env                  
+
             - name: Build Docker image
               env:
                   NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}            
