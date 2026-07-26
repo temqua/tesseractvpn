@@ -27,8 +27,6 @@ COPY ./features/ ./features/
 COPY package.json tsconfig.json proxy.ts next.config.ts next-env.d.ts postcss.config.mjs ./
 
 ENV NODE_ENV=production
-ARG BASE_URL
-ENV NEXT_PUBLIC_API_URL=${BASE_URL}
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
