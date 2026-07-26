@@ -26,6 +26,8 @@ COPY ./app/ ./app/
 COPY ./features/ ./features/
 COPY package.json tsconfig.json proxy.ts next.config.ts next-env.d.ts postcss.config.mjs ./
 
+ARG BASE_URL
+ENV NEXT_PUBLIC_API_URL=${BASE_URL}
 ENV NODE_ENV=production
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
@@ -48,8 +50,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-ARG BASE_URL
-ENV NEXT_PUBLIC_API_URL=${BASE_URL}
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the run time.
