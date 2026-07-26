@@ -9,8 +9,9 @@ export interface IErrorBody {
 
 class ApiClient {
 	async request(url: string, params: RequestInit) {
-		console.time(`${params.method} Request to ${process.env.NEXT_PUBLIC_API_URL ?? ''}${url}`);
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? ''}${url}`, {
+		const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+		console.time(`${params.method} Request to ${apiUrl ?? ''}${url}`);
+		const response = await fetch(`${apiUrl ?? ''}${url}`, {
 			...params,
 			headers: {
 				'Content-Type': 'application/json',
@@ -21,7 +22,7 @@ class ApiClient {
 		}).catch(error2 => {
 			throw new Error(`Internal server error. Server-side request error: ` + error2.message);
 		});
-		console.timeEnd(`${params.method} Request to ${env.API_URL}${url}`);
+		console.timeEnd(`${params.method} Request to ${apiUrl}${url}`);
 		const isJson = response.headers.get('Content-Type')?.includes('application/json');
 		if (!response.ok && response.body && isJson) {
 			const errorBody: IErrorBody = await response.json();

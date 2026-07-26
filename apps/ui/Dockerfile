@@ -17,19 +17,18 @@ RUN  bun install --no-save --frozen-lockfile
 
 FROM oven/bun:alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
 # Copy project dependencies from dependencies stage
 COPY --from=dependencies /app/node_modules ./node_modules
 
-# Copy application source code
 COPY ./app/ ./app/
 COPY ./features/ ./features/
 COPY package.json tsconfig.json proxy.ts next.config.ts next-env.d.ts postcss.config.mjs ./
 
 ENV NODE_ENV=production
-
+ARG BASE_URL
+ENV NEXT_PUBLIC_API_URL=${BASE_URL}
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.

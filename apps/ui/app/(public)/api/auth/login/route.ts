@@ -4,7 +4,7 @@ import { authSessionKey } from '@/app/lib/api/auth';
 
 export async function POST(req: Request) {
 	const body = await req.json();
-	const res = await fetch(`${env.API_URL}/api/v1/auth`, {
+	const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/v1/auth`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

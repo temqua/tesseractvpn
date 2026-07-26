@@ -16,8 +16,9 @@ class SSRClient {
 			throw new Error('There is no user session cookie set');
 		}
 		const token = record.value;
-		console.time(`${params.method} Request to ${env.NEXT_PUBLIC_API_URL}${url}`);
-		const response = await fetch(`${env.NEXT_PUBLIC_API_URL}${url}`, {
+		const apiUrl = env.NEXT_PUBLIC_API_URL;
+		console.time(`${params.method} Request to ${apiUrl}${url}`);
+		const response = await fetch(`${apiUrl}${url}`, {
 			...params,
 			headers: {
 				'Content-Type': 'application/json',
@@ -28,7 +29,7 @@ class SSRClient {
 		}).catch(error2 => {
 			throw new Error(`Internal server error. Server-side request error: ` + error2.message);
 		});
-		console.timeEnd(`${params.method} Request to ${env.API_URL}${url}`);
+		console.timeEnd(`${params.method} Request to ${apiUrl}${url}`);
 		if (response.status === 401) {
 			redirect('/login', RedirectType.replace);
 		}
