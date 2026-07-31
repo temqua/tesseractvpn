@@ -1,4 +1,4 @@
-import { cleanEnv, num, str } from 'envalid';
+import { cleanEnv, json, num, str } from 'envalid';
 import { config } from 'dotenv';
 config();
 
@@ -22,6 +22,7 @@ const env = cleanEnv(process.env, {
   OVPN_RECEIVER_PORT: num({ default: 8092 }),
   BOT_TOKEN: str({ default: '' }),
   JOBS_CHAT_ID: str({ default: '' }),
+  CORS_ALLOWED_ORIGINS: json({ default: '[]' }),
 });
 
 export default env;

@@ -5,11 +5,10 @@ import env from './env';
 import { RequestsInterceptor } from './logging-interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  if (env.APP_ENV === 'local') {
-    app.enableCors({
-      origin: 'http://localhost:3000',
-    });
-  }
+  const allowed = env.CORS_ALLOWED_ORIGINS;
+  app.enableCors({
+    origin: env.APP_ENV === 'local' ? 'http://localhost:3000' : allowed,
+  });
   const config = new DocumentBuilder()
     .setTitle('Tesseract')
     .setDescription('The Tesseract API description')
