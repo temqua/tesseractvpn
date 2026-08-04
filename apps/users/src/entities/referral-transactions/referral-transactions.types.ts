@@ -1,3 +1,4 @@
+import { CmdCode, ReferralTransactionCommand } from '../../enums';
 import { Payment } from '../payments/payments.types';
 import { User } from '../users/users.types';
 
@@ -16,4 +17,9 @@ export class CreateReferralTransactionDto {
 	referrerId: number;
 	referredId: number;
 	paymentId: string;
+}
+
+export interface ReferralTransactionsContext {
+	[CmdCode.Command]: ReferralTransactionCommand;
+	id?: string;
 }

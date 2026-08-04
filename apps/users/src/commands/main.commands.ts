@@ -16,6 +16,7 @@ import { plansHelpMessage } from './plans.commands';
 import { serversHelpMessage } from './servers.commands';
 import { userHelpMessage } from './users.commands';
 import { VPNUser } from '../entities/users/users.types';
+import { rtHelpMessage } from './referral-transactions.commands';
 const usersClient = new UsersClient();
 const incomingMessagesClient = new BotIncomingMessagesClient();
 const mainCommandsList = {
@@ -45,6 +46,7 @@ bot.onText(/\/start\s*(.*)/, async (msg: Message, match) => {
 		await bot.sendMessage(msg.chat.id, userHelpMessage);
 		await bot.sendMessage(msg.chat.id, plansHelpMessage);
 		await bot.sendMessage(msg.chat.id, serversHelpMessage);
+		await bot.sendMessage(msg.chat.id, rtHelpMessage);
 	} else {
 		const user = await usersClient.getByTelegramId(msg?.from?.id.toString() ?? '');
 

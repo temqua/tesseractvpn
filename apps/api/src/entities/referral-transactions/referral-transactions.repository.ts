@@ -73,7 +73,6 @@ export class ReferralTransactionsRepository {
   }
 
   async remove(id: string) {
-    console.log('id :>> ', id);
     const rt = await this.databaseService.client.referralTransaction.findUnique(
       {
         where: {
@@ -81,17 +80,18 @@ export class ReferralTransactionsRepository {
         },
       },
     );
-    console.log('rt :>> ', rt);
-    await this.databaseService.client.referralTransaction.delete({
-      where: {
-        id,
-      },
-    });
+    const deleted =
+      await this.databaseService.client.referralTransaction.delete({
+        where: {
+          id,
+        },
+      });
     await this.databaseService.client.payment.delete({
       where: {
         id: rt?.paymentId,
       },
     });
+    return deleted;
   }
 
   async findOne(id: string) {

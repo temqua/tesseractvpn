@@ -110,6 +110,7 @@ export enum CommandScope {
 	Payments = 'p',
 	Plans = 'pl',
 	Servers = 's',
+	ReferralTransactions = 'rt',
 }
 
 export enum UserRequest {
@@ -171,4 +172,10 @@ export enum UpdatePlanPropsMap {
 	months = 'm',
 	minCount = 'min',
 	maxCount = 'max',
+}
+
+export enum ReferralTransactionCommand {
+	Delete = 'de',
+	List = 'l',
+	GetById = 'g',
 }

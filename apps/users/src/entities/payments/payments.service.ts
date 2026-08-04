@@ -526,6 +526,7 @@ export class PaymentsService {
 	}
 
 	async showAll(msg: Message) {
+		this.log('showAll');
 		const payments = await this.client.getAll();
 		for (const p of payments) {
 			await this.showPaymentInfo(msg, p);

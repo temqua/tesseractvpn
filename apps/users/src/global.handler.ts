@@ -1,4 +1,5 @@
 import type { Message, Poll } from 'node-telegram-bot-api';
+import TelegramBot from 'node-telegram-bot-api';
 import type { ICommandHandler } from './contracts';
 import { expensesCommandsHandler } from './entities/expenses/expenses.handler';
 import type { ExpensesContext } from './entities/expenses/expenses.types';
@@ -6,13 +7,14 @@ import { paymentsCommandsHandler } from './entities/payments/payments.handler';
 import type { PaymentsContext } from './entities/payments/payments.types';
 import { plansCommandsHandler } from './entities/plans/plans.handler';
 import type { PlansContext } from './entities/plans/plans.types';
+import { ReferralTransactionsContext } from './entities/referral-transactions/referral-transactions.types';
 import { serversCommandsHandler } from './entities/servers/servers.handler';
 import type { ServersContext } from './entities/servers/servers.types';
 import { userCommandsHandler } from './entities/users/users.handler';
 import type { UsersContext } from './entities/users/users.types';
 import { CommandScope } from './enums';
 import logger from './logger';
-import TelegramBot from 'node-telegram-bot-api';
+import { referralTransactionsCommandsHandler } from './entities/referral-transactions/referral-transactions.handler';
 
 export type CommandDetails = {
 	processing?: boolean;
@@ -26,7 +28,13 @@ export type CommandDetailCompressed = {
 	c: CommandContext;
 };
 
-export type CommandContext = UsersContext | ExpensesContext | PaymentsContext | PlansContext | ServersContext;
+export type CommandContext =
+	| UsersContext
+	| ExpensesContext
+	| PaymentsContext
+	| PlansContext
+	| ServersContext
+	| ReferralTransactionsContext;
 class GlobalHandler {
 	private activeCommand: CommandDetails = null;
 
@@ -74,6 +82,9 @@ class GlobalHandler {
 			case CommandScope.Servers:
 				handler = serversCommandsHandler;
 				break;
+			case CommandScope.ReferralTransactions:
+				handler = referralTransactionsCommandsHandler;
+				break;
 			default:
 				handler = expensesCommandsHandler;
 		}
@@ -96,6 +107,9 @@ class GlobalHandler {
 				break;
 			case CommandScope.Servers:
 				handler = serversCommandsHandler;
+				break;
+			case CommandScope.ReferralTransactions:
+				handler = referralTransactionsCommandsHandler;
 				break;
 			default:
 				handler = userCommandsHandler;
