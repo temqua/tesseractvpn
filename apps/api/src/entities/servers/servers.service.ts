@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
 import { ServersRepository } from './servers.repository';
+import { ServerQueryDto } from './dto/server-query.dto';
 
 @Injectable()
 export class ServersService {
@@ -14,8 +15,8 @@ export class ServersService {
     );
   }
 
-  async findAll() {
-    return await this.repository.getAll();
+  async findAll(dto: ServerQueryDto) {
+    return await this.repository.getAll(dto);
   }
 
   async findOne(id: number) {

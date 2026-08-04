@@ -2,13 +2,13 @@ import { VpnServer } from '@prisma/client';
 import client from '../../api-client';
 import { CreateServerDto } from './servers.types';
 import { VPNUser } from '../users/users.types';
+import { ListResponse } from '../../definitions';
 
 export class ServersClient {
 	async getAll(): Promise<VpnServer[]> {
 		const params = new URLSearchParams();
-		// params.append('price', price.toString());
-		const result = await client.get(`/servers?${params}`);
-		return result as VpnServer[];
+		const result = (await client.get(`/servers?${params}`)) as ListResponse<VpnServer>;
+		return result.data as VpnServer[];
 	}
 
 	async getById(id: number): Promise<VpnServer | null> {

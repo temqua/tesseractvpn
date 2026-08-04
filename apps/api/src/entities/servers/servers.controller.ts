@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ServersService } from './servers.service';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
+import { ServerQueryDto } from './dto/server-query.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -21,8 +23,8 @@ export class ServersController {
   }
 
   @Get()
-  async findAll() {
-    return await this.serversService.findAll();
+  async findAll(@Query() dto: ServerQueryDto) {
+    return await this.serversService.findAll(dto);
   }
 
   @Get(':id')

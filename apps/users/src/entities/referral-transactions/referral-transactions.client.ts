@@ -4,8 +4,8 @@ import { CreateReferralTransactionDto, ReferralTransaction } from './referral-tr
 
 export class ReferralTransactionsClient {
 	async getAll(): Promise<ReferralTransaction[]> {
-		const { data } = (await client.get(`/referral-transactions`)) as ListResponse<ReferralTransaction>;
-		return data as ReferralTransaction[];
+		const response = (await client.get(`/referral-transactions`)) as ListResponse<ReferralTransaction>;
+		return response.data as ReferralTransaction[];
 	}
 
 	async getById(id: string): Promise<ReferralTransaction | null> {

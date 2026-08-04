@@ -1,19 +1,15 @@
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { BaseListDto } from '../../../dto/base-dto';
 
-export class ReferralTransactionQueryDto extends BaseListDto {
+export class ServerQueryDto extends BaseListDto {
   @IsString()
   @IsOptional()
   id?: string;
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  referrerId?: number;
-
-  @IsNumber()
-  @IsOptional()
-  referredId?: number;
+  name?: string;
 
   @IsString()
   @IsOptional()
-  paymentId?: string;
+  url?: string;
 }

@@ -1,6 +1,7 @@
 import PaymentsClientSide from '@/features/payments/components/all';
 import { paymentsSSRClient } from '@/features/payments/lib/ssr-client';
 import ServersClientSide from '@/features/servers/components/all';
+import { serversSSRClient } from '@/features/servers/lib/ssr-client';
 import { redirect } from 'next/navigation';
 
 export default async function ServersPage(props: {
@@ -8,12 +9,16 @@ export default async function ServersPage(props: {
 		page?: string;
 		take?: string;
 		id?: string;
+		url?: string;
+		name?: string;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
 	const page = Number(searchParams.page) || 1;
 	const take = Number(searchParams.take) || 25;
 	const id = searchParams.id || '';
+	const url = searchParams.url || '';
+	const name = searchParams.name || '';
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
@@ -23,13 +28,14 @@ export default async function ServersPage(props: {
 				params.set(key, value);
 			}
 		}
-		redirect(`/payments?${params.toString()}`);
+		redirect(`/servers?${params.toString()}`);
 	}
-	const response = await paymentsSSRClient.getAll({
+	const response = await serversSSRClient.getAll({
 		skip: (page - 1) * take,
 		take,
 		...(id && { id }),
-		...(userId && { userId }),
+		...(url && { url }),
+		...(name && { name }),
 	});
 
 	return <ServersClientSide initialData={response.data} count={response.count} />;

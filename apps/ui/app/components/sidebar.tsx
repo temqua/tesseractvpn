@@ -9,6 +9,11 @@ export default function Sidebar() {
 			<nav className={styles['sidebar-main']}>
 				<SidebarItem active={pathname === '/users'} href="/users" label="Users" />
 				<SidebarItem active={pathname === '/payments'} href="/payments" label="Payments" />
+				<SidebarItem
+					active={pathname === '/referral-transactions'}
+					href="/referral-transactions"
+					label="Referral Payments"
+				/>
 				<SidebarItem active={pathname === '/expenses'} href="/expenses" label="Expenses" />
 				<SidebarItem
 					active={pathname === '/bot-incoming-messages'}
@@ -25,6 +30,7 @@ export default function Sidebar() {
 					href="/bot-unauthorized-delivered-messages"
 					label="Unauthorized Delivered Messages"
 				/>
+				<SidebarItem active={pathname === '/servers'} href="/servers" label="Servers" />
 			</nav>
 			<div className={styles['sidebar-bottom']}>
 				<div>

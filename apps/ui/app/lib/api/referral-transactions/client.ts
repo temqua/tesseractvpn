@@ -7,5 +7,8 @@ export class ReferralTransactionsClient {
 		const params = new URLSearchParams(listParams as Record<string, string>);
 		return await apiClient.get(`/api/v1/referral-transactions?${params}`);
 	}
+	async delete(id: string) {
+		return await apiClient.delete(`/api/v1/referral-transactions/${id}`);
+	}
 }
-export const serversClient = new ReferralTransactionsClient();
+export const referralTransactionsClient = new ReferralTransactionsClient();

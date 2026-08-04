@@ -4,9 +4,8 @@ import ContentArea from '@/app/components/content-area';
 import Dialog from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
-import { deleteAction } from '@/app/lib/actions/payments';
-import { paymentsClient } from '@/app/lib/api/payments/client';
-import { IPayment } from '@/app/lib/api/payments/definitions';
+import { deleteAction } from '@/app/lib/actions/servers';
+import { serversClient } from '@/app/lib/api/servers/client';
 import { IServer } from '@/app/lib/api/servers/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { useUpdateParams } from '@/app/lib/use-update-params';
@@ -21,16 +20,21 @@ const baseColumns: IColumn<IServer>[] = [
 		prop: 'id',
 		searchable: true,
 	},
+	{
+		label: 'Name',
+		prop: 'name',
+		searchable: true,
+	},
+	{
+		label: 'URL',
+		prop: 'url',
+		searchable: true,
+	},
 ];
-interface IPaymentForm {
+interface IServerForm {
 	id?: string;
-	paymentDate?: string;
-	amount?: string;
-	monthsCount?: string;
-	expiresOn?: string;
-	userId?: string;
-	planId?: string;
-	parentPaymentId?: string;
+	name?: string;
+	url?: string;
 }
 
 interface IServersPageProps {
@@ -45,8 +49,8 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 	const id = searchParams.get('id') || '';
 	const page = Number(searchParams.get('page')) || 1;
 	const take = Number(searchParams.get('take')) || 25;
-	const userId = searchParams.get('userId');
-	const monthsCount = searchParams.get('monthsCount');
+	const name = searchParams.get('name') || '';
+	const url = searchParams.get('url') || '';
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const debouncedUpdateFilter = useCallback(
@@ -81,13 +85,13 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 	];
 
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['payments', page, take, id, userId, monthsCount],
+		queryKey: ['servers', page, take, id, name, url],
 		queryFn: () => {
-			const params: IListParams & Partial<IPaymentForm> = { skip: (page - 1) * take, take };
+			const params: IListParams & Partial<IServerForm> = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
-			if (userId) params.userId = userId;
-			if (monthsCount) params.monthsCount = monthsCount;
-			return paymentsClient.getAll(params);
+			if (name) params.name = name;
+			if (url) params.url = url;
+			return serversClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
 		initialData: page === 1 ? { data: initialData, count: count ?? 0 } : undefined,
@@ -102,27 +106,20 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 						onChange={event => debouncedUpdateFilter('id', event.target.value)}
 					></Input>
 				</th>
-				<th></th>
-				<th></th>
 				<th>
 					<Input
 						type="search"
-						placeholder="Months Count"
-						defaultValue={monthsCount}
-						onChange={e => debouncedUpdateFilter('monthsCount', e.target.value)}
-					/>
+						placeholder={'Name'}
+						onChange={event => debouncedUpdateFilter('name', event.target.value)}
+					></Input>
 				</th>
-				<th></th>
 				<th>
 					<Input
 						type="search"
-						placeholder="User ID"
-						defaultValue={userId}
-						onChange={e => debouncedUpdateFilter('userId', e.target.value)}
-					/>
+						placeholder={'URL'}
+						onChange={event => debouncedUpdateFilter('url', event.target.value)}
+					></Input>
 				</th>
-				<th></th>
-				<th></th>
 				<th></th>
 			</>
 		),
@@ -145,12 +142,10 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 		[take, updateParams],
 	);
 	const queryClient = useQueryClient();
+
 	return (
 		<div>
 			<ContentArea>
-				<div>
-					<Link href={`/payments/new`}>ADD</Link>
-				</div>
 				<Table
 					searchRow={searchRow}
 					columns={columns}
@@ -171,11 +166,11 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 					onConfirm={() => {
 						setModalOpened(false);
 						if (deleteId) {
-							deleteAction(deleteId, queryClient);
+							deleteAction(deleteId, queryClient, id, name, url);
 						}
 					}}
 				>
-					Are you sure you want to delete payment?
+					Are you sure you want to delete server?
 				</Dialog>
 			</div>
 		</div>

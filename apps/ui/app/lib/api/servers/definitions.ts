@@ -4,3 +4,10 @@ export interface IServer {
 	url: string;
 	createdAt: string;
 }
+
+export interface ICreateServerDto {
+	name: string;
+	url: string;
+}
+
+export interface IUpdateServerDto extends Partial<ICreateServerDto> {}
