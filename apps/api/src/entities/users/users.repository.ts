@@ -39,6 +39,12 @@ export class UsersRepository {
         contains: dto.firstName,
       };
     }
+    if (dto?.lastName) {
+      where.lastName = {
+        mode: 'insensitive',
+        contains: dto.lastName,
+      };
+    }
     if (dto?.active !== undefined) {
       where.active = dto.active === 'true';
     }
@@ -88,7 +94,27 @@ export class UsersRepository {
         },
         dependants: true,
         referrer: true,
-        referrals: true,
+        referred: {
+          where: {
+            payments: {
+              some: {},
+            },
+          },
+        },
+        referrerTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
+        referredTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
       },
     };
     const countParams = {
@@ -129,8 +155,31 @@ export class UsersRepository {
         },
         dependants: true,
         referrer: true,
-        referrals: true,
+        referred: {
+          where: {
+            payments: {
+              some: {},
+            },
+            referredTransactions: {
+              none: {},
+            },
+          },
+        },
         messageDeliveries: true,
+        referrerTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
+        referredTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
       },
     });
   }
@@ -148,7 +197,31 @@ export class UsersRepository {
         payments: true,
         dependants: true,
         referrer: true,
-        referrals: true,
+        referred: {
+          where: {
+            payments: {
+              some: {},
+            },
+            referredTransactions: {
+              none: {},
+            },
+          },
+        },
+        messageDeliveries: true,
+        referrerTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
+        referredTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
       },
     });
   }
@@ -185,7 +258,31 @@ export class UsersRepository {
         },
         dependants: true,
         referrer: true,
-        referrals: true,
+        referred: {
+          where: {
+            payments: {
+              some: {},
+            },
+            referredTransactions: {
+              none: {},
+            },
+          },
+        },
+        messageDeliveries: true,
+        referrerTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
+        referredTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
       },
     });
   }
@@ -204,7 +301,31 @@ export class UsersRepository {
         },
         dependants: true,
         referrer: true,
-        referrals: true,
+        referred: {
+          where: {
+            payments: {
+              some: {},
+            },
+            referredTransactions: {
+              none: {},
+            },
+          },
+        },
+        messageDeliveries: true,
+        referrerTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
+        referredTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
       },
     });
   }

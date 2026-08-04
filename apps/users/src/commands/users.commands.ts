@@ -40,13 +40,21 @@ export const userCommandsList = {
 		regexp: /\/user\s+pay/,
 		docs: '/user pay — user payment command',
 	},
+	referralPay: {
+		regexp: /\/user\s+refpay/,
+		docs: '/user refpay — user referral payment command',
+	},
 	getUserByContact: {
 		regexp: /@share/,
 		docs: '@share — get user by contact',
 	},
 	findUser: {
 		regexp: /@(.*)/,
-		docs: '@<id/username> — get user by id/username',
+		docs: '@<username> — get user by username',
+	},
+	findUserById: {
+		regexp: /#(\d+)/,
+		docs: '#<id> — get user by id',
 	},
 };
 
@@ -88,6 +96,32 @@ bot.onText(userCommandsList.findUser.regexp, async (msg: Message, match: RegExpM
 			scope: CommandScope.Users,
 			context: {
 				[CmdCode.Command]: command,
+				id: match[1],
+			},
+			processing: true,
+		},
+		{
+			message: msg,
+		} as TelegramBot.CallbackQuery,
+	);
+});
+
+bot.onText(userCommandsList.findUserById.regexp, async (msg: Message, match: RegExpMatchArray | null) => {
+	if (!isAdmin(msg)) {
+		return;
+	}
+	if (globalHandler.hasActiveCommand()) {
+		return;
+	}
+	const data = match[1];
+	if (isNaN(Number(data))) {
+		await bot.sendMessage(msg.chat.id, 'Введите валидное число');
+	}
+	globalHandler.execute(
+		{
+			scope: CommandScope.Users,
+			context: {
+				[CmdCode.Command]: VPNUserCommand.FindById,
 				id: match[1],
 			},
 			processing: true,
@@ -217,6 +251,23 @@ bot.onText(userCommandsList.trial.regexp, async (msg: Message) => {
 			scope: CommandScope.Users,
 			context: {
 				[CmdCode.Command]: VPNUserCommand.ShowTrial,
+			},
+		},
+		{
+			message: msg,
+		} as TelegramBot.CallbackQuery,
+	);
+});
+
+bot.onText(userCommandsList.referralPay.regexp, async (msg: Message) => {
+	if (!isAdmin(msg)) {
+		return;
+	}
+	globalHandler.execute(
+		{
+			scope: CommandScope.Users,
+			context: {
+				[CmdCode.Command]: VPNUserCommand.PayReferral,
 			},
 		},
 		{

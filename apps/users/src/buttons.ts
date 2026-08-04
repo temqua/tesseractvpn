@@ -1,5 +1,5 @@
 import type { InlineKeyboardButton, ReplyKeyboardMarkup, SendBasicOptions } from 'node-telegram-bot-api';
-import { UsersContext } from './entities/users/users.types';
+import { User, UsersContext } from './entities/users/users.types';
 import { CmdCode, CommandScope, UserRequest, VPNUserCommand } from './enums';
 import type { CommandDetailCompressed } from './global.handler';
 
@@ -29,6 +29,25 @@ export const getFrequestPaymentAmountsKeyboard = (amounts: number[]): SendBasicO
 			[CmdCode.Context]: {
 				[CmdCode.Command]: VPNUserCommand.Pay,
 				a: amount.toString(),
+			} as UsersContext,
+			[CmdCode.Processing]: 1,
+		} as CommandDetailCompressed),
+	}));
+	return {
+		reply_markup: {
+			inline_keyboard: [keyboard],
+		},
+	};
+};
+
+export const getReferredKeyboard = (users: User[]): SendBasicOptions => {
+	const keyboard: InlineKeyboardButton[] = users.map(u => ({
+		text: u.username,
+		callback_data: JSON.stringify({
+			[CmdCode.Scope]: CommandScope.Users,
+			[CmdCode.Context]: {
+				[CmdCode.Command]: VPNUserCommand.PayReferral,
+				rfid: u.id.toString(),
 			} as UsersContext,
 			[CmdCode.Processing]: 1,
 		} as CommandDetailCompressed),

@@ -1,0 +1,9 @@
+.actions {
+	display: flex;
+	gap: 1rem;
+}
+
+.actions a {
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+}

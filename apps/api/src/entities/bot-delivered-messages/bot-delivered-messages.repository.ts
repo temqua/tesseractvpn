@@ -12,6 +12,9 @@ export class BotDeliveredMessagesRepository {
     if (dto?.id) {
       where.id = Number(dto.id);
     }
+    if (dto?.userId) {
+      where.userId = Number(dto.userId);
+    }
     const params = {
       skip: dto?.skip ? Number(dto.skip) : undefined,
       take: dto?.take ? Number(dto.take) : undefined,

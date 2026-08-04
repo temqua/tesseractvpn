@@ -86,6 +86,9 @@ class UsersCommandsHandler implements ICommandHandler {
 		if (context[CmdCode.Command] === VPNUserCommand.Pay) {
 			await this.paymentsService.pay(message, context, this.state.init);
 		}
+		if (context[CmdCode.Command] === VPNUserCommand.PayReferral) {
+			await this.paymentsService.payReferral(message, context, this.state.init);
+		}
 		if (context[CmdCode.Command] === VPNUserCommand.Create) {
 			await this.service.create(message, context as UserCreateCommandContext, this.state.init);
 		}
@@ -129,6 +132,9 @@ class UsersCommandsHandler implements ICommandHandler {
 		}
 		if (context[CmdCode.Command] === VPNUserCommand.ShowPayments) {
 			await this.paymentsService.showPayments(message, context, from);
+		}
+		if (context[CmdCode.Command] === VPNUserCommand.ShowReferralPayments) {
+			await this.paymentsService.showReferralPayments(message, context, from);
 		}
 		if (context[CmdCode.Command] === VPNUserCommand.ShowUnpaid) {
 			await this.service.showUnpaid(message);

@@ -20,6 +20,9 @@ export class UserQueryDto extends BaseListDto {
   @IsString()
   @IsOptional()
   firstName?: string;
+  @IsString()
+  @IsOptional()
+  lastName?: string;
   @IsOptional()
   @IsEnum(OrderByUserField)
   orderBy?: OrderByUserField;

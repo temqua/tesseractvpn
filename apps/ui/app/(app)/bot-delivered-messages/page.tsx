@@ -8,9 +8,7 @@ export default async function DeliveredMessagesPage(props: {
 		take?: string;
 		id?: string;
 		username?: string;
-		telegramId?: string;
-		firstName?: string;
-		lastName?: string;
+		userId?: string;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
@@ -19,22 +17,23 @@ export default async function DeliveredMessagesPage(props: {
 	const take = Number(searchParams.take) || 25;
 	const id = searchParams.id || '';
 	const username = searchParams.username || '';
-	const firstName = searchParams.firstName || '';
-	const lastName = searchParams.lastName || '';
-	const telegramId = searchParams.telegramId || '';
+	const userId = searchParams.userId || '';
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
 		params.set('take', take.toString());
+		for (const [key, value] of Object.entries(searchParams)) {
+			if (value) {
+				params.set(key, value);
+			}
+		}
 		redirect(`/bot-delivered-messages?${params.toString()}`);
 	}
 	const response = await deliveredMessagesSSRClient.getAll({
 		skip: (page - 1) * take,
 		take,
 		...(id && { id }),
-		...(firstName && { firstName }),
-		...(lastName && { lastName }),
-		...(telegramId && { telegramId }),
+		...(userId && { userId }),
 		...(username && { username }),
 	});
 	return (

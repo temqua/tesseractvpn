@@ -11,7 +11,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef } from 'react';
-
+import styles from './all.module.css';
 const baseColumns: IColumn<IVPNUserUI>[] = [
 	{ label: 'ID', prop: 'id' },
 	{ label: 'Username', prop: 'username' },
@@ -36,6 +36,7 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 	const free = searchParams.get('free') || '';
 	const username = searchParams.get('username') || '';
 	const firstName = searchParams.get('firstName') || '';
+	const lastName = searchParams.get('lastName') || '';
 
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 
@@ -56,23 +57,24 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 			label: 'Actions',
 			actions: row => {
 				return (
-					<>
+					<div className={styles.actions}>
 						<Link href={`/users/${row.id}`}>✏️</Link>
-						<Link href={`/users/${row.id}/delivered-messages`}>M</Link>
-						<Link href={`/users/${row.id}/payments`}>💰</Link>
-					</>
+						<Link href={`/bot-delivered-messages?userId=${row.id}`}>✉️</Link>
+						<Link href={`/payments?userId=${row.id}`}>💰</Link>
+					</div>
 				);
 			},
 		},
 	];
 
-	const { data: fetched } = useQuery({
-		queryKey: ['users', page, take, id, username, firstName, active, free],
+	const { data: fetched, isLoading } = useQuery({
+		queryKey: ['users', page, take, id, username, firstName, lastName, active, free],
 		queryFn: () => {
 			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
 			if (id) params.id = id;
 			if (username) params.username = username;
 			if (firstName) params.firstName = firstName;
+			if (lastName) params.lastName = lastName;
 			if (active) params.active = active;
 			if (free) params.free = free;
 			return usersClient.getAll(params);
@@ -143,7 +145,14 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 						onChange={e => debouncedUpdateFilter('firstName', e.target.value)}
 					/>
 				</th>
-				<th></th>
+				<th>
+					<Input
+						type="search"
+						placeholder="Last name"
+						defaultValue={lastName}
+						onChange={e => debouncedUpdateFilter('lastName', e.target.value)}
+					/>
+				</th>
 				<th>
 					<Select onChange={event => debouncedUpdateFilter('active', event.target.value)}>
 						<option value=""></option>
@@ -168,6 +177,7 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 		<div>
 			<ContentArea>
 				<Table
+					loading={isLoading}
 					columns={columns}
 					data={prepared}
 					count={fetched?.count ?? 0}

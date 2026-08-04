@@ -9,6 +9,7 @@ export default async function UsersPage(props: {
 		id?: string;
 		username?: string;
 		firstName?: string;
+		lastName?: string;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
@@ -18,10 +19,16 @@ export default async function UsersPage(props: {
 	const id = searchParams.id || '';
 	const username = searchParams.username || '';
 	const firstName = searchParams.firstName || '';
+	const lastName = searchParams.lastName || '';
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
 		params.set('take', take.toString());
+		for (const [key, value] of Object.entries(searchParams)) {
+			if (value) {
+				params.set(key, value);
+			}
+		}
 		redirect(`/users?${params.toString()}`);
 	}
 	const response = await usersSSRClient.getAll({
@@ -30,6 +37,7 @@ export default async function UsersPage(props: {
 		...(id && { id }),
 		...(username && { username }),
 		...(firstName && { firstName }),
+		...(lastName && { lastName }),
 	});
 	return <UsersClientSide initialData={response.data} count={response.count}></UsersClientSide>;
 }

@@ -26,6 +26,11 @@ export default async function IncomingMessagesPage(props: {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
 		params.set('take', take.toString());
+		for (const [key, value] of Object.entries(searchParams)) {
+			if (value) {
+				params.set(key, value);
+			}
+		}
 		redirect(`/bot-incoming-messages?${params.toString()}`);
 	}
 	const response = await incomingMessagesSSRClient.getAll({

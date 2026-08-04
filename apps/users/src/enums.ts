@@ -55,6 +55,7 @@ export enum VPNUserCommand {
 	Update = 'u',
 	UpdateNull = 'un',
 	Pay = 'pay',
+	PayReferral = 'pr',
 	PauseKey = 'pk',
 	Export = 'ex',
 	ExportPayments = 'exp',
@@ -67,6 +68,7 @@ export enum VPNUserCommand {
 	ShowPaymentGuide = 'spg',
 	ShowPaymentIntroGuide = 'spig',
 	ShowPayments = 'sp',
+	ShowReferralPayments = 'srp',
 	ShowLastPayment = 'slp',
 	ShowLastPaymentAdmin = 'slpa',
 	ShowRefLink = 'srl',
@@ -79,6 +81,7 @@ export enum VPNUserCommand {
 	ShowMenu = 'sm',
 	UnassignKey = 'uask',
 	UserPay = 'up',
+	UserReferralPay = 'urp',
 }
 
 export enum PaymentCommand {
@@ -116,6 +119,7 @@ export enum UserRequest {
 	Lookup,
 	Get,
 	XUI,
+	PayReferral,
 }
 
 export enum Bank {

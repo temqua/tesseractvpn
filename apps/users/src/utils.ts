@@ -10,7 +10,7 @@ export const formatDate = (date: Date | string, dateFormat = 'yyyy-MM-dd'): stri
 	return format(date, dateFormat);
 };
 
-export function setActiveStep(current: string, steps: { [key: string]: boolean }) {
+export function setActiveStep<T extends { [key: string]: boolean }>(current: keyof T, steps: T) {
 	Object.keys(steps).forEach(k => {
 		steps[k] = false;
 		steps[current] = true;

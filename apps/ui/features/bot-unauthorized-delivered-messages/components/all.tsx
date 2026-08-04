@@ -53,7 +53,7 @@ export default function UnauthorizedDeliveredMessagesClientSide({
 		},
 		[updateParams],
 	);
-	const { data: fetched } = useQuery({
+	const { data: fetched, isLoading } = useQuery({
 		queryKey: ['bot-unauthorized-delivered-messages', page, take, id, telegramId],
 		queryFn: () => {
 			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
@@ -106,6 +106,7 @@ export default function UnauthorizedDeliveredMessagesClientSide({
 		<div>
 			<ContentArea>
 				<Table
+					loading={isLoading}
 					page={page}
 					take={take}
 					searchRow={searchRow}

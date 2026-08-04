@@ -79,6 +79,8 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 	const id = searchParams.get('id') || '';
 	const page = Number(searchParams.get('page')) || 1;
 	const take = Number(searchParams.get('take')) || 25;
+	const userId = searchParams.get('userId');
+	const monthsCount = searchParams.get('monthsCount');
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const debouncedUpdateFilter = useCallback(
@@ -112,12 +114,13 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 		},
 	];
 
-	const { data: fetched } = useQuery({
-		queryKey: ['payments', page, take, id],
+	const { data: fetched, isLoading } = useQuery({
+		queryKey: ['payments', page, take, id, userId, monthsCount],
 		queryFn: () => {
 			const params: IListParams & Partial<IPaymentForm> = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
-
+			if (userId) params.userId = userId;
+			if (monthsCount) params.monthsCount = monthsCount;
 			return paymentsClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
@@ -133,11 +136,28 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 						onChange={event => debouncedUpdateFilter('id', event.target.value)}
 					></Input>
 				</th>
-				{columns
-					.filter(c => c.prop !== 'id')
-					.map(c => (
-						<th></th>
-					))}
+				<th></th>
+				<th></th>
+				<th>
+					<Input
+						type="search"
+						placeholder="Months Count"
+						defaultValue={monthsCount}
+						onChange={e => debouncedUpdateFilter('monthsCount', e.target.value)}
+					/>
+				</th>
+				<th></th>
+				<th>
+					<Input
+						type="search"
+						placeholder="User ID"
+						defaultValue={userId}
+						onChange={e => debouncedUpdateFilter('userId', e.target.value)}
+					/>
+				</th>
+				<th></th>
+				<th></th>
+				<th></th>
 			</>
 		),
 		[debouncedUpdateFilter],
@@ -174,6 +194,7 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 					take={take}
 					onChangePage={handlePageChange}
 					onChangeTake={handleTakeChange}
+					loading={isLoading}
 				/>
 			</ContentArea>
 			<div>

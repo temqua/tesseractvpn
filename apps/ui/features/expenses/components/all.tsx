@@ -66,7 +66,7 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 		},
 		[updateParams],
 	);
-	const { data: fetched } = useQuery({
+	const { data: fetched, isLoading } = useQuery({
 		queryKey: ['expenses', page, take, id, category],
 		queryFn: () => {
 			const params: IListParams & Partial<IExpenseForm> = { skip: (page - 1) * take, take };
@@ -154,6 +154,7 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 					columns={columns}
 					count={fetched?.count ?? 0}
 					data={fetched?.data ?? []}
+					loading={isLoading}
 					onChangePage={handlePageChange}
 					onChangeTake={handleTakeChange}
 				/>

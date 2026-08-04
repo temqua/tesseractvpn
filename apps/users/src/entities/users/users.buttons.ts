@@ -62,11 +62,33 @@ export const getUserMenu = (userId: number, isChildUser: boolean = false) => {
 				}),
 			},
 			{
+				text: 'Referral Payments',
+				callback_data: JSON.stringify({
+					[CmdCode.Scope]: CommandScope.Users,
+					[CmdCode.Context]: {
+						[CmdCode.Command]: VPNUserCommand.ShowReferralPayments,
+						id: userId,
+					},
+				}),
+			},
+		],
+		[
+			{
 				text: 'Pay',
 				callback_data: JSON.stringify({
 					[CmdCode.Scope]: CommandScope.Users,
 					[CmdCode.Context]: {
 						[CmdCode.Command]: VPNUserCommand.Pay,
+						id: userId,
+					},
+				}),
+			},
+			{
+				text: 'Pay Referral',
+				callback_data: JSON.stringify({
+					[CmdCode.Scope]: CommandScope.Users,
+					[CmdCode.Context]: {
+						[CmdCode.Command]: VPNUserCommand.PayReferral,
 						id: userId,
 					},
 				}),
@@ -371,6 +393,38 @@ export const acceptKeyboard: SendBasicOptions = {
 	reply_markup: {
 		inline_keyboard: [[acceptButton]],
 	},
+};
+
+export const getExpirationDateKeyboard = (command: VPNUserCommand = VPNUserCommand.Pay): SendBasicOptions => {
+	const keyboard = [
+		{
+			text: 'Accept',
+			callback_data: JSON.stringify({
+				[CmdCode.Scope]: CommandScope.Users,
+				[CmdCode.Context]: {
+					[CmdCode.Command]: command,
+					accept: 1,
+				},
+				[CmdCode.Processing]: 1,
+			} as CommandDetailCompressed),
+		},
+		{
+			text: 'Считать от текущей даты',
+			callback_data: JSON.stringify({
+				[CmdCode.Scope]: CommandScope.Users,
+				[CmdCode.Context]: {
+					[CmdCode.Command]: command,
+					today: 1,
+				},
+				[CmdCode.Processing]: 1,
+			} as CommandDetailCompressed),
+		},
+	];
+	return {
+		reply_markup: {
+			inline_keyboard: [keyboard],
+		},
+	};
 };
 
 const createUserOperationsInlineKeyboard = (id: number) => {

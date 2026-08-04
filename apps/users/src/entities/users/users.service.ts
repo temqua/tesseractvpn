@@ -1941,8 +1941,8 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 				},
 			});
 		}
-		if (user.referrals?.length) {
-			const buttons: InlineKeyboardButton[][] = user.referrals.map(ref => [
+		if (user.referred?.length) {
+			const buttons: InlineKeyboardButton[][] = user.referred.map(ref => [
 				{
 					text: ref.username,
 					callback_data: JSON.stringify({
@@ -1954,7 +1954,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 					}),
 				},
 			]);
-			await bot.sendMessage(chatId, 'Referrals', {
+			await bot.sendMessage(chatId, 'Referred', {
 				reply_markup: {
 					inline_keyboard: buttons,
 				},

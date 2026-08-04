@@ -5,11 +5,14 @@ import env from '../../env';
 export class TelegramService {
   private readonly logger = new Logger(TelegramService.name);
 
-  private readonly chatId = env.JOBS_CHAT_ID;
-  async send(text: string) {
+  private readonly chatId = env.TG_NOTIFICATIONS_CHAT_ID;
+  async send(text: string, chatId = this.chatId) {
+    if (env.APP_ENV === 'local') {
+      return;
+    }
     try {
       const body = JSON.stringify({
-        chat_id: this.chatId,
+        chatId,
         text,
       });
       const response = await fetch(

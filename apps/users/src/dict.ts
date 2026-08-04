@@ -180,6 +180,10 @@ Your referral link: https://t.me/tesseract_users_bot?start=${refId}`,
 		ru: 'Не найдено платежей для данного пользователя',
 		en: 'Payments not found for user',
 	},
+	referral_payments_not_found: {
+		ru: 'Не найдено реферальных платежей для данного пользователя',
+		en: 'Referral payments not found for user',
+	},
 	no_keys: {
 		ru: 'Не найдено существующих ключей',
 		en: 'No keys found for user',
@@ -219,6 +223,10 @@ Your referral link: https://t.me/tesseract_users_bot?start=${refId}`,
 	payment_processed: {
 		en: 'Your payment has been successfully processed',
 		ru: 'Ваш платёж был успешно обработан',
+	},
+	referral_payment_processed: {
+		en: "You've successfully earned a bonus month for referring a user",
+		ru: 'Вы успешно получили бонусный месяц за реферального пользователя',
 	},
 	installation_guide: {
 		ru: (link: string) => `Ваша подписка и инструкция по ссылке ${link}`,

@@ -18,6 +18,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TelegramModule } from './entities/telegram/telegram.module';
 import { DatabaseModule } from './database.module';
 import { BotDeliveredMessagesModule } from './entities/bot-delivered-messages/bot-delivered-messages.module';
+import { ReferralTransactionsModule } from './entities/referral-transactions/referral-transactions.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { BotDeliveredMessagesModule } from './entities/bot-delivered-messages/bo
     ScheduleModule.forRoot(),
     DatabaseModule,
     BotDeliveredMessagesModule,
+    ReferralTransactionsModule,
   ],
   providers: [
     {

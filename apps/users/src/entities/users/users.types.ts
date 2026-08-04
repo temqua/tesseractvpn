@@ -2,6 +2,7 @@ import { Device, UserRole, VPNProtocol, VpnServer } from '@prisma/client';
 import { Message, User as TGUser } from 'node-telegram-bot-api';
 import { CmdCode, UpdateUserPropsMap, VPNUserCommand } from '../../enums';
 import { Payment } from '../payments/payments.types';
+import { ReferralTransaction } from '../referral-transactions/referral-transactions.types';
 
 export interface UsersContext {
 	[CmdCode.Command]: VPNUserCommand;
@@ -13,12 +14,13 @@ export interface UsersContext {
 	prop?: keyof User;
 	chatId?: number;
 	payerId?: string;
+	today?: 0 | 1;
 	pr?: 'I' | 'W' | 'O';
 	a?: string;
 	rid?: string;
 	username?: string;
 	tgid?: number;
-	ref?: number;
+	rfid?: string;
 	[CmdCode.SubOperation]?: VPNUserCommand;
 }
 
@@ -131,5 +133,6 @@ export type VPNUser = User & {
 	payments: Payment[];
 	dependants: User[];
 	referrer: User | null;
-	referrals: User[];
+	referred: User[];
+	referrerTransactions: ReferralTransaction[];
 };

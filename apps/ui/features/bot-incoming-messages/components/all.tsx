@@ -71,7 +71,7 @@ export default function IncomingMessagesClientSide({ initialData, count }: IInco
 		},
 		[updateParams],
 	);
-	const { data: fetched } = useQuery({
+	const { data: fetched, isLoading } = useQuery({
 		queryKey: ['bot-incoming-messages', page, take, id, username, firstName, lastName, telegramId],
 		queryFn: () => {
 			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
@@ -149,6 +149,7 @@ export default function IncomingMessagesClientSide({ initialData, count }: IInco
 		<div>
 			<ContentArea>
 				<Table
+					loading={isLoading}
 					page={page}
 					take={take}
 					searchRow={searchRow}

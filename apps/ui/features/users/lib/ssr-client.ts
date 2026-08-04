@@ -1,5 +1,5 @@
 import ssrClient from '@/app/lib/api/ssr-client';
-import { IVPNUser, IVPNUserDTO, IVPNUserListDTO } from '@/app/lib/api/users/definitions';
+import { IVPNUserDTO, IVPNUserListDTO } from '@/app/lib/api/users/definitions';
 import { IListParams, ListResponse } from '@/app/lib/definitions.global';
 
 export class UsersSSRClient {

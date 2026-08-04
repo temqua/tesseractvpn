@@ -21,7 +21,7 @@ const env = cleanEnv(process.env, {
   WG_RECEIVER_PORT: num({ default: 8091 }),
   OVPN_RECEIVER_PORT: num({ default: 8092 }),
   BOT_TOKEN: str({ default: '' }),
-  JOBS_CHAT_ID: str({ default: '' }),
+  TG_NOTIFICATIONS_CHAT_ID: str({ default: '' }),
   CORS_ALLOWED_ORIGINS: json({ default: '[]' }),
 });
 

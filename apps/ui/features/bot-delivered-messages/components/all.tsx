@@ -48,7 +48,7 @@ const baseColumns: IColumn<IBotDeliveredMessageUI>[] = [
 export default function DeliveredMessagesClientSide({ initialData, count }: IDeliveredMessagesPageProps) {
 	const searchParams = useSearchParams();
 	const id = searchParams.get('id') || '';
-	const telegramId = searchParams.get('telegramId') || '';
+	const userId = searchParams.get('userId') || '';
 	const page = Number(searchParams.get('page')) || 1;
 	const take = Number(searchParams.get('take')) || 25;
 	const updateParams = useUpdateParams(useRouter(), usePathname());
@@ -62,12 +62,12 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 		},
 		[updateParams],
 	);
-	const { data: fetched } = useQuery({
-		queryKey: ['bot-delivered-messages', page, take, id, telegramId],
+	const { data: fetched, isLoading } = useQuery({
+		queryKey: ['bot-delivered-messages', page, take, id, userId],
 		queryFn: () => {
 			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
 			if (id) params.id = id;
-			// if (telegramId) params.telegramId = telegramId;
+			if (userId) params.userId = userId;
 			return deliveredMessagesClient.getAll(params).then(r => {
 				return {
 					...r,
@@ -100,7 +100,14 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 					></Input>
 				</th>
 				<th></th>
-				<th></th>
+				<th>
+					<Input
+						type="search"
+						placeholder={'User ID'}
+						defaultValue={userId}
+						onChange={event => debouncedUpdateFilter('userId', event.target.value)}
+					></Input>
+				</th>
 				<th></th>
 				<th></th>
 				{/* <th>
@@ -133,6 +140,7 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 		<div>
 			<ContentArea>
 				<Table
+					loading={isLoading}
 					page={page}
 					take={take}
 					searchRow={searchRow}

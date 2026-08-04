@@ -8,4 +8,7 @@ export class DeliveredMessagesQueryDto extends BaseListDto {
   @IsString()
   @IsOptional()
   username?: string;
+  @IsNumber()
+  @IsOptional()
+  userId?: number;
 }

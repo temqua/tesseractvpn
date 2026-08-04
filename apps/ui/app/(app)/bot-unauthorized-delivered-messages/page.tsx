@@ -20,6 +20,11 @@ export default async function UnauthorizedDeliveredMessagesPage(props: {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
 		params.set('take', take.toString());
+		for (const [key, value] of Object.entries(searchParams)) {
+			if (value) {
+				params.set(key, value);
+			}
+		}
 		redirect(`/bot-unauthorized-delivered-messages?${params.toString()}`);
 	}
 	const response = await unauthorizedDeliveredMessagesSSRClient.getAll({

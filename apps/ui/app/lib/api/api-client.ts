@@ -9,7 +9,6 @@ export interface IErrorBody {
 class ApiClient {
 	async request(url: string, params: RequestInit) {
 		const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}`;
-		console.log('apiUrl :>> ', apiUrl);
 		console.time(`${params.method} Request to ${apiUrl ?? ''}${url}`);
 		const response = await fetch(`${apiUrl ?? ''}${url}`, {
 			...params,

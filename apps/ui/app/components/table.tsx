@@ -11,6 +11,7 @@ interface TableProps<T extends Record<keyof T, React.ReactNode> = object>
 	count: number;
 	page: number;
 	take: number;
+	loading?: boolean;
 	onChangePage?: (page: number | SetStateAction<number>) => void;
 	onChangeTake?: (take: number | SetStateAction<number>) => void;
 }
@@ -33,6 +34,7 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 	take,
 	onChangePage,
 	onChangeTake,
+	loading = false,
 	...rest
 }: TableProps<T>) {
 	const headers = columns.map((column, i) => <th key={i}>{column.label}</th>);
@@ -59,6 +61,10 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 
 	function handleNextPage(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
 		onChangePage?.(p => Math.min(totalPages, p + 1));
+	}
+
+	if (loading) {
+		return 'Loading...';
 	}
 
 	return (

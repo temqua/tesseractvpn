@@ -37,6 +37,9 @@ export class PaymentsRepository {
         lte: endOfDay(parse(dto.to, 'yyyy-MM-dd', new Date())),
       };
     }
+    if (dto?.monthsCount) {
+      where.monthsCount = Number(dto?.monthsCount);
+    }
     if (dto?.userId) {
       where.userId = Number(dto?.userId);
     }

@@ -2,24 +2,36 @@ import { addDays, addMonths, parse } from 'date-fns';
 import type { Message, User as TGUser } from 'node-telegram-bot-api';
 import { basename } from 'path';
 import bot from '../../bot';
-import { getFrequestPaymentAmountsKeyboard, getYesNoKeyboard } from '../../buttons';
+import { getFrequestPaymentAmountsKeyboard, getReferredKeyboard, getYesNoKeyboard } from '../../buttons';
 import { dict } from '../../dict';
-import { CmdCode, CommandScope, PaymentCommand, UserRequest } from '../../enums';
+import { CmdCode, CommandScope, PaymentCommand, UserRequest, VPNUserCommand } from '../../enums';
 import env from '../../env';
 import { globalHandler } from '../../global.handler';
 import logger from '../../logger';
 import { formatDate, setActiveStep, uuid32to36 } from '../../utils';
 import { PlansClient } from '../plans/plans.client';
+import { Plan } from '../plans/plans.types';
+import { ReferralTransactionsClient } from '../referral-transactions/referral-transactions.client';
 import { NalogService } from '../users/nalog.service';
 import { PasarguardService } from '../users/pasarguard.service';
 import { RemnawaveService } from '../users/rw.service';
-import { acceptKeyboard, getUserKeyboard } from '../users/users.buttons';
+import { acceptKeyboard, getExpirationDateKeyboard, getUserKeyboard } from '../users/users.buttons';
 import { UsersClient } from '../users/users.client';
 import { UsersContext, VPNUser } from '../users/users.types';
 import { PaymentsClient } from './payments.client';
 import { Payment, PaymentsContext } from './payments.types';
-import { Plan } from '../plans/plans.types';
-type AvailableFields = 'amount' | 'from' | 'to' | 'user' | 'nalog' | 'expires' | 'months' | 'dependants' | 'plan';
+type AvailableFields =
+	| 'amount'
+	| 'from'
+	| 'to'
+	| 'user'
+	| 'nalog'
+	| 'expires'
+	| 'months'
+	| 'dependants'
+	| 'plan'
+	| 'referrer'
+	| 'referred';
 export class PaymentsService {
 	constructor(
 		private pasarguardService: PasarguardService = new PasarguardService(),
@@ -27,6 +39,7 @@ export class PaymentsService {
 		private usersClient: UsersClient = new UsersClient(),
 		private plansClient: PlansClient = new PlansClient(),
 		private rwService = new RemnawaveService(),
+		private rtClient = new ReferralTransactionsClient(),
 	) {}
 
 	private nalogService: NalogService = new NalogService();
@@ -38,6 +51,13 @@ export class PaymentsService {
 		expires: false,
 		nalog: false,
 		dependants: false,
+	};
+	private referralPaymentSteps = {
+		referrer: false,
+		referred: false,
+		nalog: false,
+		dependants: false,
+		expires: false,
 	};
 	private findByDateRangeSteps = {
 		from: false,
@@ -57,6 +77,25 @@ export class PaymentsService {
 		}
 		for (const p of payments) {
 			await this.showPaymentInfo(message, p);
+		}
+		globalHandler.finishCommand();
+	}
+
+	async showReferralPayments(message: Message, context: UsersContext, from?: TGUser) {
+		const lang = from?.is_bot ? 'ru' : from?.language_code;
+		let userId: string = context.id;
+		const user = context.id
+			? await this.usersClient.getById(userId)
+			: await this.usersClient.getByTelegramId(message.chat.id.toString());
+		if (!context.id) {
+			userId = user.id.toString();
+		}
+		const rts = user?.referrerTransactions;
+		if (!rts?.length) {
+			await bot.sendMessage(message.chat.id, dict.referral_payments_not_found[lang]);
+		}
+		for (const p of rts) {
+			await this.showPaymentInfo(message, p.payment);
 		}
 		globalHandler.finishCommand();
 	}
@@ -230,6 +269,7 @@ export class PaymentsService {
 	async pay(message: Message | null, context: UsersContext, start: boolean) {
 		this.log(`pay. Active step "${this.getActiveStep(this.paymentSteps) ?? 'start'}"`);
 		const chatId = message?.chat?.id ?? env.ADMIN_USER_ID;
+
 		if (start) {
 			setActiveStep('user', this.paymentSteps);
 			if (!context.id) {
@@ -323,12 +363,21 @@ export class PaymentsService {
 				}
 			}
 			delete context.accept;
-			await this.calculateExpirationDate(chatId, user);
+			const calculated = await this.calculateExpirationDate(
+				chatId,
+				user,
+				this.params.get('months') as number,
+				VPNUserCommand.Pay,
+			);
+			this.params.set('expires', calculated);
+			this.setPaymentStep('expires');
 			return;
 		}
 		if (this.paymentSteps.expires) {
 			if (!context.accept) {
-				if (message?.text) {
+				if (context.today) {
+					this.params.set('expires', addMonths(new Date(), this.params.get('months')));
+				} else if (message?.text) {
 					this.params.set('expires', new Date(message.text));
 				} else {
 					await bot.sendMessage(chatId, `message.text is null/empty ${message?.text}`);
@@ -338,6 +387,7 @@ export class PaymentsService {
 				}
 			}
 			delete context.accept;
+			delete context.today;
 			await bot.sendMessage(chatId, `Добавить налог?`, {
 				reply_markup: {
 					inline_keyboard: getYesNoKeyboard(),
@@ -364,6 +414,115 @@ export class PaymentsService {
 			this.params.set('dependants', Boolean(context?.accept));
 		}
 		await this.executePayment(chatId, user);
+	}
+
+	async payReferral(message: Message, context: UsersContext, start: boolean) {
+		this.log(`referral pay. Active step "${this.getActiveStep(this.paymentSteps) ?? 'start'}"`);
+		const chatId = message?.chat?.id ?? env.ADMIN_USER_ID;
+
+		if (start) {
+			setActiveStep('referrer', this.referralPaymentSteps);
+			if (!context.id) {
+				await bot.sendMessage(chatId, 'Share user or enter username', {
+					reply_markup: {
+						keyboard: [
+							[
+								{
+									text: 'Share contact',
+									request_user: {
+										request_id: UserRequest.PayReferral,
+									},
+								},
+							],
+						],
+						one_time_keyboard: true, // The keyboard will hide after one use
+						resize_keyboard: true, // Fit the keyboard to the screen size
+					},
+				});
+				return;
+			}
+		}
+
+		if (this.referralPaymentSteps.referrer) {
+			let user: VPNUser | null;
+			if (context.id) {
+				user = await this.usersClient.getById(Number(context.id));
+			} else if (message?.user_shared?.user_id) {
+				user = await this.usersClient.getByTelegramId(message.user_shared.user_id.toString());
+			} else {
+				user = await this.usersClient.getByUsername(message?.text ?? '');
+			}
+
+			if (!user) {
+				const errorMessage = 'Пользователь не найден в системе';
+				logger.error(errorMessage);
+				await bot.sendMessage(chatId, errorMessage);
+				this.params.clear();
+				globalHandler.finishCommand();
+				return;
+			}
+			this.params.set('referrer', user);
+			if (!user.referred.length) {
+				await bot.sendMessage(chatId, 'Нет доступных рефералов для пользователя');
+				this.params.clear();
+				globalHandler.finishCommand();
+				return;
+			}
+			await bot.sendMessage(
+				chatId,
+				`Список реферралов для которых доступно списание ${user.username}`,
+				getReferredKeyboard(user.referred),
+			);
+			setActiveStep('referred', this.referralPaymentSteps);
+			return;
+		}
+		const referrer = this.params.get('referrer') as VPNUser;
+		if (!referrer) {
+			const errorMessage = `Ошибка при обработке реферального платежа. Пользователь не найден в системе`;
+			logger.error(`[${basename(__filename)}]: ${errorMessage}`);
+			await bot.sendMessage(chatId, errorMessage);
+			this.params.clear();
+			globalHandler.finishCommand();
+			return;
+		}
+		if (this.referralPaymentSteps.referred) {
+			this.params.set('referred', context.rfid);
+			const calculated = await this.calculateExpirationDate(chatId, referrer, 1, VPNUserCommand.PayReferral);
+			this.params.set('expires', calculated);
+			setActiveStep('expires', this.referralPaymentSteps);
+			return;
+		}
+		if (this.referralPaymentSteps.expires) {
+			if (!context.accept) {
+				if (context.today) {
+					this.params.set('expires', addMonths(new Date(), 1));
+				} else if (message?.text) {
+					this.params.set('expires', new Date(message.text));
+				} else {
+					await bot.sendMessage(chatId, `message.text is null/empty ${message?.text}`);
+					this.params.clear();
+					globalHandler.finishCommand();
+					return;
+				}
+			}
+			delete context.accept;
+			delete context.today;
+			delete context.accept;
+			if (referrer.dependants?.filter(u => u.active)?.length) {
+				await bot.sendMessage(chatId, `Добавить платежи для дочерних юзеров?`, {
+					reply_markup: {
+						inline_keyboard: getYesNoKeyboard(VPNUserCommand.PayReferral),
+					},
+				});
+				this.params.set('dependants', false);
+				setActiveStep('dependants', this.referralPaymentSteps);
+				return;
+			}
+		}
+		if (this.referralPaymentSteps.dependants) {
+			this.params.set('dependants', Boolean(context?.accept));
+		}
+		this.executeReferralPayment(chatId, referrer);
 	}
 
 	async showAll(msg: Message) {
@@ -450,22 +609,28 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 		this.setPaymentStep('months');
 	}
 
-	private async calculateExpirationDate(chatId: number, user: VPNUser) {
-		const months = this.params.get('months') as number;
+	private async calculateExpirationDate(chatId: number, user: VPNUser, months: number, command: VPNUserCommand) {
+		let startPoint = new Date();
 		const lastPayment = await this.usersClient.getLastPayment(user.id);
 		if (lastPayment) {
 			await bot.sendMessage(
 				chatId,
 				`Последний платёж этого пользователя количеством ${lastPayment.amount} ${lastPayment.currency} 
-создан ${formatDate(lastPayment.paymentDate)} на ${lastPayment.monthsCount} месяцев 
-и истекает ${lastPayment.expiresOn ? formatDate(lastPayment.expiresOn) : 'unset'}`,
+	создан ${formatDate(lastPayment.paymentDate)} на ${lastPayment.monthsCount} месяцев 
+	и истекает ${lastPayment.expiresOn ? formatDate(lastPayment.expiresOn) : 'unset'}`,
 			);
+			startPoint = new Date(lastPayment.expiresOn);
 		}
+
 		// const calculated = addMonths(lastPayment?.expiresOn ?? new Date(), months);
-		const calculated = addMonths(new Date(), months);
-		await bot.sendMessage(chatId, `Вычисленная дата окончания работы: ${formatDate(calculated)}`, acceptKeyboard);
-		this.params.set('expires', calculated);
-		this.setPaymentStep('expires');
+		const calculated = addMonths(startPoint, months);
+		console.log('calculated :>> ', calculated);
+		await bot.sendMessage(
+			chatId,
+			`Вычисленная дата окончания работы: ${formatDate(calculated)}`,
+			getExpirationDateKeyboard(command),
+		);
+		return calculated;
 	}
 
 	private async executePayment(chatId: number, user: VPNUser) {
@@ -618,6 +783,163 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 		}
 	}
 
+	private async executeReferralPayment(chatId: number, referrer: VPNUser) {
+		const amount: number = 0;
+		const monthsCount: number = 1;
+		const expiresOn = this.params.get('expires') as Date;
+		console.log('expiresOn :>> ', expiresOn);
+		const addDependants = this.params.get('dependants') as boolean | undefined;
+		const referredId = this.params.get('referred') as string;
+		await bot.sendMessage(chatId, `Вычисленная дата окончания работы: ${formatDate(expiresOn)}`);
+
+		try {
+			const result = await this.client.create({
+				userId: referrer.id,
+				amount: Number(amount),
+				monthsCount: Number(monthsCount),
+				expiresOn: expiresOn.toISOString(),
+			});
+
+			if (!result) {
+				const errMessage = `По непредвиденным обстоятельствам реферальный платеж для пользователя ${referrer.username} c ID ${referrer.id} не был создан`;
+				logger.error(`[${basename(__filename)}]: ${errMessage}`);
+				await bot.sendMessage(chatId, errMessage);
+				return;
+			}
+			const successMessage = `Реферальный платёж на ${monthsCount} месяц был успешно обработан для пользователя ${referrer.username}. 
+Новая дата истечения срока ${formatDate(expiresOn)}.`;
+			logger.success(`[${basename(__filename)}]: ${successMessage}`);
+			await bot.sendMessage(chatId, successMessage);
+			await bot.sendMessage(chatId, `ID платежа: \`${result.id.replace(/[-.*#_]/g, match => `\\${match}`)}\``, {
+				parse_mode: 'MarkdownV2',
+			});
+			const rt = await this.rtClient.create({
+				referrerId: referrer.id,
+				referredId: Number(referredId),
+				paymentId: result.id,
+			});
+
+			if (!rt) {
+				const errMessage = `По непредвиденным обстоятельствам реферальная транзакция для платежа ${result.id} для пользователя ${referrer.username} c ID ${referrer.id} не была создана`;
+				logger.error(`[${basename(__filename)}]: ${errMessage}`);
+				await bot.sendMessage(chatId, errMessage);
+				return;
+			}
+			const successRTMessage = `Реферальная транзакция создана для пользователя ${referrer.username} за реферального пользователя ${referredId}`;
+			logger.success(`[${basename(__filename)}]: ${successRTMessage}`);
+			await bot.sendMessage(chatId, successRTMessage);
+			await bot.sendMessage(chatId, `ID транзакции: \`${rt.id.replace(/[-.*#_]/g, match => `\\${match}`)}\``, {
+				parse_mode: 'MarkdownV2',
+			});
+			if (referrer.telegramId) {
+				try {
+					await bot.sendMessage(referrer.telegramId, dict.referral_payment_processed['ru']);
+				} catch (err) {
+					logger.error(`${err}`);
+				}
+			}
+			if (addDependants) {
+				for (const dep of referrer.dependants.filter(u => u.active)) {
+					const childResult = await this.client.create({
+						userId: dep.id,
+						amount: 0,
+						monthsCount: Number(monthsCount),
+						expiresOn: expiresOn.toISOString(),
+						parentPaymentId: result.id,
+					});
+					if (childResult) {
+						const successMessage = `Реферальный платёж на ${monthsCount} месяцев был успешно обработан для пользователя ${dep.username} (${dep.id}) дочернего от ${referrer.username} (${referrer.id}). 
+Новая дата истечения срока ${formatDate(expiresOn)}`;
+						logger.success(`${basename(__filename)}: ${successMessage}`);
+						await bot.sendMessage(chatId, successMessage);
+						await bot.sendMessage(
+							chatId,
+							`ID платежа: \`${result.id.replace(/[-.*#_]/g, match => `\\${match}`)}\``,
+							{
+								parse_mode: 'MarkdownV2',
+							},
+						);
+						if (!dep.active) {
+							this.usersClient
+								.update(dep.id, {
+									active: true,
+								})
+								.catch(err => {
+									bot.sendMessage(
+										env.ADMIN_USER_ID,
+										`Ошибка при активации юзера ${referrer.username} ${err}`,
+									);
+								});
+						}
+						if (env.BOT_ENV !== 'local') {
+							if (dep.pasarguardId) {
+								try {
+									await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
+										expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
+									});
+								} catch (err) {
+									const ms = `Request to pasarguard failed ${err}`;
+									logger.error(ms);
+									await bot.sendMessage(chatId, ms);
+								}
+							}
+
+							if (dep.rwUUID) {
+								try {
+									await this.rwService.updateUser({
+										uuid: dep.rwUUID,
+										expireAt: addDays(new Date(childResult.expiresOn), 1).toISOString(),
+									});
+								} catch (err) {
+									const ms = `Request to remnawave failed ${err}`;
+									logger.error(ms);
+									await bot.sendMessage(chatId, ms);
+								}
+							}
+						}
+					} else {
+						const errMessage = `По непредвиденным обстоятельствам реферальный платеж для дочернего пользователя ${dep.username} не был создан`;
+						logger.error(`[${basename(__filename)}]: ${errMessage}`);
+						await bot.sendMessage(chatId, errMessage);
+					}
+				}
+			}
+
+			if (env.BOT_ENV !== 'local') {
+				if (referrer.pasarguardId) {
+					try {
+						await this.pasarguardService.updateUser(`${referrer.username}_${referrer.id}`, {
+							expire: addDays(new Date(result.expiresOn), 1).toISOString(),
+						});
+					} catch (err) {
+						const ms = `Request to pasarguard failed ${err}`;
+						logger.error(ms);
+						await bot.sendMessage(chatId, ms);
+					}
+				}
+				if (referrer.rwUUID) {
+					try {
+						await this.rwService.updateUser({
+							uuid: referrer.rwUUID,
+							expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
+						});
+					} catch (err) {
+						const ms = `Request to remnawave failed ${err}`;
+						logger.error(ms);
+						await bot.sendMessage(chatId, ms);
+					}
+				}
+			}
+		} catch (err) {
+			const errMessage = `Ошибка при обработке реферального платежа для пользователя ${referrer.username} ${err}`;
+			logger.error(`[${basename(__filename)}]: ${errMessage}`);
+			await bot.sendMessage(chatId, errMessage);
+		} finally {
+			this.params.clear();
+			globalHandler.finishCommand();
+		}
+	}
+
 	private async showPaymentInfo(message: Message, p: Payment) {
 		const cd = JSON.stringify({
 			[CmdCode.Scope]: CommandScope.Payments,
@@ -687,7 +1009,7 @@ Amount: ${parentPayment.amount} ${parentPayment.currency}`,
 		}
 	}
 
-	private setPaymentStep(current: string) {
+	private setPaymentStep(current: keyof typeof this.paymentSteps) {
 		setActiveStep(current, this.paymentSteps);
 	}
 

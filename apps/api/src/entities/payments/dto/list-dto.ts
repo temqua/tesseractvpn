@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 import { BaseListDto } from '../../../dto/base-dto';
 
 export class PaymentListDto extends BaseListDto {
@@ -12,5 +12,7 @@ export class PaymentListDto extends BaseListDto {
   to?: string;
   @IsString()
   sheet?: string;
+  @IsNumber()
+  monthsCount?: number;
 }
 new URLSearchParams();
