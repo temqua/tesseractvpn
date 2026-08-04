@@ -1,4 +1,5 @@
 import PaymentsClientSide from '@/features/payments/components/all';
+import ReferralTransactionsClientSide from '@/features/referral-transactions/components/all';
 import { referralTransactionsSSRClient } from '@/features/referral-transactions/lib/ssr-client';
 import { redirect } from 'next/navigation';
 
@@ -39,5 +40,5 @@ export default async function ReferralTransactionsPage(props: {
 		...(paymentId && { paymentId }),
 	});
 
-	return <PaymentsClientSide initialData={response.data} count={response.count} />;
+	return <ReferralTransactionsClientSide initialData={response.data} count={response.count} />;
 }

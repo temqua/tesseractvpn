@@ -7,6 +7,7 @@ import Table, { IColumn } from '@/app/components/table';
 import { deleteAction } from '@/app/lib/actions/payments';
 import { paymentsClient } from '@/app/lib/api/payments/client';
 import { IPayment } from '@/app/lib/api/payments/definitions';
+import { IReferralTransaction } from '@/app/lib/api/referral-transactions/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -14,45 +15,10 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-const baseColumns: IColumn<IPayment>[] = [
+const baseColumns: IColumn<IReferralTransaction>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
-		searchable: true,
-	},
-	{
-		label: 'Payment Date',
-		prop: 'paymentDate',
-		searchable: true,
-	},
-	{
-		label: 'Amount',
-		prop: 'amount',
-		searchable: true,
-	},
-	{
-		label: 'Months count',
-		prop: 'monthsCount',
-		searchable: true,
-	},
-	{
-		label: 'Expires on',
-		prop: 'expiresOn',
-		searchable: true,
-	},
-	{
-		label: 'userId',
-		prop: 'userId',
-		searchable: true,
-	},
-	{
-		label: 'planId',
-		prop: 'planId',
-		searchable: true,
-	},
-	{
-		label: 'parentPaymentId',
-		prop: 'parentPaymentId',
 		searchable: true,
 	},
 ];
@@ -68,11 +34,11 @@ interface IPaymentForm {
 }
 
 interface IReferralTransactionsPageProps {
-	initialData: IPayment[];
+	initialData: IReferralTransaction[];
 	count?: number;
 }
 
-export default function ReferralTransactionsClientSide({ initialData, count }: IPaymentsPageProps) {
+export default function ReferralTransactionsClientSide({ initialData, count }: IReferralTransactionsPageProps) {
 	const [isModalOpened, setModalOpened] = useState(false);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const searchParams = useSearchParams();
@@ -92,14 +58,14 @@ export default function ReferralTransactionsClientSide({ initialData, count }: I
 		},
 		[updateParams],
 	);
-	const columns: IColumn<IPayment>[] = [
+	const columns: IColumn<IReferralTransaction>[] = [
 		...baseColumns,
 		{
 			label: 'Actions',
 			actions: row => {
 				return (
 					<>
-						<Link href={`/payments/${row.id}`}>✏️</Link>
+						<Link href={`/referral-transactions/${row.id}`}>✏️</Link>
 						<button
 							onClick={() => {
 								setDeleteId(row.id);
@@ -115,7 +81,7 @@ export default function ReferralTransactionsClientSide({ initialData, count }: I
 	];
 
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['payments', page, take, id, userId, monthsCount],
+		queryKey: ['referral-transactions', page, take, id, userId, monthsCount],
 		queryFn: () => {
 			const params: IListParams & Partial<IPaymentForm> = { skip: (page - 1) * take, take };
 			if (id) params.id = id;

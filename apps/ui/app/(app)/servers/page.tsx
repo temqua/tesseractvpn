@@ -1,5 +1,6 @@
 import PaymentsClientSide from '@/features/payments/components/all';
 import { paymentsSSRClient } from '@/features/payments/lib/ssr-client';
+import ServersClientSide from '@/features/servers/components/all';
 import { redirect } from 'next/navigation';
 
 export default async function ServersPage(props: {
@@ -31,5 +32,5 @@ export default async function ServersPage(props: {
 		...(userId && { userId }),
 	});
 
-	return <PaymentsClientSide initialData={response.data} count={response.count} />;
+	return <ServersClientSide initialData={response.data} count={response.count} />;
 }
