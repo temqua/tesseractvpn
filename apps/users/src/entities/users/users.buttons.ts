@@ -397,32 +397,37 @@ export const acceptKeyboard: SendBasicOptions = {
 
 export const getExpirationDateKeyboard = (command: VPNUserCommand = VPNUserCommand.Pay): SendBasicOptions => {
 	const keyboard = [
-		{
-			text: 'Accept',
-			callback_data: JSON.stringify({
-				[CmdCode.Scope]: CommandScope.Users,
-				[CmdCode.Context]: {
-					[CmdCode.Command]: command,
-					accept: 1,
-				},
-				[CmdCode.Processing]: 1,
-			} as CommandDetailCompressed),
-		},
-		{
-			text: 'Считать от текущей даты',
-			callback_data: JSON.stringify({
-				[CmdCode.Scope]: CommandScope.Users,
-				[CmdCode.Context]: {
-					[CmdCode.Command]: command,
-					today: 1,
-				},
-				[CmdCode.Processing]: 1,
-			} as CommandDetailCompressed),
-		},
+		[
+			{
+				text: 'Accept',
+				callback_data: JSON.stringify({
+					[CmdCode.Scope]: CommandScope.Users,
+					[CmdCode.Context]: {
+						[CmdCode.Command]: command,
+						accept: 1,
+					},
+					[CmdCode.Processing]: 1,
+				} as CommandDetailCompressed),
+			},
+		],
+		[
+			{
+				text: 'Считать от текущей даты',
+				callback_data: JSON.stringify({
+					[CmdCode.Scope]: CommandScope.Users,
+					[CmdCode.Context]: {
+						[CmdCode.Command]: command,
+						today: 1,
+					},
+					[CmdCode.Processing]: 1,
+				} as CommandDetailCompressed),
+			},
+		],
 	];
+
 	return {
 		reply_markup: {
-			inline_keyboard: [keyboard],
+			inline_keyboard: keyboard,
 		},
 	};
 };

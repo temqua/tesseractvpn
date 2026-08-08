@@ -623,9 +623,7 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 			startPoint = new Date(lastPayment.expiresOn);
 		}
 
-		// const calculated = addMonths(lastPayment?.expiresOn ?? new Date(), months);
 		const calculated = addMonths(startPoint, months);
-		console.log('calculated :>> ', calculated);
 		await bot.sendMessage(
 			chatId,
 			`Вычисленная дата окончания работы: ${formatDate(calculated)}`,
