@@ -115,7 +115,7 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 						<Link href={`/plans/${row.id}`}>✏️</Link>
 						<button
 							onClick={() => {
-								setDeleteId(row.id);
+								setDeleteId(row.id.toString());
 								setModalOpened(true);
 							}}
 						>
