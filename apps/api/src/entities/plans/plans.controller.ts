@@ -11,6 +11,7 @@ import {
 import { PlansService } from './plans.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
+import { SearchPlanDto } from './dto/search-plan.dto';
 
 @Controller('plans')
 export class PlansController {
@@ -22,16 +23,8 @@ export class PlansController {
   }
 
   @Get()
-  async findAll(
-    @Query('price') price: string,
-    @Query('count') count: string,
-    @Query('amount') amount: string,
-  ) {
-    return await this.plansService.findAll({
-      price,
-      count,
-      amount,
-    });
+  async findAll(@Query() dto?: SearchPlanDto) {
+    return await this.plansService.findAll(dto);
   }
 
   @Get(':id')

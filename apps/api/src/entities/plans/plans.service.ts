@@ -19,36 +19,32 @@ export class PlansService {
     );
   }
 
-  async findAll(queryParams: SearchPlanDto) {
-    if (queryParams.price && queryParams.count && queryParams.amount) {
-      return await this.repository.findPlan(
-        Number(queryParams.amount),
-        Number(queryParams.price),
-        Number(queryParams.count),
-      );
-    }
-    if (queryParams.price && queryParams.count) {
-      return await this.repository.findByPriceAndCount(
-        Number(queryParams.price),
-        Number(queryParams.count),
-      );
-    }
-    if (queryParams.price && queryParams.amount) {
-      return await this.repository.findByPriceAndAmount(
-        Number(queryParams.price),
-        Number(queryParams.amount),
-      );
-    }
-    if (queryParams.price) {
-      return await this.repository.getByPrice(Number(queryParams.price));
-    }
-    if (queryParams.count) {
-      return await this.repository.findByCount(Number(queryParams.count));
-    }
-    if (queryParams.amount) {
-      return await this.repository.findByAmount(Number(queryParams.amount));
-    }
-    return await this.repository.getAll();
+  async findAll(dto?: SearchPlanDto) {
+    // if (queryParams?.price && queryParams?.count && queryParams?.amount) {
+    //   return await this.repository.findPlan(queryParams);
+    // }
+    // if (queryParams?.price && queryParams?.count) {
+    //   return await this.repository.findByPriceAndCount(
+    //     Number(queryParams.price),
+    //     Number(queryParams.count),
+    //   );
+    // }
+    // if (queryParams?.price && queryParams?.amount) {
+    //   return await this.repository.findByPriceAndAmount(
+    //     Number(queryParams.price),
+    //     Number(queryParams.amount),
+    //   );
+    // }
+    // if (queryParams?.price) {
+    //   return await this.repository.getByPrice(Number(queryParams.price));
+    // }
+    // if (queryParams?.count) {
+    //   return await this.repository.findByCount(Number(queryParams.count));
+    // }
+    // if (queryParams?.amount) {
+    //   return await this.repository.findByAmount(Number(queryParams.amount));
+    // }
+    return await this.repository.findPlan(dto);
   }
 
   async findOne(id: number) {

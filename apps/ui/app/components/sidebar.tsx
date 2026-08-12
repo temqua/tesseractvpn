@@ -30,6 +30,7 @@ export default function Sidebar() {
 					href="/bot-unauthorized-delivered-messages"
 					label="Unauthorized Delivered Messages"
 				/>
+				<SidebarItem active={pathname === '/plans'} href="/plans" label="Plans" />
 				<SidebarItem active={pathname === '/servers'} href="/servers" label="Servers" />
 			</nav>
 			<div className={styles['sidebar-bottom']}>

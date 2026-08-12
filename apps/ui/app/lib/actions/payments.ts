@@ -65,7 +65,6 @@ export function getUpdateAction(id: string) {
 			userId: Number(formData.get('userId')),
 			paymentDate: formData.get('paymentDate'),
 		});
-		console.log('validatedFields :>> ', validatedFields);
 		if (!validatedFields.success) {
 			return {
 				errors: treeifyError(validatedFields.error),
@@ -99,9 +98,9 @@ export function getUpdateAction(id: string) {
 }
 
 export async function deleteAction(id: string, queryClient: QueryClient) {
-	queryClient.invalidateQueries({ queryKey: ['payments-all'] });
+	queryClient.invalidateQueries({ queryKey: ['payments'] });
 	const response = await paymentsClient.delete(id);
 	if (response.ok) {
-		queryClient.setQueryData(['payments-all'], (oldData: IPayment[]) => oldData.filter(item => item.id !== id));
+		queryClient.setQueryData(['payments'], (oldData: IPayment[]) => oldData.filter(item => item.id !== id));
 	}
 }

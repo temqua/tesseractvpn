@@ -72,7 +72,7 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 						<Link href={`/servers/${row.id}`}>✏️</Link>
 						<button
 							onClick={() => {
-								setDeleteId(row.id);
+								setDeleteId(row.id.toString());
 								setModalOpened(true);
 							}}
 						>

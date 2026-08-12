@@ -11,3 +11,11 @@ export interface IReferralTransaction {
 	referrer: IVPNUser;
 	referred: IVPNUser;
 }
+
+export interface IReferralTransactionUI {
+	id: string;
+	referrerId: number;
+	referredId: number;
+	paymentId: string;
+	createdAt: string;
+}

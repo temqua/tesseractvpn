@@ -4,53 +4,94 @@ import ContentArea from '@/app/components/content-area';
 import Dialog from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
-import { deleteAction } from '@/app/lib/actions/referral-transactions';
-import { referralTransactionsClient } from '@/app/lib/api/referral-transactions/client';
-import { IReferralTransaction, IReferralTransactionUI } from '@/app/lib/api/referral-transactions/definitions';
+import { plansClient } from '@/app/lib/api/plans/client';
+import { IPlan } from '@/app/lib/api/plans/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
+import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-const baseColumns: IColumn<IReferralTransactionUI>[] = [
+interface IPlanPageProps {
+	initialData: IPlan[];
+	count?: number;
+}
+
+interface IPlanForm {
+	id?: string;
+	name?: string;
+	amount?: string;
+	months?: string;
+	price?: string;
+	minCount?: string;
+	maxCount?: string;
+}
+
+interface IPlanFormWithOrder extends IPlanForm {
+	orderBy?: keyof IPlanForm;
+	orderDirection?: OrderDirection;
+}
+
+const baseColumns: IColumn<IPlan>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
 		searchable: true,
 	},
 	{
-		label: 'Referrer ID',
-		prop: 'referrerId',
+		label: 'Name',
+		prop: 'name',
 		searchable: true,
 	},
 	{
-		label: 'Referred ID',
-		prop: 'referredId',
+		label: 'Amount',
+		prop: 'amount',
 		searchable: true,
 	},
+	{
+		label: 'Months',
+		prop: 'months',
+		searchable: true,
+	},
+	{
+		label: 'Price',
+		prop: 'price',
+		searchable: true,
+	},
+	{
+		label: 'Currency',
+		prop: 'currency',
+	},
+	{
+		label: 'Min count',
+		prop: 'minCount',
+	},
+	{
+		label: 'Max count',
+		prop: 'maxCount',
+	},
+	{
+		label: 'Created At',
+		prop: 'createdAt',
+	},
 ];
-interface IRefTransactionForm {
-	id?: string;
-	referrerId?: string;
-	referredId?: string;
-	paymentId?: string;
-}
 
-interface IReferralTransactionsPageProps {
-	initialData: IReferralTransaction[];
-	count?: number;
-}
-
-export default function ReferralTransactionsClientSide({ initialData, count }: IReferralTransactionsPageProps) {
+export default function PlansClientSide({ initialData, count }: IPlanPageProps) {
 	const [isModalOpened, setModalOpened] = useState(false);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const searchParams = useSearchParams();
 	const id = searchParams.get('id') || '';
 	const page = Number(searchParams.get('page')) || 1;
 	const take = Number(searchParams.get('take')) || 25;
-	const userId = searchParams.get('userId');
+	const price = searchParams.get('price');
+	const months = searchParams.get('months');
+	const amount = searchParams.get('amount');
+	const minCount = searchParams.get('minCount');
+	const maxCount = searchParams.get('maxCount');
+	const name = searchParams.get('name');
+
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const debouncedUpdateFilter = useCallback(
@@ -62,14 +103,16 @@ export default function ReferralTransactionsClientSide({ initialData, count }: I
 		},
 		[updateParams],
 	);
-	const columns: IColumn<IReferralTransactionUI>[] = [
+	const orderBy = (searchParams.get('orderBy') as keyof IPlanForm) || '';
+	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
+	const columns: IColumn<IPlan>[] = [
 		...baseColumns,
 		{
 			label: 'Actions',
 			actions: row => {
 				return (
 					<>
-						<Link href={`/referral-transactions/${row.id}`}>✏️</Link>
+						<Link href={`/plans/${row.id}`}>✏️</Link>
 						<button
 							onClick={() => {
 								setDeleteId(row.id);
@@ -83,29 +126,24 @@ export default function ReferralTransactionsClientSide({ initialData, count }: I
 			},
 		},
 	];
-
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['referral-transactions', page, take, id],
+		queryKey: ['plans', page, take, id, orderBy, orderDirection, months, amount, price, minCount, maxCount, name],
 		queryFn: () => {
-			const params: IListParams & Partial<IRefTransactionForm> = { skip: (page - 1) * take, take };
+			const params: IListParams & Partial<IPlanFormWithOrder> = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
-			return referralTransactionsClient.getAll(params);
+			if (price) params.price = price;
+			if (amount) params.amount = amount;
+			if (months) params.months = months;
+			if (minCount) params.minCount = minCount;
+			if (maxCount) params.maxCount = maxCount;
+			if (orderBy) params.orderBy = orderBy;
+			if (orderDirection) params.orderDirection = orderDirection;
+			if (name) params.name = name;
+			return plansClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
 		initialData: page === 1 ? { data: initialData, count: count ?? 0 } : undefined,
 	});
-
-	const prepared: IReferralTransactionUI[] =
-		fetched?.data.map(u => {
-			return {
-				id: u.id,
-				createdAt: u.createdAt,
-				paymentId: u.paymentId,
-				referredId: u.referredId,
-				referrerId: u.referrerId,
-			};
-		}) ?? [];
-
 	const searchRow = useMemo(
 		() => (
 			<>
@@ -116,7 +154,49 @@ export default function ReferralTransactionsClientSide({ initialData, count }: I
 						onChange={event => debouncedUpdateFilter('id', event.target.value)}
 					></Input>
 				</th>
+				<th>
+					<Input
+						type="search"
+						placeholder={'Name'}
+						onChange={event => debouncedUpdateFilter('name', event.target.value)}
+					></Input>
+				</th>
+				<th>
+					<Input
+						type="search"
+						placeholder={'Amount'}
+						onChange={event => debouncedUpdateFilter('amount', event.target.value)}
+					></Input>
+				</th>
+				<th>
+					<Input
+						type="search"
+						placeholder={'Months'}
+						onChange={event => debouncedUpdateFilter('months', event.target.value)}
+					></Input>
+				</th>
+				<th>
+					<Input
+						type="search"
+						placeholder={'Price'}
+						onChange={event => debouncedUpdateFilter('price', event.target.value)}
+					></Input>
+				</th>
 				<th></th>
+				<th>
+					<Input
+						type="search"
+						placeholder={'Min Count'}
+						onChange={event => debouncedUpdateFilter('minCount', event.target.value)}
+					></Input>
+				</th>
+				<th>
+					<Input
+						type="search"
+						placeholder={'Max Count'}
+						onChange={event => debouncedUpdateFilter('maxCount', event.target.value)}
+					></Input>
+				</th>
 				<th></th>
 				<th></th>
 			</>
@@ -147,7 +227,7 @@ export default function ReferralTransactionsClientSide({ initialData, count }: I
 				<Table
 					searchRow={searchRow}
 					columns={columns}
-					data={prepared}
+					data={fetched?.data ?? []}
 					count={fetched?.count ?? 0}
 					page={page}
 					take={take}
@@ -164,11 +244,11 @@ export default function ReferralTransactionsClientSide({ initialData, count }: I
 					onConfirm={() => {
 						setModalOpened(false);
 						if (deleteId) {
-							deleteAction(deleteId, queryClient, id, page, take);
+							// deleteAction(deleteId, queryClient, id, page, take);
 						}
 					}}
 				>
-					Are you sure you want to delete referral transaction?
+					Are you sure you want to delete plan?
 				</Dialog>
 			</div>
 		</div>

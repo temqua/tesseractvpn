@@ -577,7 +577,6 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 			price: user.price,
 			count: 1 + dependantsCount,
 		});
-
 		if (dependants?.length) {
 			await bot.sendMessage(
 				chatId,

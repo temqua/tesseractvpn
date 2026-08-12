@@ -1,4 +1,5 @@
 import client from '../../api-client';
+import { ListResponse } from '../../definitions';
 import { CreatePlanDto, Plan } from './plans.types';
 
 export class PlansClient {
@@ -13,8 +14,8 @@ export class PlansClient {
 		if (params?.count) {
 			queryParams.append('count', params.count.toString());
 		}
-		const result = await client.get(`/plans?${queryParams}`);
-		return result as Plan[];
+		const result = (await client.get(`/plans?${queryParams}`)) as ListResponse<Plan>;
+		return result.data;
 	}
 
 	async getById(id: number): Promise<Plan | null> {
