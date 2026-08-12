@@ -1,3 +1,4 @@
+import { OrderDirection } from '@/app/lib/enums';
 import PaymentsClientSide from '@/features/payments/components/all';
 import { paymentsSSRClient } from '@/features/payments/lib/ssr-client';
 import { redirect } from 'next/navigation';
@@ -8,6 +9,8 @@ export default async function PaymentsPage(props: {
 		take?: string;
 		id?: string;
 		userId?: string;
+		orderBy?: string;
+		orderDirection?: OrderDirection;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
@@ -15,6 +18,8 @@ export default async function PaymentsPage(props: {
 	const take = Number(searchParams.take) || 25;
 	const id = searchParams.id || '';
 	const userId = searchParams.userId || '';
+	const orderBy = searchParams.orderBy;
+	const orderDirection = searchParams.orderDirection;
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
@@ -31,6 +36,8 @@ export default async function PaymentsPage(props: {
 		take,
 		...(id && { id }),
 		...(userId && { userId }),
+		...(orderBy && { orderBy }),
+		...(orderDirection && { orderDirection }),
 	});
 
 	return <PaymentsClientSide initialData={response.data} count={response.count} />;

@@ -9,6 +9,7 @@ import { deleteAction } from '@/app/lib/actions/expenses';
 import { expensesClient } from '@/app/lib/api/expenses/client';
 import { IExpense } from '@/app/lib/api/expenses/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
+import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { debounce } from '@/app/lib/utils';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -21,6 +22,11 @@ interface IExpenseForm {
 	paymentDate: string;
 	amount: string;
 	category: string;
+}
+
+interface IExpenseFormWithOrder extends IExpenseForm {
+	orderBy?: keyof IExpenseForm;
+	orderDirection?: OrderDirection;
 }
 
 const baseColumns: IColumn<IExpense>[] = [
@@ -40,6 +46,10 @@ const baseColumns: IColumn<IExpense>[] = [
 		label: 'Category',
 		prop: 'category',
 	},
+	{
+		label: 'Description',
+		prop: 'description',
+	},
 ];
 
 interface IExpensePageProps {
@@ -55,6 +65,9 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 	const category = searchParams.get('category');
 	const page = Number(searchParams.get('page')) || 1;
 	const take = Number(searchParams.get('take')) || 25;
+	const orderBy = (searchParams.get('orderBy') as keyof IExpenseForm) || '';
+	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
+
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const debouncedUpdateFilter = useCallback(
@@ -67,11 +80,13 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 		[updateParams],
 	);
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['expenses', page, take, id, category],
+		queryKey: ['expenses', page, take, id, category, orderBy, orderDirection],
 		queryFn: () => {
-			const params: IListParams & Partial<IExpenseForm> = { skip: (page - 1) * take, take };
+			const params: IListParams & Partial<IExpenseFormWithOrder> = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (category) params.category = category;
+			if (orderBy) params.orderBy = orderBy;
+			if (orderDirection) params.orderDirection = orderDirection;
 			return expensesClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
@@ -119,6 +134,7 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 						<option value="Servers">Servers</option>
 					</Select>
 				</th>
+				<th></th>
 				<th></th>
 			</>
 		),

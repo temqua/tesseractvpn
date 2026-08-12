@@ -8,6 +8,7 @@ import { deleteAction } from '@/app/lib/actions/payments';
 import { paymentsClient } from '@/app/lib/api/payments/client';
 import { IPayment } from '@/app/lib/api/payments/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
+import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -72,6 +73,11 @@ interface IPaymentsPageProps {
 	count?: number;
 }
 
+interface IPaymentFormWithOrder extends IPaymentForm {
+	orderBy?: keyof IPaymentForm;
+	orderDirection?: OrderDirection;
+}
+
 export default function PaymentsClientSide({ initialData, count }: IPaymentsPageProps) {
 	const [isModalOpened, setModalOpened] = useState(false);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -81,6 +87,9 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 	const take = Number(searchParams.get('take')) || 25;
 	const userId = searchParams.get('userId');
 	const monthsCount = searchParams.get('monthsCount');
+	const orderBy = (searchParams.get('orderBy') as keyof IPaymentForm) || '';
+	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
+
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const debouncedUpdateFilter = useCallback(
@@ -115,12 +124,14 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 	];
 
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['payments', page, take, id, userId, monthsCount],
+		queryKey: ['payments', page, take, id, userId, monthsCount, orderBy, orderDirection],
 		queryFn: () => {
-			const params: IListParams & Partial<IPaymentForm> = { skip: (page - 1) * take, take };
+			const params: IListParams & Partial<IPaymentFormWithOrder> = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (userId) params.userId = userId;
 			if (monthsCount) params.monthsCount = monthsCount;
+			if (orderBy) params.orderBy = orderBy;
+			if (orderDirection) params.orderDirection = orderDirection;
 			return paymentsClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
@@ -142,7 +153,7 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 					<Input
 						type="search"
 						placeholder="Months Count"
-						defaultValue={monthsCount}
+						defaultValue={monthsCount ?? undefined}
 						onChange={e => debouncedUpdateFilter('monthsCount', e.target.value)}
 					/>
 				</th>
@@ -151,7 +162,7 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 					<Input
 						type="search"
 						placeholder="User ID"
-						defaultValue={userId}
+						defaultValue={userId ?? undefined}
 						onChange={e => debouncedUpdateFilter('userId', e.target.value)}
 					/>
 				</th>

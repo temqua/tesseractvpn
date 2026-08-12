@@ -1,3 +1,4 @@
+import { OrderDirection } from '@/app/lib/enums';
 import ExpensesClientSide from '@/features/expenses/components/all';
 import { expensesSSRClient } from '@/features/expenses/lib/ssr-client';
 import { redirect } from 'next/navigation';
@@ -7,12 +8,16 @@ export default async function ExpensesPage(props: {
 		page?: string;
 		take?: string;
 		id?: string;
+		orderBy?: string;
+		orderDirection?: OrderDirection;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
 
 	const page = Number(searchParams.page) || 1;
 	const take = Number(searchParams.take) || 25;
+	const orderBy = searchParams.orderBy;
+	const orderDirection = searchParams.orderDirection;
 	const id = searchParams.id || '';
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
@@ -29,6 +34,8 @@ export default async function ExpensesPage(props: {
 		skip: (page - 1) * take,
 		take,
 		...(id && { id }),
+		...(orderBy && { orderBy }),
+		...(orderDirection && { orderDirection }),
 	});
 	return <ExpensesClientSide initialData={response.data} count={response.count} />;
 }
