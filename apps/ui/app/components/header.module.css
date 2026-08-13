@@ -1,6 +1,9 @@
 .header {
 	height: 66px;
-
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 1rem;
 	background-color: var(--sidebar);
 	box-shadow: 0 0 2rem #0000001a;
 
