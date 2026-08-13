@@ -1,8 +1,9 @@
 'use client';
 
 import ActionsCell from '@/app/components/actions-cell';
+import { Button } from '@/app/components/button';
 import ContentArea from '@/app/components/content-area';
-import Dialog from '@/app/components/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
 import { deleteAction } from '@/app/lib/actions/servers';
@@ -165,21 +166,35 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 					loading={isLoading}
 				/>
 			</ContentArea>
-			<div>
-				<Dialog
-					isOpened={isModalOpened}
-					onCancel={() => setModalOpened(false)}
-					onClose={() => setModalOpened(false)}
-					onConfirm={() => {
-						setModalOpened(false);
-						if (deleteId) {
-							deleteAction(deleteId, queryClient, id, name, url);
-						}
-					}}
-				>
+			<Dialog open={isModalOpened}>
+				<DialogContent className="sm:max-w-sm">
+					<DialogHeader>
+						<DialogTitle>Confirm</DialogTitle>
+					</DialogHeader>
 					Are you sure you want to delete server?
-				</Dialog>
-			</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setModalOpened(false);
+								if (deleteId) {
+									deleteAction(deleteId, queryClient, id, name, url);
+								}
+							}}
+						>
+							Confirm
+						</Button>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setModalOpened(false);
+							}}
+						>
+							Cancel
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

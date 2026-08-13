@@ -89,6 +89,8 @@ export default function NewPlan() {
 						/>
 					</FormField>
 					<Button type="submit">Submit</Button>
+					{state?.errors?.errors?.length ? state?.errors?.errors.join(',') : ''}
+					{state?.data?.id ? `Successfully created plan ${state?.data.id}` : ''}
 				</div>
 			</form>
 		</ContentArea>

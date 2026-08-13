@@ -1,7 +1,8 @@
 'use client';
 
+import { Button } from '@/app/components/button';
 import ContentArea from '@/app/components/content-area';
-import Dialog from '@/app/components/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
 import { deleteAction } from '@/app/lib/actions/referral-transactions';
@@ -156,21 +157,35 @@ export default function ReferralTransactionsClientSide({ initialData, count }: I
 					loading={isLoading}
 				/>
 			</ContentArea>
-			<div>
-				<Dialog
-					isOpened={isModalOpened}
-					onCancel={() => setModalOpened(false)}
-					onClose={() => setModalOpened(false)}
-					onConfirm={() => {
-						setModalOpened(false);
-						if (deleteId) {
-							deleteAction(deleteId, queryClient, id, page, take);
-						}
-					}}
-				>
+			<Dialog open={isModalOpened}>
+				<DialogContent className="sm:max-w-sm">
+					<DialogHeader>
+						<DialogTitle>Confirm</DialogTitle>
+					</DialogHeader>
 					Are you sure you want to delete referral transaction?
-				</Dialog>
-			</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setModalOpened(false);
+								if (deleteId) {
+									deleteAction(deleteId, queryClient, id, page, take);
+								}
+							}}
+						>
+							Confirm
+						</Button>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setModalOpened(false);
+							}}
+						>
+							Cancel
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

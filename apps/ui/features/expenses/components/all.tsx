@@ -1,8 +1,9 @@
 'use client';
 
 import ActionsCell from '@/app/components/actions-cell';
+import { Button } from '@/app/components/button';
 import ContentArea from '@/app/components/content-area';
-import Dialog from '@/app/components/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
 import { Select } from '@/app/components/select';
 import Table, { IColumn } from '@/app/components/table';
@@ -12,12 +13,11 @@ import { IExpense } from '@/app/lib/api/expenses/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
-import { debounce } from '@/app/lib/utils';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Trash } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 interface IExpenseForm {
 	id: string;
@@ -39,6 +39,7 @@ const baseColumns: IColumn<IExpense>[] = [
 	{
 		label: 'Payment Date',
 		prop: 'paymentDate',
+		sortable: true,
 	},
 	{
 		label: 'Amount',
@@ -168,6 +169,17 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 		},
 		[take, updateParams],
 	);
+
+	const handleSort = useCallback(
+		(prop?: keyof IExpense) => {
+			if (!prop) {
+				return;
+			}
+			const newDirection = orderDirection ? (orderDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+			updateParams({ orderBy: prop, orderDirection: newDirection });
+		},
+		[orderDirection],
+	);
 	const queryClient = useQueryClient();
 
 	return (
@@ -186,23 +198,38 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 					loading={isLoading}
 					onChangePage={handlePageChange}
 					onChangeTake={handleTakeChange}
+					onSort={handleSort}
 				/>
 			</ContentArea>
-			<div>
-				<Dialog
-					isOpened={isModalOpened}
-					onCancel={() => setModalOpened(false)}
-					onClose={() => setModalOpened(false)}
-					onConfirm={() => {
-						setModalOpened(false);
-						if (deleteId) {
-							deleteAction(deleteId, queryClient);
-						}
-					}}
-				>
+			<Dialog open={isModalOpened}>
+				<DialogContent className="sm:max-w-sm">
+					<DialogHeader>
+						<DialogTitle>Confirm</DialogTitle>
+					</DialogHeader>
 					Are you sure you want to delete expense?
-				</Dialog>
-			</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setModalOpened(false);
+								if (deleteId) {
+									deleteAction(deleteId, queryClient);
+								}
+							}}
+						>
+							Confirm
+						</Button>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setModalOpened(false);
+							}}
+						>
+							Cancel
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

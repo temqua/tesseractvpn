@@ -1,9 +1,10 @@
-import { Check, X } from 'lucide-react';
+import { ArrowUpDown, Check, X } from 'lucide-react';
 import { JSX, SetStateAction, useMemo } from 'react';
 import { Button } from './button';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from './pagination';
 import { Select } from './select';
 import styles from './table.module.css';
+import { TableBody, TableHead, TableHeader, TableRow } from './table-components';
 
 interface TableProps<T extends Record<keyof T, React.ReactNode> = object>
 	extends React.TableHTMLAttributes<HTMLTableElement> {
@@ -16,6 +17,7 @@ interface TableProps<T extends Record<keyof T, React.ReactNode> = object>
 	loading?: boolean;
 	onChangePage?: (page: number | SetStateAction<number>) => void;
 	onChangeTake?: (take: number | SetStateAction<number>) => void;
+	onSort?: (prop?: keyof T) => void;
 }
 export interface IColumn<T extends Record<keyof T, React.ReactNode> = object> {
 	prop?: keyof T;
@@ -24,6 +26,7 @@ export interface IColumn<T extends Record<keyof T, React.ReactNode> = object> {
 	search?: {
 		custom?: true;
 	};
+	sortable?: boolean;
 	actions?: (row: T) => React.ReactNode;
 }
 
@@ -36,10 +39,27 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 	take,
 	onChangePage,
 	onChangeTake,
+	onSort,
 	loading = false,
 	...rest
 }: TableProps<T>) {
-	const headers = columns.map((column, i) => <th key={i}>{column.label}</th>);
+	const headers = columns.map((column, i) => (
+		<TableHead key={i}>
+			{column.sortable ? (
+				<Button
+					variant="ghost"
+					onClick={() => {
+						onSort?.(column.prop);
+					}}
+				>
+					{column.label}
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			) : (
+				<>{column.label}</>
+			)}
+		</TableHead>
+	));
 
 	const totalPages = useMemo(() => Math.max(1, Math.ceil(count / take)), [count, take]);
 	const items = data.map((row, index) => {
@@ -70,7 +90,7 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 	}
 
 	return (
-		<div className={styles.tableWrapper}>
+		<div>
 			<div className={styles.paginationWrapper}>
 				<div>Count: {count}</div>
 				<div className={styles.pagination}>
@@ -128,13 +148,19 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 					</Select>
 				</div>
 			</div>
-			<table className={styles.table} style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }} {...rest}>
-				<thead>
-					<tr>{headers}</tr>
-					<tr>{searchRow}</tr>
-				</thead>
-				<tbody>{items}</tbody>
-			</table>
+			<div className={styles.tableWrapper}>
+				<table
+					className={styles.table}
+					style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}
+					{...rest}
+				>
+					<TableHeader>
+						<TableRow>{headers}</TableRow>
+						<TableRow>{searchRow}</TableRow>
+					</TableHeader>
+					<TableBody>{items}</TableBody>
+				</table>
+			</div>
 		</div>
 	);
 }

@@ -8,28 +8,21 @@ import { IErrorBody } from '../definitions.global';
 import { toast } from '@/app/components/toast';
 
 export async function createAction(state: PaymentFormState, formData: FormData) {
-	const validatedFields = PaymentFormSchema.safeParse({
+	const body = {
 		amount: Number(formData.get('amount')),
 		monthsCount: Number(formData.get('monthsCount')),
-		expiresOn: formData.get('expiresOn'),
-		parentPaymentId: formData.get('parentPaymentId'),
-		planId: formData.get('planId'),
-		userId: formData.get('userId'),
-	});
+		expiresOn: formData.get('expiresOn') as string,
+		parentPaymentId: formData.get('parentPaymentId') as string,
+		userId: Number(formData.get('userId')),
+	};
+	const validatedFields = PaymentFormSchema.safeParse(body);
 	if (!validatedFields.success) {
 		return {
 			errors: treeifyError(validatedFields.error),
 		};
 	}
 	try {
-		const response: Response = await paymentsClient.create({
-			amount: Number(formData.get('amount')),
-			monthsCount: Number(formData.get('monthsCount')),
-			expiresOn: formData.get('expiresOn') as string,
-			parentPaymentId: formData.get('parentPaymentId') as string,
-			planId: Number(formData.get('planId')),
-			userId: Number(formData.get('userId')),
-		});
+		const response: Response = await paymentsClient.create(body);
 		if (response.ok) {
 			toast.success(`Payment has been successfully created`);
 		}
@@ -65,7 +58,6 @@ export function getUpdateAction(id: string) {
 			userId: Number(formData.get('userId')),
 			paymentDate: formData.get('paymentDate'),
 		};
-		console.log('body :>> ', body);
 		const validatedFields = PaymentFormSchema.safeParse(body);
 		if (!validatedFields.success) {
 			return {

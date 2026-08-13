@@ -84,9 +84,9 @@ export function getUpdateAction(id: string) {
 }
 
 export async function deleteAction(id: string, queryClient: QueryClient) {
-	queryClient.invalidateQueries({ queryKey: ['expenses-all'] });
+	queryClient.invalidateQueries({ queryKey: ['expenses'] });
 	const response = await expensesClient.delete(id);
 	if (response.ok) {
-		queryClient.setQueryData(['expenses-all'], (oldData: IExpense[]) => oldData.filter(item => item.id !== id));
+		queryClient.setQueryData(['expenses'], (oldData: IExpense[]) => oldData.filter(item => item.id !== id));
 	}
 }

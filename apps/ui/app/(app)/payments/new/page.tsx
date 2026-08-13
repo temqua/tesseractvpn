@@ -7,6 +7,12 @@ import { FieldSet } from '@/app/components/field';
 import { Input } from '@/app/components/input';
 import { PaymentFormState } from '@/features/payments/lib/definitions';
 import { useActionState, useState } from 'react';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/app/components/input-group';
+import { isValidDate } from '@/app/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/app/components/popover';
+import { CalendarIcon } from 'lucide-react';
+import { formatISO } from 'date-fns';
+import { Calendar } from '@/app/components/calendar';
 
 export default function NewPaymentPage() {
 	const [state, formAction, isPendingUpdate] = useActionState<PaymentFormState, FormData>(createAction, {});
@@ -15,7 +21,8 @@ export default function NewPaymentPage() {
 	const [monthsCount, setMonthsCount] = useState(0);
 	const [expiresOn, setExpiresOn] = useState('');
 	const [userId, setUserID] = useState(0);
-	// const [planId, setPlanID] = useState(data?.planId);
+	const [expiresOnDate, setExpiresOnDate] = useState(new Date());
+	const [isExpiresOnOpened, setExpiresOnOpened] = useState(false);
 	return (
 		<ContentArea>
 			<form action={formAction}>
@@ -50,7 +57,7 @@ export default function NewPaymentPage() {
 						/>
 					</FormField>
 					<FormField id="expiresOn" label="Expires on" errors={state?.errors?.properties?.expiresOn?.errors}>
-						<Input
+						{/* <Input
 							value={expiresOn}
 							onChange={event => setExpiresOn(event.target.value)}
 							id="expiresOn"
@@ -58,7 +65,65 @@ export default function NewPaymentPage() {
 							autoComplete="off"
 							placeholder="Expires On"
 							aria-invalid={Boolean(state?.errors?.properties?.expiresOn?.errors?.length)}
-						/>
+						/> */}
+						<InputGroup>
+							<InputGroupInput
+								id="expiresOn"
+								name="expiresOn"
+								value={expiresOn}
+								placeholder="Expires On"
+								readOnly
+								onChange={e => {
+									const date = new Date(e.target.value);
+									setExpiresOn(e.target.value);
+									if (isValidDate(date)) {
+										setExpiresOnDate(date);
+									}
+								}}
+								onKeyDown={e => {
+									if (e.key === 'ArrowDown') {
+										e.preventDefault();
+										setExpiresOnOpened(true);
+									}
+								}}
+								aria-invalid={Boolean(state?.errors?.properties?.expiresOn?.errors?.length)}
+							/>
+							<InputGroupAddon align="inline-end">
+								<Popover open={isExpiresOnOpened} onOpenChange={setExpiresOnOpened}>
+									<PopoverTrigger
+										render={
+											<InputGroupButton
+												id="date-picker"
+												variant="ghost"
+												size="icon-xs"
+												aria-label="Select date"
+											>
+												<CalendarIcon />
+												<span className="sr-only">Select date</span>
+											</InputGroupButton>
+										}
+									/>
+									<PopoverContent
+										className="w-auto overflow-hidden p-0"
+										align="end"
+										alignOffset={-8}
+										sideOffset={10}
+									>
+										<Calendar
+											mode="single"
+											selected={expiresOnDate}
+											onSelect={date => {
+												if (date) {
+													setExpiresOnDate(date);
+													setExpiresOn(formatISO(date));
+												}
+												setExpiresOnOpened(false);
+											}}
+										/>
+									</PopoverContent>
+								</Popover>
+							</InputGroupAddon>
+						</InputGroup>
 					</FormField>
 					<FormField id="userId" label="User ID" errors={state?.errors?.properties?.userId?.errors}>
 						<Input
@@ -86,6 +151,8 @@ export default function NewPaymentPage() {
                 </div>
                 {state?.errors?.properties?.planId && <p>{state.errors?.properties.planId?.errors.join()}</p>} */}
 					<Button type="submit">Submit</Button>
+					{state?.errors?.errors?.length ? state?.errors?.errors.join(',') : ''}
+					{state?.data?.id ? `Successfully created payment ${state?.data.id}` : ''}
 				</FieldSet>
 			</form>
 		</ContentArea>

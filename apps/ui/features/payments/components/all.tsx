@@ -1,8 +1,9 @@
 'use client';
 
 import ActionsCell from '@/app/components/actions-cell';
+import { Button } from '@/app/components/button';
 import ContentArea from '@/app/components/content-area';
-import Dialog from '@/app/components/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
 import { deleteAction } from '@/app/lib/actions/payments';
@@ -21,42 +22,38 @@ const baseColumns: IColumn<IPayment>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
-		searchable: true,
 	},
 	{
 		label: 'Payment Date',
 		prop: 'paymentDate',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'Amount',
 		prop: 'amount',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'Months count',
 		prop: 'monthsCount',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'Expires on',
 		prop: 'expiresOn',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'userId',
 		prop: 'userId',
-		searchable: true,
 	},
 	{
 		label: 'planId',
 		prop: 'planId',
-		searchable: true,
 	},
 	{
 		label: 'parentPaymentId',
 		prop: 'parentPaymentId',
-		searchable: true,
 	},
 ];
 interface IPaymentForm {
@@ -187,6 +184,17 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 		[debouncedUpdateFilter],
 	);
 
+	const handleSort = useCallback(
+		(prop?: keyof IPayment) => {
+			if (!prop) {
+				return;
+			}
+			const newDirection = orderDirection ? (orderDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+			updateParams({ orderBy: prop, orderDirection: newDirection });
+		},
+		[orderDirection],
+	);
+
 	const handlePageChange = useCallback(
 		(newPage: number | ((p: number) => number)) => {
 			const resolved = typeof newPage === 'function' ? newPage(page) : newPage;
@@ -218,24 +226,39 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 					take={take}
 					onChangePage={handlePageChange}
 					onChangeTake={handleTakeChange}
+					onSort={handleSort}
 					loading={isLoading}
 				/>
 			</ContentArea>
-			<div>
-				<Dialog
-					isOpened={isModalOpened}
-					onCancel={() => setModalOpened(false)}
-					onClose={() => setModalOpened(false)}
-					onConfirm={() => {
-						setModalOpened(false);
-						if (deleteId) {
-							deleteAction(deleteId, queryClient);
-						}
-					}}
-				>
+			<Dialog open={isModalOpened}>
+				<DialogContent className="sm:max-w-sm">
+					<DialogHeader>
+						<DialogTitle>Confirm</DialogTitle>
+					</DialogHeader>
 					Are you sure you want to delete payment?
-				</Dialog>
-			</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setModalOpened(false);
+								if (deleteId) {
+									deleteAction(deleteId, queryClient);
+								}
+							}}
+						>
+							Confirm
+						</Button>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setModalOpened(false);
+							}}
+						>
+							Cancel
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

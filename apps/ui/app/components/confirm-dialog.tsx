@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Dialog from './dialog';
+import { Dialog } from './dialog';
 
 export default function ConfirmDialog({ message }: { message: string }) {
 	const [open, setOpen] = useState(false);
