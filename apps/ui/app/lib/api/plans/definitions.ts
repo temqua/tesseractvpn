@@ -10,3 +10,14 @@ export interface IPlan {
 	createdAt: string;
 	legacy: boolean;
 }
+
+export interface ICreatePlanDto {
+	amount: number;
+	name: string;
+	monthsCount: number;
+	price: number;
+	minCount: number;
+	maxCount: number;
+}
+
+export interface IUpdatePlanDto extends Partial<ICreatePlanDto> {}

@@ -5,6 +5,7 @@
 	box-shadow: 0 0 2rem #0000001a;
 
 	@media (prefers-color-scheme: dark) {
-		background-color: #1e2c36;
+		/* background-color: #1e2c36; */
+		background-color: var(--sidebar);
 	}
 }

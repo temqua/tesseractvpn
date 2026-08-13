@@ -22,6 +22,8 @@ export class PaymentListDto extends BaseListDto {
   sheet?: string;
   @IsNumber()
   monthsCount?: number;
+  @IsNumber()
+  amount?: number;
   @IsOptional()
   @IsEnum(OrderByPaymentField)
   orderBy?: OrderByPaymentField;

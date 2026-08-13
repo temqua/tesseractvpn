@@ -48,6 +48,9 @@ export class ExpensesRepository {
     if (dto?.category) {
       where.category = dto?.category;
     }
+    if (dto?.amount) {
+      where.amount = Number(dto?.amount);
+    }
     const params = {
       skip: dto?.skip ? Number(dto.skip) : undefined,
       take: dto?.take ? Number(dto.take) : undefined,

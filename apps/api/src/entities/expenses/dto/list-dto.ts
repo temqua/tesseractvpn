@@ -1,5 +1,5 @@
 import { ExpenseCategory } from '@prisma/client';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { BaseListDto } from '../../../dto/base-dto';
 import { OrderDirection } from 'src/enums';
 
@@ -21,6 +21,8 @@ export class ExpenseListDto extends BaseListDto {
   @IsString()
   category?: ExpenseCategory;
 
+  @IsNumber()
+  amount?: number;
   @IsOptional()
   @IsEnum(OrderByExpenseField)
   orderBy?: OrderByExpenseField;

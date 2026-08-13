@@ -13,7 +13,7 @@ export default async function PlansPage(props: {
 		minCount?: string;
 		maxCount?: string;
 		amount?: string;
-		months?: string;
+		monthsCount?: string;
 		orderBy?: string;
 		price?: string;
 		name?: string;
@@ -29,7 +29,7 @@ export default async function PlansPage(props: {
 	const id = searchParams.id || '';
 	const price = searchParams.price || '';
 	const amount = searchParams.amount || '';
-	const months = searchParams.months || '';
+	const monthsCount = searchParams.monthsCount || '';
 	const minCount = searchParams.minCount || '';
 	const maxCount = searchParams.maxCount || '';
 	const name = searchParams.name || '';
@@ -50,7 +50,7 @@ export default async function PlansPage(props: {
 		...(id && { id }),
 		...(price && { price }),
 		...(amount && { amount }),
-		...(months && { months }),
+		...(monthsCount && { monthsCount }),
 		...(name && { name }),
 		...(minCount && { minCount }),
 		...(maxCount && { maxCount }),

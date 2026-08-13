@@ -1,5 +1,7 @@
-import { JSX, SetStateAction, useEffect, useMemo } from 'react';
+import { Check, X } from 'lucide-react';
+import { JSX, SetStateAction, useMemo } from 'react';
 import { Button } from './button';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from './pagination';
 import { Select } from './select';
 import styles from './table.module.css';
 
@@ -46,20 +48,20 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 				return <td key={ci}>{c.actions(row)}</td>;
 			}
 
-			let cellData = c.prop ? row[c.prop] : '';
+			const cellData = c.prop ? row[c.prop] : '';
 			if (c.prop && typeof row[c.prop] === 'boolean') {
-				cellData = row[c.prop] ? '✅' : '❌';
+				return <td key={ci}>{row[c.prop] ? <Check /> : <X />}</td>;
 			}
 			return <td key={ci}>{cellData}</td>;
 		});
 		return <tr key={index}>{cells}</tr>;
 	});
 
-	function handlePreviousPage(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+	function handlePreviousPage(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
 		onChangePage?.(p => Math.max(1, p - 1));
 	}
 
-	function handleNextPage(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+	function handleNextPage(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
 		onChangePage?.(p => Math.min(totalPages, p + 1));
 	}
 
@@ -68,36 +70,52 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className={styles['pagination-wrapper']}>
+		<div className={styles.tableWrapper}>
+			<div className={styles.paginationWrapper}>
 				<div>Count: {count}</div>
 				<div className={styles.pagination}>
 					{totalPages > 1 ? (
-						<>
-							<Button onClick={handlePreviousPage} disabled={page === 1}>
-								🡰
-							</Button>
-							<Button onClick={() => onChangePage?.(1)} disabled={page === 1}>
-								1
-							</Button>
+						<Pagination>
+							<PaginationContent>
+								<PaginationItem>
+									<PaginationPrevious onClick={handlePreviousPage} disabled={page === 1} />
+								</PaginationItem>
+								{/* <Button onClick={handlePreviousPage} disabled={page === 1}>
+									🡰
+								</Button> */}
+								<PaginationItem>
+									<Button onClick={() => onChangePage?.(1)} disabled={page === 1}>
+										1
+									</Button>
+								</PaginationItem>
 
-							{/* {totalPages > 2 && <Button onClick={() => onChangePage?.(2)} disabled={page === 2}>
+								{/* {totalPages > 2 && <Button onClick={() => onChangePage?.(2)} disabled={page === 2}>
 								2
 							</Button>} */}
 
-							{totalPages > 2 && page > 2 && <span className="self-center px-2">...</span>}
+								{totalPages > 2 && page > 2 && <span className="self-center px-2">...</span>}
 
-							{page > 1 && page < totalPages && <Button disabled>{page}</Button>}
+								{page > 1 && page < totalPages && <Button disabled>{page}</Button>}
 
-							{totalPages > 2 && page < totalPages - 1 && <span className="self-center px-2">...</span>}
+								{totalPages > 2 && page < totalPages - 1 && (
+									<span className="self-center px-2">...</span>
+								)}
 
-							<Button onClick={() => onChangePage?.(totalPages)} disabled={page === totalPages}>
-								{totalPages}
-							</Button>
-							<Button onClick={handleNextPage} disabled={page === totalPages}>
-								🡲
-							</Button>
-						</>
+								<PaginationItem>
+									<Button onClick={() => onChangePage?.(totalPages)} disabled={page === totalPages}>
+										{totalPages}
+									</Button>
+								</PaginationItem>
+
+								{/* <Button onClick={handleNextPage} disabled={page === totalPages}>
+									🡲
+								</Button> */}
+
+								<PaginationItem>
+									<PaginationNext onClick={handleNextPage} disabled={page === totalPages} />
+								</PaginationItem>
+							</PaginationContent>
+						</Pagination>
 					) : (
 						<Button disabled>1</Button>
 					)}

@@ -8,6 +8,7 @@ export default async function ExpensesPage(props: {
 		page?: string;
 		take?: string;
 		id?: string;
+		amount?: string;
 		orderBy?: string;
 		orderDirection?: OrderDirection;
 	}>;
@@ -19,6 +20,7 @@ export default async function ExpensesPage(props: {
 	const orderBy = searchParams.orderBy;
 	const orderDirection = searchParams.orderDirection;
 	const id = searchParams.id || '';
+	const amount = searchParams.amount || '';
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
@@ -34,6 +36,7 @@ export default async function ExpensesPage(props: {
 		skip: (page - 1) * take,
 		take,
 		...(id && { id }),
+		...(amount && { amount }),
 		...(orderBy && { orderBy }),
 		...(orderDirection && { orderDirection }),
 	});

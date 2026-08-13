@@ -1,6 +1,6 @@
 import { IListParams, ListResponse } from '../../definitions.global';
 import apiClient from '../api-client';
-import { IPlan } from './definitions';
+import { ICreatePlanDto, IPlan, IUpdatePlanDto } from './definitions';
 
 export class PlansClient {
 	async getAll(listParams?: IListParams): Promise<ListResponse<IPlan>> {
@@ -10,6 +10,18 @@ export class PlansClient {
 
 	async getById(id: string): Promise<IPlan> {
 		return await apiClient.get(`/api/v1/plans/${id}`);
+	}
+
+	async create(dto: ICreatePlanDto) {
+		return await apiClient.post(`/api/v1/plans`, {
+			body: JSON.stringify(dto),
+		});
+	}
+
+	async update(id: string, dto: IUpdatePlanDto) {
+		return await apiClient.patch(`/api/v1/plans/${id}`, {
+			body: JSON.stringify(dto),
+		});
 	}
 
 	async delete(id: string) {

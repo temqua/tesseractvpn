@@ -11,12 +11,16 @@ export default async function PaymentsPage(props: {
 		userId?: string;
 		orderBy?: string;
 		orderDirection?: OrderDirection;
+		monthsCount?: string;
+		amount?: string;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
 	const page = Number(searchParams.page) || 1;
 	const take = Number(searchParams.take) || 25;
 	const id = searchParams.id || '';
+	const monthsCount = searchParams.monthsCount || '';
+	const amount = searchParams.amount || '';
 	const userId = searchParams.userId || '';
 	const orderBy = searchParams.orderBy;
 	const orderDirection = searchParams.orderDirection;
@@ -36,6 +40,8 @@ export default async function PaymentsPage(props: {
 		take,
 		...(id && { id }),
 		...(userId && { userId }),
+		...(monthsCount && { monthsCount }),
+		...(amount && { amount }),
 		...(orderBy && { orderBy }),
 		...(orderDirection && { orderDirection }),
 	});

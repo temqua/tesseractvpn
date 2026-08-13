@@ -12,6 +12,8 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef } from 'react';
 import styles from './all.module.css';
+import { CreditCard, Mail, Pencil } from 'lucide-react';
+import ActionsCell from '@/app/components/actions-cell';
 const baseColumns: IColumn<IVPNUserUI>[] = [
 	{ label: 'ID', prop: 'id' },
 	{ label: 'Username', prop: 'username' },
@@ -57,11 +59,17 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 			label: 'Actions',
 			actions: row => {
 				return (
-					<div className={styles.actions}>
-						<Link href={`/users/${row.id}`}>✏️</Link>
-						<Link href={`/bot-delivered-messages?userId=${row.id}`}>✉️</Link>
-						<Link href={`/payments?userId=${row.id}`}>💰</Link>
-					</div>
+					<ActionsCell>
+						<Link href={`/users/${row.id}`}>
+							<Pencil />
+						</Link>
+						<Link href={`/bot-delivered-messages?userId=${row.id}`}>
+							<Mail />
+						</Link>
+						<Link href={`/payments?userId=${row.id}`}>
+							<CreditCard />
+						</Link>
+					</ActionsCell>
 				);
 			},
 		},

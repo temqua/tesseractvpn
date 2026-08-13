@@ -1,5 +1,6 @@
 'use client';
 
+import ActionsCell from '@/app/components/actions-cell';
 import ContentArea from '@/app/components/content-area';
 import Dialog from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
@@ -13,6 +14,7 @@ import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { debounce } from '@/app/lib/utils';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Pencil, Trash } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -62,6 +64,7 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 	const [isModalOpened, setModalOpened] = useState(false);
 	const searchParams = useSearchParams();
 	const id = searchParams.get('id') || '';
+	const amount = searchParams.get('amount');
 	const category = searchParams.get('category');
 	const page = Number(searchParams.get('page')) || 1;
 	const take = Number(searchParams.get('take')) || 25;
@@ -80,13 +83,15 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 		[updateParams],
 	);
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['expenses', page, take, id, category, orderBy, orderDirection],
+		queryKey: ['expenses', page, take, id, category, orderBy, orderDirection, amount],
 		queryFn: () => {
 			const params: IListParams & Partial<IExpenseFormWithOrder> = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (category) params.category = category;
+			if (amount) params.amount = amount;
 			if (orderBy) params.orderBy = orderBy;
 			if (orderDirection) params.orderDirection = orderDirection;
+
 			return expensesClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
@@ -98,17 +103,19 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 			label: 'Actions',
 			actions: row => {
 				return (
-					<>
-						<Link href={`/expenses/${row.id}`}>✏️</Link>
+					<ActionsCell>
+						<Link href={`/expenses/${row.id}`}>
+							<Pencil />
+						</Link>
 						<button
 							onClick={() => {
 								setDeleteId(row.id);
 								setModalOpened(true);
 							}}
 						>
-							🗑️
+							<Trash />
 						</button>
-					</>
+					</ActionsCell>
 				);
 			},
 		},
@@ -126,7 +133,13 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 				<th>
 					{/* <Input type="date" placeholder={'Date'} onChange={event => setFilter('paymentDate', event.target.value)}></Input> */}
 				</th>
-				<th></th>
+				<th>
+					<Input
+						type="search"
+						placeholder={'Amount'}
+						onChange={event => debouncedUpdateFilter('amount', event.target.value)}
+					></Input>
+				</th>
 				<th>
 					<Select onChange={event => debouncedUpdateFilter('category', event.target.value)}>
 						<option value=""></option>

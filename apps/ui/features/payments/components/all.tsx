@@ -1,5 +1,6 @@
 'use client';
 
+import ActionsCell from '@/app/components/actions-cell';
 import ContentArea from '@/app/components/content-area';
 import Dialog from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
@@ -11,6 +12,7 @@ import { IListParams } from '@/app/lib/definitions.global';
 import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Pencil, Trash } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -87,6 +89,7 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 	const take = Number(searchParams.get('take')) || 25;
 	const userId = searchParams.get('userId');
 	const monthsCount = searchParams.get('monthsCount');
+	const amount = searchParams.get('amount');
 	const orderBy = (searchParams.get('orderBy') as keyof IPaymentForm) || '';
 	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
 
@@ -107,29 +110,32 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 			label: 'Actions',
 			actions: row => {
 				return (
-					<>
-						<Link href={`/payments/${row.id}`}>✏️</Link>
+					<ActionsCell>
+						<Link href={`/payments/${row.id}`}>
+							<Pencil />
+						</Link>
 						<button
 							onClick={() => {
 								setDeleteId(row.id);
 								setModalOpened(true);
 							}}
 						>
-							🗑️
+							<Trash />
 						</button>
-					</>
+					</ActionsCell>
 				);
 			},
 		},
 	];
 
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['payments', page, take, id, userId, monthsCount, orderBy, orderDirection],
+		queryKey: ['payments', page, take, id, userId, monthsCount, orderBy, orderDirection, amount],
 		queryFn: () => {
 			const params: IListParams & Partial<IPaymentFormWithOrder> = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (userId) params.userId = userId;
 			if (monthsCount) params.monthsCount = monthsCount;
+			if (amount) params.amount = amount;
 			if (orderBy) params.orderBy = orderBy;
 			if (orderDirection) params.orderDirection = orderDirection;
 			return paymentsClient.getAll(params);
@@ -148,7 +154,14 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 					></Input>
 				</th>
 				<th></th>
-				<th></th>
+				<th>
+					<Input
+						type="search"
+						placeholder={'Amount'}
+						defaultValue={amount ?? undefined}
+						onChange={event => debouncedUpdateFilter('amount', event.target.value)}
+					></Input>
+				</th>
 				<th>
 					<Input
 						type="search"

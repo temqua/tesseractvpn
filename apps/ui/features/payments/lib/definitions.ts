@@ -3,7 +3,7 @@ import { IErrorBody } from '@/app/lib/definitions.global';
 import z from 'zod';
 
 export const PaymentFormSchema = z.object({
-	amount: z.number().min(1, { error: 'Payment must be positive number.' }),
+	amount: z.number(),
 	userId: z.number(),
 	monthsCount: z.number().min(1, { error: 'Payment must be for at least 1 month' }),
 	expiresOn: z.string(),

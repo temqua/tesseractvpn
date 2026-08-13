@@ -1,6 +1,6 @@
-import { useRef, useEffect, useState } from 'react';
-import styles from './dialog.module.css';
+import { useEffect, useRef } from 'react';
 import { Button } from './button';
+import styles from './dialog.module.css';
 interface DialogProps {
 	isOpened: boolean;
 	onClose?: () => void;

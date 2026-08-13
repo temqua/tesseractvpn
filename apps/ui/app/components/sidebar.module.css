@@ -21,7 +21,8 @@
 	gap: 0.75rem;
 
 	@media (prefers-color-scheme: dark) {
-		background-color: #1e2c36;
+		/* background-color: #1e2c36; */
+		background-color: var(--sidebar);
 	}
 
 	@media (min-width: 1024px) {

@@ -1,15 +1,18 @@
 'use client';
 
+import ActionsCell from '@/app/components/actions-cell';
 import ContentArea from '@/app/components/content-area';
 import Dialog from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
+import { deleteAction } from '@/app/lib/actions/plans';
 import { plansClient } from '@/app/lib/api/plans/client';
 import { IPlan } from '@/app/lib/api/plans/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { IdCardIcon, Pencil, Trash } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -86,7 +89,7 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 	const page = Number(searchParams.get('page')) || 1;
 	const take = Number(searchParams.get('take')) || 25;
 	const price = searchParams.get('price');
-	const months = searchParams.get('months');
+	const monthsCount = searchParams.get('monthsCount');
 	const amount = searchParams.get('amount');
 	const minCount = searchParams.get('minCount');
 	const maxCount = searchParams.get('maxCount');
@@ -111,29 +114,44 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 			label: 'Actions',
 			actions: row => {
 				return (
-					<>
-						<Link href={`/plans/${row.id}`}>✏️</Link>
+					<ActionsCell>
+						<Link href={`/plans/${row.id}`}>
+							<Pencil />
+						</Link>
 						<button
 							onClick={() => {
 								setDeleteId(row.id.toString());
 								setModalOpened(true);
 							}}
 						>
-							🗑️
+							<Trash />
 						</button>
-					</>
+					</ActionsCell>
 				);
 			},
 		},
 	];
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['plans', page, take, id, orderBy, orderDirection, months, amount, price, minCount, maxCount, name],
+		queryKey: [
+			'plans',
+			page,
+			take,
+			id,
+			orderBy,
+			orderDirection,
+			monthsCount,
+			amount,
+			price,
+			minCount,
+			maxCount,
+			name,
+		],
 		queryFn: () => {
 			const params: IListParams & Partial<IPlanFormWithOrder> = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (price) params.price = price;
 			if (amount) params.amount = amount;
-			if (months) params.months = months;
+			if (monthsCount) params.months = monthsCount;
 			if (minCount) params.minCount = minCount;
 			if (maxCount) params.maxCount = maxCount;
 			if (orderBy) params.orderBy = orderBy;
@@ -151,6 +169,7 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 					<Input
 						type="search"
 						placeholder={'ID'}
+						defaultValue={id}
 						onChange={event => debouncedUpdateFilter('id', event.target.value)}
 					></Input>
 				</th>
@@ -158,6 +177,7 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 					<Input
 						type="search"
 						placeholder={'Name'}
+						defaultValue={name ?? undefined}
 						onChange={event => debouncedUpdateFilter('name', event.target.value)}
 					></Input>
 				</th>
@@ -165,14 +185,16 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 					<Input
 						type="search"
 						placeholder={'Amount'}
+						defaultValue={amount ?? undefined}
 						onChange={event => debouncedUpdateFilter('amount', event.target.value)}
 					></Input>
 				</th>
 				<th>
 					<Input
 						type="search"
-						placeholder={'Months'}
-						onChange={event => debouncedUpdateFilter('months', event.target.value)}
+						placeholder={'Months count'}
+						defaultValue={monthsCount ?? undefined}
+						onChange={event => debouncedUpdateFilter('monthsCount', event.target.value)}
 					></Input>
 				</th>
 				<th>
@@ -224,6 +246,9 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 	return (
 		<div>
 			<ContentArea>
+				<div>
+					<Link href={`/plans/new`}>ADD</Link>
+				</div>
 				<Table
 					searchRow={searchRow}
 					columns={columns}
@@ -244,7 +269,7 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 					onConfirm={() => {
 						setModalOpened(false);
 						if (deleteId) {
-							// deleteAction(deleteId, queryClient, id, page, take);
+							deleteAction(deleteId, queryClient);
 						}
 					}}
 				>

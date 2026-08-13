@@ -1,5 +1,6 @@
 'use client';
 
+import ActionsCell from '@/app/components/actions-cell';
 import ContentArea from '@/app/components/content-area';
 import Dialog from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
@@ -10,6 +11,7 @@ import { IServer } from '@/app/lib/api/servers/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Pencil, Trash } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -68,17 +70,19 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 			label: 'Actions',
 			actions: row => {
 				return (
-					<>
-						<Link href={`/servers/${row.id}`}>✏️</Link>
+					<ActionsCell>
+						<Link href={`/servers/${row.id}`}>
+							<Pencil />
+						</Link>
 						<button
 							onClick={() => {
 								setDeleteId(row.id.toString());
 								setModalOpened(true);
 							}}
 						>
-							🗑️
+							<Trash />
 						</button>
-					</>
+					</ActionsCell>
 				);
 			},
 		},
@@ -103,6 +107,7 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 					<Input
 						type="search"
 						placeholder={'ID'}
+						defaultValue={id}
 						onChange={event => debouncedUpdateFilter('id', event.target.value)}
 					></Input>
 				</th>
@@ -110,6 +115,7 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 					<Input
 						type="search"
 						placeholder={'Name'}
+						defaultValue={name}
 						onChange={event => debouncedUpdateFilter('name', event.target.value)}
 					></Input>
 				</th>
@@ -117,6 +123,7 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 					<Input
 						type="search"
 						placeholder={'URL'}
+						defaultValue={url}
 						onChange={event => debouncedUpdateFilter('url', event.target.value)}
 					></Input>
 				</th>

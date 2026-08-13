@@ -18,20 +18,18 @@ export async function deleteAction(id: string, queryClient: QueryClient, ...para
 
 export function getUpdateAction(id: string) {
 	return async function (state: ServerFormState, formData: FormData) {
-		const validatedFields = ServerFormSchema.safeParse({
-			name: formData.get('name'),
-			url: formData.get('url'),
-		});
+		const body = {
+			name: (formData.get('name') as string) ?? '',
+			url: (formData.get('url') as string) ?? '',
+		};
+		const validatedFields = ServerFormSchema.safeParse(body);
 		if (!validatedFields.success) {
 			return {
 				errors: treeifyError(validatedFields.error),
 			};
 		}
 		try {
-			const response = await serversClient.update(id, {
-				name: formData.get('name') as string,
-				url: formData.get('url') as string,
-			});
+			const response = await serversClient.update(id, body);
 			if (response.ok) {
 				toast.success(`Server ${id} has been successfully updated`);
 			}

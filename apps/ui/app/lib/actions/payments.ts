@@ -56,7 +56,7 @@ export async function createAction(state: PaymentFormState, formData: FormData) 
 
 export function getUpdateAction(id: string) {
 	return async function (state: PaymentFormState, formData: FormData) {
-		const validatedFields = PaymentFormSchema.safeParse({
+		const body = {
 			amount: Number(formData.get('amount')),
 			monthsCount: Number(formData.get('monthsCount')),
 			expiresOn: formData.get('expiresOn'),
@@ -64,7 +64,9 @@ export function getUpdateAction(id: string) {
 			planId: Number(formData.get('planId')),
 			userId: Number(formData.get('userId')),
 			paymentDate: formData.get('paymentDate'),
-		});
+		};
+		console.log('body :>> ', body);
+		const validatedFields = PaymentFormSchema.safeParse(body);
 		if (!validatedFields.success) {
 			return {
 				errors: treeifyError(validatedFields.error),
