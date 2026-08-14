@@ -2,23 +2,22 @@ import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { BaseListDto } from '../../../dto/base-dto';
 import { OrderDirection } from 'src/enums';
 
-export enum OrderByDeliveredMessagesField {
-  CreateAt = 'createdAt',
+export enum OrderByUnauthorizedMessageField {
+  ID = 'id',
+  TelegramId = 'telegramId',
+  CreatedAt = 'createdAt',
 }
 
-export class DeliveredMessagesQueryDto extends BaseListDto {
+export class UnauthorizedUsersDeliveredMessagesQueryDto extends BaseListDto {
   @IsNumber()
   @IsOptional()
   id?: number;
   @IsString()
   @IsOptional()
-  username?: string;
-  @IsNumber()
+  telegramId?: string;
   @IsOptional()
-  userId?: number;
-  @IsOptional()
-  @IsEnum(OrderByDeliveredMessagesField)
-  orderBy?: OrderByDeliveredMessagesField;
+  @IsEnum(OrderByUnauthorizedMessageField)
+  orderBy?: OrderByUnauthorizedMessageField;
   @IsString()
   @IsOptional()
   @IsEnum(OrderDirection)

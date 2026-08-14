@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { BotUnauthorizedDeliveredMessagesService } from './bot-unauthorized-delivered-messages.service';
 import { CreateBotUnauthorizedDeliveredMessageDto } from './dto/create-bot-unauthorized-delivered-message.dto';
-import { UnauthorizedUsersDeliveredMessagesQueryDto } from './dto/delivered-messages-query-dto';
+import { UnauthorizedUsersDeliveredMessagesQueryDto } from './dto/unauthorized-delivered-messages-query-dto';
 import { UpdateBotUnauthorizedDeliveredMessageDto } from './dto/update-bot-unauthorized-delivered-message.dto';
 
 @Controller('bot-unauthorized-delivered-messages')

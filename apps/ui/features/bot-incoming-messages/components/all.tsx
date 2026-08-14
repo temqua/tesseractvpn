@@ -5,6 +5,7 @@ import Table, { IColumn } from '@/app/components/table';
 import { incomingMessagesClient } from '@/app/lib/api/bot-incoming-messages/client';
 import { IBotIncomingMessage } from '@/app/lib/api/bot-incoming-messages/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
+import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -19,7 +20,7 @@ const baseColumns: IColumn<IBotIncomingMessage>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'Text',
@@ -28,28 +29,43 @@ const baseColumns: IColumn<IBotIncomingMessage>[] = [
 	{
 		label: 'Telegram ID',
 		prop: 'telegramId',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'Username',
 		prop: 'username',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'First name',
 		prop: 'firstName',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'Last name',
 		prop: 'lastName',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'Created At',
 		prop: 'createdAt',
+		sortable: true,
 	},
 ];
+
+interface IBotIncomingMessageForm {
+	id?: string;
+	telegramId?: string;
+	username?: string;
+	firstName?: string;
+	lastName?: string;
+	createAt?: string;
+}
+
+interface IBotIncomingMessageFormWithOrder extends IBotIncomingMessageForm {
+	orderBy?: keyof IBotIncomingMessageForm;
+	orderDirection?: OrderDirection;
+}
 
 export default function IncomingMessagesClientSide({ initialData, count }: IIncomingMessagesPageProps) {
 	const searchParams = useSearchParams();
@@ -71,15 +87,30 @@ export default function IncomingMessagesClientSide({ initialData, count }: IInco
 		},
 		[updateParams],
 	);
+	const orderBy = (searchParams.get('orderBy') as keyof IBotIncomingMessageForm) || '';
+	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['bot-incoming-messages', page, take, id, username, firstName, lastName, telegramId],
+		queryKey: [
+			'bot-incoming-messages',
+			page,
+			take,
+			id,
+			username,
+			firstName,
+			lastName,
+			telegramId,
+			orderBy,
+			orderDirection,
+		],
 		queryFn: () => {
-			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
+			const params: IListParams & IBotIncomingMessageFormWithOrder = { skip: (page - 1) * take, take } as any;
 			if (id) params.id = id;
 			if (username) params.username = username;
 			if (firstName) params.firstName = firstName;
 			if (lastName) params.lastName = lastName;
 			if (telegramId) params.telegramId = lastName;
+			if (orderBy) params.orderBy = orderBy;
+			if (orderDirection) params.orderDirection = orderDirection;
 			return incomingMessagesClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
@@ -130,6 +161,16 @@ export default function IncomingMessagesClientSide({ initialData, count }: IInco
 		),
 		[debouncedUpdateFilter],
 	);
+	const handleSort = useCallback(
+		(prop?: keyof IBotIncomingMessage) => {
+			if (!prop) {
+				return;
+			}
+			const newDirection = orderDirection ? (orderDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+			updateParams({ orderBy: prop, orderDirection: newDirection });
+		},
+		[orderDirection],
+	);
 	const handlePageChange = useCallback(
 		(newPage: number | ((p: number) => number)) => {
 			const resolved = typeof newPage === 'function' ? newPage(page) : newPage;
@@ -158,6 +199,7 @@ export default function IncomingMessagesClientSide({ initialData, count }: IInco
 					data={fetched?.data ?? []}
 					onChangePage={handlePageChange}
 					onChangeTake={handleTakeChange}
+					onSort={handleSort}
 				/>
 			</ContentArea>
 		</div>

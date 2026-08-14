@@ -1,3 +1,4 @@
+import { OrderDirection } from '@/app/lib/enums';
 import IncomingMessagesClientSide from '@/features/bot-incoming-messages/components/all';
 import { incomingMessagesSSRClient } from '@/features/bot-incoming-messages/lib/ssr-client';
 import { redirect } from 'next/navigation';
@@ -11,6 +12,8 @@ export default async function IncomingMessagesPage(props: {
 		telegramId?: string;
 		firstName?: string;
 		lastName?: string;
+		orderBy?: string;
+		orderDirection?: OrderDirection;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
@@ -22,6 +25,8 @@ export default async function IncomingMessagesPage(props: {
 	const firstName = searchParams.firstName || '';
 	const lastName = searchParams.lastName || '';
 	const telegramId = searchParams.telegramId || '';
+	const orderBy = searchParams.orderBy;
+	const orderDirection = searchParams.orderDirection;
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
@@ -41,6 +46,8 @@ export default async function IncomingMessagesPage(props: {
 		...(lastName && { lastName }),
 		...(telegramId && { telegramId }),
 		...(username && { username }),
+		...(orderBy && { orderBy }),
+		...(orderDirection && { orderDirection }),
 	});
 	return <IncomingMessagesClientSide initialData={response.data} count={response.count} />;
 }

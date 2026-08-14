@@ -10,6 +10,7 @@ import { deleteAction } from '@/app/lib/actions/servers';
 import { serversClient } from '@/app/lib/api/servers/client';
 import { IServer } from '@/app/lib/api/servers/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
+import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Trash } from 'lucide-react';
@@ -21,23 +22,27 @@ const baseColumns: IColumn<IServer>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'Name',
 		prop: 'name',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'URL',
 		prop: 'url',
-		searchable: true,
 	},
 ];
 interface IServerForm {
 	id?: string;
 	name?: string;
 	url?: string;
+}
+
+interface IServerFormWithOrder extends IServerForm {
+	orderBy?: keyof IServerForm;
+	orderDirection?: OrderDirection;
 }
 
 interface IServersPageProps {
@@ -54,6 +59,8 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 	const take = Number(searchParams.get('take')) || 25;
 	const name = searchParams.get('name') || '';
 	const url = searchParams.get('url') || '';
+	const orderBy = (searchParams.get('orderBy') as keyof IServerForm) || '';
+	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const debouncedUpdateFilter = useCallback(
@@ -90,12 +97,14 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 	];
 
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['servers', page, take, id, name, url],
+		queryKey: ['servers', page, take, id, name, url, orderBy, orderDirection],
 		queryFn: () => {
-			const params: IListParams & Partial<IServerForm> = { skip: (page - 1) * take, take };
+			const params: IListParams & IServerFormWithOrder = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (name) params.name = name;
 			if (url) params.url = url;
+			if (orderBy) params.orderBy = orderBy;
+			if (orderDirection) params.orderDirection = orderDirection;
 			return serversClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
@@ -149,6 +158,16 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 		},
 		[take, updateParams],
 	);
+	const handleSort = useCallback(
+		(prop?: keyof IServer) => {
+			if (!prop) {
+				return;
+			}
+			const newDirection = orderDirection ? (orderDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+			updateParams({ orderBy: prop, orderDirection: newDirection });
+		},
+		[orderDirection],
+	);
 	const queryClient = useQueryClient();
 
 	return (
@@ -163,6 +182,7 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 					take={take}
 					onChangePage={handlePageChange}
 					onChangeTake={handleTakeChange}
+					onSort={handleSort}
 					loading={isLoading}
 				/>
 			</ContentArea>

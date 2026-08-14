@@ -33,11 +33,6 @@ export default function Sidebar() {
 				<SidebarItem active={pathname === '/plans'} href="/plans" label="Plans" />
 				<SidebarItem active={pathname === '/servers'} href="/servers" label="Servers" />
 			</nav>
-			<div className={styles['sidebar-bottom']}>
-				<div>
-					<SidebarItem href="/logout" label="➜] LOGOUT"></SidebarItem>
-				</div>
-			</div>
 		</aside>
 	);
 }

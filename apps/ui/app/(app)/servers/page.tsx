@@ -1,3 +1,4 @@
+import { OrderDirection } from '@/app/lib/enums';
 import PaymentsClientSide from '@/features/payments/components/all';
 import { paymentsSSRClient } from '@/features/payments/lib/ssr-client';
 import ServersClientSide from '@/features/servers/components/all';
@@ -11,6 +12,8 @@ export default async function ServersPage(props: {
 		id?: string;
 		url?: string;
 		name?: string;
+		orderBy?: string;
+		orderDirection?: OrderDirection;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
@@ -19,6 +22,8 @@ export default async function ServersPage(props: {
 	const id = searchParams.id || '';
 	const url = searchParams.url || '';
 	const name = searchParams.name || '';
+	const orderBy = searchParams.orderBy;
+	const orderDirection = searchParams.orderDirection;
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
@@ -36,6 +41,8 @@ export default async function ServersPage(props: {
 		...(id && { id }),
 		...(url && { url }),
 		...(name && { name }),
+		...(orderBy && { orderBy }),
+		...(orderDirection && { orderDirection }),
 	});
 
 	return <ServersClientSide initialData={response.data} count={response.count} />;

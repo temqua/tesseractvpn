@@ -1,4 +1,5 @@
 'use client';
+import ActionsCell from '@/app/components/actions-cell';
 import ContentArea from '@/app/components/content-area';
 import { Input } from '@/app/components/input';
 import { Select } from '@/app/components/select';
@@ -6,19 +7,18 @@ import Table, { IColumn } from '@/app/components/table';
 import { usersClient } from '@/app/lib/api/users/client';
 import { IVPNUserListDTO, IVPNUserUI } from '@/app/lib/api/users/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
+import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { CreditCard, Mail, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef } from 'react';
-import styles from './all.module.css';
-import { CreditCard, Mail, Pencil } from 'lucide-react';
-import ActionsCell from '@/app/components/actions-cell';
 const baseColumns: IColumn<IVPNUserUI>[] = [
-	{ label: 'ID', prop: 'id' },
-	{ label: 'Username', prop: 'username' },
-	{ label: 'First name', prop: 'firstName' },
-	{ label: 'Last name', prop: 'lastName' },
+	{ label: 'ID', prop: 'id', sortable: true },
+	{ label: 'Username', prop: 'username', sortable: true },
+	{ label: 'First name', prop: 'firstName', sortable: true },
+	{ label: 'Last name', prop: 'lastName', sortable: true },
 	{ label: 'Active', prop: 'active' },
 	{ label: 'Free', prop: 'free' },
 ];
@@ -26,6 +26,19 @@ const baseColumns: IColumn<IVPNUserUI>[] = [
 interface IUsersPageProps {
 	initialData: IVPNUserListDTO[];
 	count?: number;
+}
+
+interface IUserForm {
+	id?: string;
+	username?: string;
+	firstName?: string;
+	lastName?: string;
+	free?: boolean;
+	active?: boolean;
+}
+interface IUserFormWithOrder extends IUserForm {
+	orderBy?: keyof IUserForm;
+	orderDirection?: OrderDirection;
 }
 
 export default function UsersClientSide({ initialData, count }: IUsersPageProps) {
@@ -39,7 +52,8 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 	const username = searchParams.get('username') || '';
 	const firstName = searchParams.get('firstName') || '';
 	const lastName = searchParams.get('lastName') || '';
-
+	const orderBy = (searchParams.get('orderBy') as keyof IUserForm) || '';
+	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -76,15 +90,17 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 	];
 
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['users', page, take, id, username, firstName, lastName, active, free],
+		queryKey: ['users', page, take, id, username, firstName, lastName, active, free, orderBy, orderDirection],
 		queryFn: () => {
-			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
+			const params: IListParams & IUserFormWithOrder = { skip: (page - 1) * take, take } as any;
 			if (id) params.id = id;
 			if (username) params.username = username;
 			if (firstName) params.firstName = firstName;
 			if (lastName) params.lastName = lastName;
 			if (active) params.active = active;
 			if (free) params.free = free;
+			if (orderBy) params.orderBy = orderBy;
+			if (orderDirection) params.orderDirection = orderDirection;
 			return usersClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
@@ -125,7 +141,16 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 		},
 		[take, updateParams],
 	);
-
+	const handleSort = useCallback(
+		(prop?: keyof IVPNUserUI) => {
+			if (!prop) {
+				return;
+			}
+			const newDirection = orderDirection ? (orderDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+			updateParams({ orderBy: prop, orderDirection: newDirection });
+		},
+		[orderDirection],
+	);
 	const searchRow = useMemo(
 		() => (
 			<>
@@ -194,6 +219,7 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 					searchRow={searchRow}
 					onChangePage={handlePageChange}
 					onChangeTake={handleTakeChange}
+					onSort={handleSort}
 				/>
 			</ContentArea>
 		</div>

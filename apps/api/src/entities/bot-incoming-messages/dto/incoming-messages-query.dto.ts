@@ -1,9 +1,13 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { BaseListDto } from '../../../dto/base-dto';
+import { OrderDirection } from 'src/enums';
 
-export enum OrderByUserField {
+export enum OrderByIncomingMessageField {
+  ID = 'id',
   Username = 'username',
   FirstName = 'firstName',
+  LastName = 'lastName',
+  CreatedAt = 'createdAt',
 }
 
 export class IncomingMessagesQueryDto extends BaseListDto {
@@ -22,11 +26,11 @@ export class IncomingMessagesQueryDto extends BaseListDto {
   @IsString()
   @IsOptional()
   lastName?: string;
-  // @IsOptional()
-  // @IsEnum(OrderByUserField)
-  // orderBy?: OrderByUserField;
-  // @IsString()
-  // @IsOptional()
-  // @IsEnum(OrderDirection)
-  // orderDirection?: OrderDirection;
+  @IsOptional()
+  @IsEnum(OrderByIncomingMessageField)
+  orderBy?: OrderByIncomingMessageField;
+  @IsString()
+  @IsOptional()
+  @IsEnum(OrderDirection)
+  orderDirection?: OrderDirection;
 }

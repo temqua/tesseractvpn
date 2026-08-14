@@ -15,6 +15,7 @@ interface TableProps<T extends Record<keyof T, React.ReactNode> = object>
 	page: number;
 	take: number;
 	loading?: boolean;
+	gridTemplateColumns?: string;
 	onChangePage?: (page: number | SetStateAction<number>) => void;
 	onChangeTake?: (take: number | SetStateAction<number>) => void;
 	onSort?: (prop?: keyof T) => void;
@@ -40,6 +41,7 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 	onChangePage,
 	onChangeTake,
 	onSort,
+	gridTemplateColumns = `repeat(${columns.length}, 1fr)`,
 	loading = false,
 	...rest
 }: TableProps<T>) {
@@ -149,11 +151,7 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 				</div>
 			</div>
 			<div className={styles.tableWrapper}>
-				<table
-					className={styles.table}
-					style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}
-					{...rest}
-				>
+				<table className={styles.table} style={{ gridTemplateColumns: gridTemplateColumns }} {...rest}>
 					<TableHeader>
 						<TableRow>{headers}</TableRow>
 						<TableRow>{searchRow}</TableRow>

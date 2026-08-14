@@ -44,6 +44,7 @@ const baseColumns: IColumn<IExpense>[] = [
 	{
 		label: 'Amount',
 		prop: 'amount',
+		sortable: true,
 	},
 	{
 		label: 'Category',

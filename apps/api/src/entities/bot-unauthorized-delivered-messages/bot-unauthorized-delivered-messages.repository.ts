@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database.service';
 import { CreateBotUnauthorizedDeliveredMessageDto } from './dto/create-bot-unauthorized-delivered-message.dto';
 import { UpdateBotUnauthorizedDeliveredMessageDto } from './dto/update-bot-unauthorized-delivered-message.dto';
-import { UnauthorizedUsersDeliveredMessagesQueryDto } from './dto/delivered-messages-query-dto';
+import { UnauthorizedUsersDeliveredMessagesQueryDto } from './dto/unauthorized-delivered-messages-query-dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -47,10 +47,19 @@ export class BotUnauthorizedDeliveredMessagesRepository {
     if (dto?.id) {
       where.id = Number(dto.id);
     }
+    if (dto?.telegramId) {
+      where.telegramId = dto.telegramId;
+    }
     const params = {
       skip: dto?.skip ? Number(dto.skip) : undefined,
       take: dto?.take ? Number(dto.take) : undefined,
       where,
+      orderBy:
+        dto?.orderBy && dto?.orderDirection
+          ? {
+              [dto.orderBy]: dto.orderDirection,
+            }
+          : undefined,
     };
     const countParams = {
       where,

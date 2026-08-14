@@ -6,6 +6,7 @@ import Table, { IColumn } from '@/app/components/table';
 import { unauthorizedDeliveredMessagesClient } from '@/app/lib/api/bot-unauthorized-delivered-messages/client';
 import { IBotUnauthorizedDeliveredMessage } from '@/app/lib/api/bot-unauthorized-delivered-messages/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
+import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -20,7 +21,7 @@ const baseColumns: IColumn<IBotUnauthorizedDeliveredMessage>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'Message',
@@ -29,9 +30,25 @@ const baseColumns: IColumn<IBotUnauthorizedDeliveredMessage>[] = [
 	{
 		label: 'Telegram ID',
 		prop: 'telegramId',
-		searchable: true,
+		sortable: true,
+	},
+	{
+		label: 'Created At',
+		prop: 'createdAt',
+		sortable: true,
 	},
 ];
+
+interface IBotUnauthorizedMessageForm {
+	id?: string;
+	telegramId?: string;
+	createAt?: string;
+}
+
+interface IBotUnauthorizedMessageFormWithOrder extends IBotUnauthorizedMessageForm {
+	orderBy?: keyof IBotUnauthorizedMessageForm;
+	orderDirection?: OrderDirection;
+}
 
 export default function UnauthorizedDeliveredMessagesClientSide({
 	initialData,
@@ -42,23 +59,27 @@ export default function UnauthorizedDeliveredMessagesClientSide({
 	const telegramId = searchParams.get('telegramId') || '';
 	const page = Number(searchParams.get('page')) || 1;
 	const take = Number(searchParams.get('take')) || 25;
+	const orderBy = (searchParams.get('orderBy') as keyof IBotUnauthorizedMessageForm) || '';
+	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const debouncedUpdateFilter = useCallback(
 		(key: string, value: string) => {
 			if (debounceTimer.current) clearTimeout(debounceTimer.current);
 			debounceTimer.current = setTimeout(() => {
-				updateParams({ [key]: value, page: 1 }); // сброс страницы при новом фильтре
+				updateParams({ [key]: value, page: 1 }); // сброс ст>раницы при новом фильтре
 			}, 500);
 		},
 		[updateParams],
 	);
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['bot-unauthorized-delivered-messages', page, take, id, telegramId],
+		queryKey: ['bot-unauthorized-delivered-messages', page, take, id, telegramId, orderBy, orderDirection],
 		queryFn: () => {
 			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
 			if (id) params.id = id;
 			if (telegramId) params.telegramId = telegramId;
+			if (orderBy) params.orderBy = orderBy;
+			if (orderDirection) params.orderDirection = orderDirection;
 			return unauthorizedDeliveredMessagesClient.getAll(params);
 		},
 		placeholderData: keepPreviousData,
@@ -83,6 +104,7 @@ export default function UnauthorizedDeliveredMessagesClientSide({
 						onChange={event => debouncedUpdateFilter('telegramId', event.target.value)}
 					></Input>
 				</th>
+				<th></th>
 			</>
 		),
 		[debouncedUpdateFilter],
@@ -102,6 +124,16 @@ export default function UnauthorizedDeliveredMessagesClientSide({
 		},
 		[take, updateParams],
 	);
+	const handleSort = useCallback(
+		(prop?: keyof IBotUnauthorizedDeliveredMessage) => {
+			if (!prop) {
+				return;
+			}
+			const newDirection = orderDirection ? (orderDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+			updateParams({ orderBy: prop, orderDirection: newDirection });
+		},
+		[orderDirection],
+	);
 	return (
 		<div>
 			<ContentArea>
@@ -115,6 +147,7 @@ export default function UnauthorizedDeliveredMessagesClientSide({
 					data={fetched?.data ?? []}
 					onChangePage={handlePageChange}
 					onChangeTake={handleTakeChange}
+					onSort={handleSort}
 				/>
 			</ContentArea>
 		</div>

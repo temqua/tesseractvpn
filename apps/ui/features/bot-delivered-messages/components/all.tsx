@@ -4,8 +4,9 @@ import ContentArea from '@/app/components/content-area';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
 import { deliveredMessagesClient } from '@/app/lib/api/bot-delivered-messages/client';
-import { IBotDeliveredMessageUI } from '@/app/lib/api/bot-delivered-messages/definitions';
+import { IBotDeliveredMessage, IBotDeliveredMessageUI } from '@/app/lib/api/bot-delivered-messages/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
+import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -20,7 +21,7 @@ const baseColumns: IColumn<IBotDeliveredMessageUI>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
-		searchable: true,
+		sortable: true,
 	},
 	{
 		label: 'Message',
@@ -29,6 +30,7 @@ const baseColumns: IColumn<IBotDeliveredMessageUI>[] = [
 	{
 		label: 'User ID',
 		prop: 'userId',
+		sortable: true,
 	},
 	{
 		label: 'Username',
@@ -37,6 +39,7 @@ const baseColumns: IColumn<IBotDeliveredMessageUI>[] = [
 	{
 		label: 'Created At',
 		prop: 'createdAt',
+		sortable: true,
 	},
 	// {
 	// 	label: 'Telegram ID',
@@ -45,12 +48,26 @@ const baseColumns: IColumn<IBotDeliveredMessageUI>[] = [
 	// },
 ];
 
+interface IBotDeliveredMessageForm {
+	id?: string;
+	telegramId?: string;
+	createAt?: string;
+	userId?: string;
+}
+
+interface IBotDeliveredMessageFormWithOrder extends IBotDeliveredMessageForm {
+	orderBy?: keyof IBotDeliveredMessageForm;
+	orderDirection?: OrderDirection;
+}
+
 export default function DeliveredMessagesClientSide({ initialData, count }: IDeliveredMessagesPageProps) {
 	const searchParams = useSearchParams();
 	const id = searchParams.get('id') || '';
 	const userId = searchParams.get('userId') || '';
 	const page = Number(searchParams.get('page')) || 1;
 	const take = Number(searchParams.get('take')) || 25;
+	const orderBy = (searchParams.get('orderBy') as keyof IBotDeliveredMessageForm) || '';
+	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const debouncedUpdateFilter = useCallback(
@@ -63,11 +80,13 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 		[updateParams],
 	);
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['bot-delivered-messages', page, take, id, userId],
+		queryKey: ['bot-delivered-messages', page, take, id, userId, orderBy, orderDirection],
 		queryFn: () => {
-			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
+			const params: IListParams & IBotDeliveredMessageFormWithOrder = { skip: (page - 1) * take, take } as any;
 			if (id) params.id = id;
 			if (userId) params.userId = userId;
+			if (orderBy) params.orderBy = orderBy;
+			if (orderDirection) params.orderDirection = orderDirection;
 			return deliveredMessagesClient.getAll(params).then(r => {
 				return {
 					...r,
@@ -121,6 +140,16 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 		),
 		[debouncedUpdateFilter],
 	);
+	const handleSort = useCallback(
+		(prop?: keyof IBotDeliveredMessage) => {
+			if (!prop) {
+				return;
+			}
+			const newDirection = orderDirection ? (orderDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+			updateParams({ orderBy: prop, orderDirection: newDirection });
+		},
+		[orderDirection],
+	);
 	const handlePageChange = useCallback(
 		(newPage: number | ((p: number) => number)) => {
 			const resolved = typeof newPage === 'function' ? newPage(page) : newPage;
@@ -149,6 +178,7 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 					data={fetched?.data ?? []}
 					onChangePage={handlePageChange}
 					onChangeTake={handleTakeChange}
+					onSort={handleSort}
 				/>
 			</ContentArea>
 		</div>

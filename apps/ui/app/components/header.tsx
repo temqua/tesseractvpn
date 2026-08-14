@@ -3,6 +3,7 @@ import { Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from './button';
 import styles from './header.module.css';
+import Link from 'next/link';
 
 export default function Header() {
 	const [darkTheme, setDarkTheme] = useState(true);
@@ -30,6 +31,7 @@ export default function Header() {
 			>
 				{darkTheme ? <Sun /> : <Moon />}
 			</Button>
+			<Link href={'/logout'}>➜] LOGOUT</Link>
 		</header>
 	);
 }

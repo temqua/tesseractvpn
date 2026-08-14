@@ -1,5 +1,11 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { BaseListDto } from '../../../dto/base-dto';
+import { OrderDirection } from 'src/enums';
+
+export enum OrderByServerField {
+  ID = 'id',
+  Name = 'name',
+}
 
 export class ServerQueryDto extends BaseListDto {
   @IsString()
@@ -12,4 +18,12 @@ export class ServerQueryDto extends BaseListDto {
   @IsString()
   @IsOptional()
   url?: string;
+
+  @IsOptional()
+  @IsEnum(OrderByServerField)
+  orderBy?: OrderByServerField;
+  @IsString()
+  @IsOptional()
+  @IsEnum(OrderDirection)
+  orderDirection?: OrderDirection;
 }

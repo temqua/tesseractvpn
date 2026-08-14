@@ -19,6 +19,12 @@ export class BotDeliveredMessagesRepository {
       skip: dto?.skip ? Number(dto.skip) : undefined,
       take: dto?.take ? Number(dto.take) : undefined,
       where,
+      orderBy:
+        dto?.orderBy && dto?.orderDirection
+          ? {
+              [dto.orderBy]: dto.orderDirection,
+            }
+          : undefined,
       include: {
         user: true,
       },

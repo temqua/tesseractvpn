@@ -1,3 +1,4 @@
+import { OrderDirection } from '@/app/lib/enums';
 import UsersClientSide from '@/features/users/components/all';
 import { usersSSRClient } from '@/features/users/lib/ssr-client';
 import { redirect } from 'next/navigation';
@@ -10,6 +11,8 @@ export default async function UsersPage(props: {
 		username?: string;
 		firstName?: string;
 		lastName?: string;
+		orderBy?: string;
+		orderDirection?: OrderDirection;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
@@ -20,6 +23,8 @@ export default async function UsersPage(props: {
 	const username = searchParams.username || '';
 	const firstName = searchParams.firstName || '';
 	const lastName = searchParams.lastName || '';
+	const orderBy = searchParams.orderBy;
+	const orderDirection = searchParams.orderDirection;
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
@@ -38,6 +43,8 @@ export default async function UsersPage(props: {
 		...(username && { username }),
 		...(firstName && { firstName }),
 		...(lastName && { lastName }),
+		...(orderBy && { orderBy }),
+		...(orderDirection && { orderDirection }),
 	});
 	return <UsersClientSide initialData={response.data} count={response.count}></UsersClientSide>;
 }

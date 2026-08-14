@@ -42,6 +42,7 @@ const baseColumns: IColumn<IPlan>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
+		sortable: true,
 	},
 	{
 		label: 'Name',
@@ -77,6 +78,7 @@ const baseColumns: IColumn<IPlan>[] = [
 	{
 		label: 'Created At',
 		prop: 'createdAt',
+		sortable: true,
 	},
 ];
 
@@ -93,7 +95,8 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 	const minCount = searchParams.get('minCount');
 	const maxCount = searchParams.get('maxCount');
 	const name = searchParams.get('name');
-
+	const orderBy = (searchParams.get('orderBy') as keyof IPlanForm) || '';
+	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const debouncedUpdateFilter = useCallback(
@@ -105,8 +108,7 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 		},
 		[updateParams],
 	);
-	const orderBy = (searchParams.get('orderBy') as keyof IPlanForm) || '';
-	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
+
 	const columns: IColumn<IPlan>[] = [
 		...baseColumns,
 		{
