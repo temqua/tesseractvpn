@@ -33,8 +33,8 @@ interface IUserForm {
 	username?: string;
 	firstName?: string;
 	lastName?: string;
-	free?: boolean;
-	active?: boolean;
+	free?: string;
+	active?: string;
 }
 interface IUserFormWithOrder extends IUserForm {
 	orderBy?: keyof IUserForm;
@@ -92,7 +92,7 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 	const { data: fetched, isLoading } = useQuery({
 		queryKey: ['users', page, take, id, username, firstName, lastName, active, free, orderBy, orderDirection],
 		queryFn: () => {
-			const params: IListParams & IUserFormWithOrder = { skip: (page - 1) * take, take } as any;
+			const params: IListParams & IUserFormWithOrder = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (username) params.username = username;
 			if (firstName) params.firstName = firstName;

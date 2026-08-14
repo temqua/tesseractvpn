@@ -103,7 +103,7 @@ export default function IncomingMessagesClientSide({ initialData, count }: IInco
 			orderDirection,
 		],
 		queryFn: () => {
-			const params: IListParams & IBotIncomingMessageFormWithOrder = { skip: (page - 1) * take, take } as any;
+			const params: IListParams & IBotIncomingMessageFormWithOrder = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (username) params.username = username;
 			if (firstName) params.firstName = firstName;

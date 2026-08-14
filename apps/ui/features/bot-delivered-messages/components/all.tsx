@@ -82,7 +82,7 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 	const { data: fetched, isLoading } = useQuery({
 		queryKey: ['bot-delivered-messages', page, take, id, userId, orderBy, orderDirection],
 		queryFn: () => {
-			const params: IListParams & IBotDeliveredMessageFormWithOrder = { skip: (page - 1) * take, take } as any;
+			const params: IListParams & IBotDeliveredMessageFormWithOrder = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (userId) params.userId = userId;
 			if (orderBy) params.orderBy = orderBy;
@@ -141,7 +141,7 @@ export default function DeliveredMessagesClientSide({ initialData, count }: IDel
 		[debouncedUpdateFilter],
 	);
 	const handleSort = useCallback(
-		(prop?: keyof IBotDeliveredMessage) => {
+		(prop?: keyof IBotDeliveredMessageUI) => {
 			if (!prop) {
 				return;
 			}

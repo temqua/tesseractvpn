@@ -75,7 +75,7 @@ export default function UnauthorizedDeliveredMessagesClientSide({
 	const { data: fetched, isLoading } = useQuery({
 		queryKey: ['bot-unauthorized-delivered-messages', page, take, id, telegramId, orderBy, orderDirection],
 		queryFn: () => {
-			const params: IListParams & Record<string, string> = { skip: (page - 1) * take, take } as any;
+			const params: IListParams & IBotUnauthorizedMessageFormWithOrder = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (telegramId) params.telegramId = telegramId;
 			if (orderBy) params.orderBy = orderBy;
