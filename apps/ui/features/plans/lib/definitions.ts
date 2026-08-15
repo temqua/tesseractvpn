@@ -8,7 +8,7 @@ export const PlanFormSchema = z.object({
 	price: z.number().min(1, { error: 'Must be positive number.' }),
 	minCount: z.number().min(1, { error: 'Must be positive number.' }),
 	maxCount: z.number().min(1, { error: 'Must be positive number.' }),
-	name: z.string().trim(),
+	name: z.string().trim().nonempty(),
 	monthsCount: z.number().min(1, { error: 'Must be positive number' }),
 });
 export type PlanFormState =

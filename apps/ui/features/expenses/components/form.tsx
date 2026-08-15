@@ -45,6 +45,7 @@ export default function ExpenseClientSide({ data, id }: { data: IExpense; id: st
 							id="amount"
 							name="amount"
 							type="number"
+							step="0.01"
 							autoComplete="off"
 							placeholder="Amount"
 						/>

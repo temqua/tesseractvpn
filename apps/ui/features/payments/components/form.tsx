@@ -53,6 +53,7 @@ export default function PaymentClientSide({ data, id }: { data: IPayment; id: st
 							type="number"
 							autoComplete="off"
 							placeholder="Amount"
+							step="0.01"
 							aria-invalid={Boolean(state?.errors?.properties?.amount?.errors?.length)}
 						/>
 					</FormField>

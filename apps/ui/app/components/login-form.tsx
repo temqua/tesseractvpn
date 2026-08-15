@@ -3,35 +3,45 @@ import { useActionState } from 'react';
 import { auth } from '@/app/lib/actions/auth';
 import { Button } from './button';
 import { Input } from './input';
+import { FieldSet } from './field';
+import FormField from './form-field';
 
 export default function LoginForm() {
 	const [state, formAction, isPending] = useActionState(auth, undefined);
 	return (
-		<form action={formAction} className="flex flex-col gap-8">
-			<div className="flex flex-col">
-				<label htmlFor="username">
-					Username <span style={{ color: 'red' }}>*</span>
-				</label>
-				<Input id="username" name="username" placeholder="Username" />
-			</div>
-			{state?.errors?.properties?.username && <p>{state.errors?.properties.username?.errors.join()}</p>}
-			<div className="flex flex-col">
-				<label htmlFor="password">
-					Password <span style={{ color: 'red' }}>*</span>
-				</label>
-				<Input id="password" name="password" type="password" placeholder="Password" />
-			</div>
-			{state?.errors?.properties?.password && (
-				<div>
-					<p>Password must:</p>
-					<ul>{state.errors?.properties?.password?.errors.map(error => <li key={error}>- {error}</li>)}</ul>
-				</div>
-			)}
-			<Button className="cursor-pointer" disabled={isPending} type="submit">
-				{isPending ? 'Loading...' : 'Sign in'}
-			</Button>
+		<form action={formAction}>
+			<FieldSet className="mb-8">
+				<FormField id="username" label="Username" errors={state?.errors?.properties?.username?.errors}>
+					<Input
+						id="username"
+						name="username"
+						placeholder="Username"
+						aria-invalid={Boolean(state?.errors?.properties?.username?.errors.length)}
+					/>
+				</FormField>
+				<FormField id="password" label="Password" errors={state?.errors?.properties?.password?.errors}>
+					<Input
+						id="password"
+						name="password"
+						placeholder="Password"
+						aria-invalid={Boolean(state?.errors?.properties?.password?.errors.length)}
+					/>
+				</FormField>
+			</FieldSet>
+			<div className="flex flex-col gap-8 items-center">
+				<Button className="cursor-pointer w-full" disabled={isPending} type="submit">
+					{isPending ? 'Loading...' : 'Sign in'}
+				</Button>
+				<script
+					async
+					src="https://oauth.telegram.org/js/telegram-login.js?5"
+					data-client-id="8010360221"
+					data-onauth="console.log(data)"
+				></script>
 
-			{state?.errors.errors.length ? state?.errors.errors.join(',') : ''}
+				<button className="tg-auth-button">Sign In with Telegram</button>
+				{state?.errors.errors.length ? state?.errors.errors.join(',') : ''}
+			</div>
 		</form>
 	);
 }

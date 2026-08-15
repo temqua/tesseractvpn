@@ -2,7 +2,7 @@
 	height: 66px;
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
+	justify-content: space-between;
 	gap: 1rem;
 	padding: 1rem;
 	background-color: var(--sidebar);

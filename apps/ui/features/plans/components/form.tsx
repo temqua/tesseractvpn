@@ -29,6 +29,7 @@ export default function PlanClientSide({ data, id }: { data: IPlan; id: string }
 							name="name"
 							placeholder="Name"
 							aria-invalid={Boolean(state?.errors?.properties?.name?.errors?.length)}
+							required
 						/>
 					</FormField>
 					<FormField id={'amount'} label={'Amount'} errors={state?.errors?.properties?.amount?.errors}>

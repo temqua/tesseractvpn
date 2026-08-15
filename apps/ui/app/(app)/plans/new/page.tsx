@@ -26,6 +26,7 @@ export default function NewPlan() {
 							id="name"
 							name="name"
 							placeholder="Name"
+							required
 							aria-invalid={Boolean(state?.errors?.properties?.name?.errors?.length)}
 						/>
 					</FormField>

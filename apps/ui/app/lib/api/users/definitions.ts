@@ -37,6 +37,8 @@ export interface IVPNUserDTO extends IVPNUserListDTO {
 	messageDeliveries: IBotDeliveredMessage[];
 }
 
+export type Device = 'Android' | 'iOS' | 'macOS' | 'Linux' | 'Windows' | 'AndroidTV' | 'GoogleTV' | 'AppleTV';
+
 export interface IVPNUser {
 	id: number;
 	username: string;
@@ -77,4 +79,28 @@ export interface IVPNUserUI {
 	price: number;
 	free: boolean;
 	active: boolean;
+}
+
+export interface ICreateUserDto {
+	username: string;
+	firstName: string;
+
+	telegramId: string | null;
+	telegramLink?: string;
+
+	lastName?: string;
+	languageCode?: string;
+	payerId?: number | null;
+	price?: number;
+	referrerId?: number | null;
+	devices?: Device[];
+}
+
+export interface IUpdateUserDto extends Partial<ICreateUserDto> {
+	subLink?: string | null;
+	rwLink?: string | null;
+	rwUsername?: string | null;
+	rwUUID?: string | null;
+	rwId?: number | null;
+	active?: boolean;
 }

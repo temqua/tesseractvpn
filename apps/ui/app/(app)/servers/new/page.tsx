@@ -1,19 +1,17 @@
 'use client';
 import { Button } from '@/app/components/button';
-import { Input } from '@/app/components/input';
-import { getUpdateAction } from '@/app/lib/actions/servers';
-import { IServer } from '@/app/lib/api/servers/definitions';
-import { useActionState, useState } from 'react';
-import { ServerFormState } from '../lib/definitions';
-import FormField from '@/app/components/form-field';
 import ContentArea from '@/app/components/content-area';
 import { FieldSet } from '@/app/components/field';
+import FormField from '@/app/components/form-field';
+import { createAction } from '@/app/lib/actions/servers';
+import { ServerFormState } from '@/features/servers/lib/definitions';
+import { Input } from '@/app/components/input';
+import { useActionState, useState } from 'react';
 
-export default function ServerClientSide({ data, id }: { data: IServer; id: string }) {
-	const updateAction = getUpdateAction(id);
-	const [state, formAction, isPendingUpdate] = useActionState<ServerFormState, FormData>(updateAction, {});
-	const [name, setName] = useState(data?.name);
-	const [url, setUrl] = useState(data?.url);
+export default function NewServer() {
+	const [state, formAction, isPendingUpdate] = useActionState<ServerFormState, FormData>(createAction, {});
+	const [name, setName] = useState('');
+	const [url, setUrl] = useState('');
 	return (
 		<ContentArea>
 			<form action={formAction}>
@@ -37,8 +35,8 @@ export default function ServerClientSide({ data, id }: { data: IServer; id: stri
 							name="url"
 							type="url"
 							placeholder="URL"
-							aria-invalid={Boolean(state?.errors?.properties?.url?.errors)}
 							required
+							aria-invalid={Boolean(state?.errors?.properties?.url?.errors)}
 						/>
 					</FormField>
 					<Button type="submit">Submit</Button>

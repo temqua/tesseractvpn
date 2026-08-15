@@ -34,6 +34,7 @@ export default function NewPaymentPage() {
 							id="amount"
 							name="amount"
 							type="number"
+							step="0.01"
 							autoComplete="off"
 							placeholder="Amount"
 							aria-invalid={Boolean(state?.errors?.properties?.amount?.errors?.length)}

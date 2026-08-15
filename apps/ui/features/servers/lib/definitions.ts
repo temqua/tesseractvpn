@@ -1,9 +1,14 @@
 import { IServer } from '@/app/lib/api/servers/definitions';
 import { IErrorBody } from '@/app/lib/definitions.global';
 import z from 'zod';
-export const ServerFormSchema = z.object({
-	name: z.string(),
-	url: z.string(),
+export const ServerFormCreateSchema = z.object({
+	name: z.string().nonempty(),
+	url: z.string().nonempty(),
+});
+
+export const ServerFormEditSchema = z.object({
+	name: z.string().nonempty(),
+	url: z.string().nonempty(),
 });
 
 export type ServerFormState =
