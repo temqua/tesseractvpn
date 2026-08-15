@@ -35,7 +35,7 @@ export default function LoginForm() {
 				<script
 					async
 					src="https://oauth.telegram.org/js/telegram-login.js?5"
-					data-client-id="8010360221"
+					data-client-id={process.env.NEXT_PUBLIC_TG_CLIENT_ID}
 					data-onauth="console.log(data)"
 				></script>
 

@@ -26,6 +26,7 @@ const env = cleanEnv(process.env, {
 	HOOK_PORT: num({ default: 4000 }),
 	RW_API_ROOT: str({ default: '' }),
 	RW_TOKEN: str({ default: '' }),
+	ADMIN_UI_URL: str({ default: '' }),
 });
 
 export default env;

@@ -27,7 +27,9 @@ COPY ./features/ ./features/
 COPY package.json tsconfig.json proxy.ts next.config.ts next-env.d.ts postcss.config.mjs ./
 
 ARG BASE_URL
+ARG TG_CLIENT_ID
 ENV NEXT_PUBLIC_API_URL=${BASE_URL}
+ENV NEXT_PUBLIC_TG_CLIENT_ID=${TG_CLIENT_ID}
 ENV NODE_ENV=production
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry

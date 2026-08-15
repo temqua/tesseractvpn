@@ -1908,6 +1908,7 @@ ${dict.payment_through[lang]} @tesseract\\_users\\_bot`;
 
 	private async sendUserMenu(chatId: number, user: VPNUser) {
 		await bot.sendMessage(chatId, this.formatUserInfo(user));
+		await bot.sendMessage(chatId, `${env.ADMIN_UI_URL}/users/${user.id}`);
 
 		await bot.sendMessage(chatId, 'Select operation', {
 			reply_markup: {
