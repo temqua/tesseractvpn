@@ -23,6 +23,7 @@ export default function LoginForm() {
 					<Input
 						id="password"
 						name="password"
+						type="password"
 						placeholder="Password"
 						aria-invalid={Boolean(state?.errors?.properties?.password?.errors.length)}
 					/>
