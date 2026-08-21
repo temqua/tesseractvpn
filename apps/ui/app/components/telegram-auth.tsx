@@ -4,7 +4,7 @@ import { TGAuthParams, tgSessionKey } from '../lib/api/auth';
 import { authClient } from '../lib/api/auth/client';
 import { redirect, RedirectType } from 'next/navigation';
 
-async function onTelegramAuth(input: TGAuthParams | { error: string }) {
+async function onTelegramAuth(input: TGAuthParams & { error: string }) {
 	if (input.id_token && input.user) {
 		const result = await authClient.authTelegram(input as TGAuthParams);
 		if (result.token) {
