@@ -1,6 +1,4 @@
 import { OrderDirection } from '@/app/lib/enums';
-import ExpensesClientSide from '@/features/expenses/components/all';
-import { expensesSSRClient } from '@/features/expenses/lib/ssr-client';
 import PlansClientSide from '@/features/plans/components/all';
 import { plansSSRClient } from '@/features/plans/lib/ssr-client';
 import { redirect } from 'next/navigation';

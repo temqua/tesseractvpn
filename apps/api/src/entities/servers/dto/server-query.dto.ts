@@ -7,6 +7,12 @@ export enum OrderByServerField {
   Name = 'name',
 }
 
+export enum OrderByServerUserField {
+  Protocol = 'protocol',
+  Username = 'username',
+  ID = 'id',
+}
+
 export class ServerQueryDto extends BaseListDto {
   @IsString()
   @IsOptional()
@@ -22,6 +28,25 @@ export class ServerQueryDto extends BaseListDto {
   @IsOptional()
   @IsEnum(OrderByServerField)
   orderBy?: OrderByServerField;
+  @IsString()
+  @IsOptional()
+  @IsEnum(OrderDirection)
+  orderDirection?: OrderDirection;
+}
+
+export class ServerUserQueryDto extends BaseListDto {
+  @IsNumber()
+  @IsOptional()
+  id?: number;
+  @IsString()
+  @IsOptional()
+  username?: string;
+  @IsString()
+  @IsOptional()
+  protocol?: string;
+  @IsOptional()
+  @IsEnum(OrderByServerUserField)
+  orderBy?: OrderByServerUserField;
   @IsString()
   @IsOptional()
   @IsEnum(OrderDirection)

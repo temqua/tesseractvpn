@@ -40,7 +40,9 @@ export default function LoginForm() {
 					data-onauth="console.log(data)"
 				></script>
 
-				<button className="tg-auth-button">Sign In with Telegram</button>
+				<button type="button" className="tg-auth-button">
+					Sign In with Telegram
+				</button>
 				{state?.errors.errors.length ? state?.errors.errors.join(',') : ''}
 			</div>
 		</form>

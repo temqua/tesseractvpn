@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
 import { ServersRepository } from './servers.repository';
-import { ServerQueryDto } from './dto/server-query.dto';
+import { ServerQueryDto, ServerUserQueryDto } from './dto/server-query.dto';
 
 @Injectable()
 export class ServersService {
@@ -35,7 +35,7 @@ export class ServersService {
     return await this.repository.delete(id);
   }
 
-  async getUsers(id: number) {
-    return await this.repository.getUsers(id);
+  async getUsers(id: number, dto?: ServerUserQueryDto) {
+    return await this.repository.getUsers(id, dto);
   }
 }

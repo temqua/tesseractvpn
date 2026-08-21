@@ -7,7 +7,9 @@ export default function LoginPage() {
 				<h1 style={{ fontSize: '2.5rem', fontFamily: 'BBH Bartle sans-serif', letterSpacing: '1rem' }}>
 					TESSERACT
 				</h1>
+
 				<LoginForm />
+
 				{/* <button className="tg-auth-button">Sign In with Telegram</button>
 				<script
 					async

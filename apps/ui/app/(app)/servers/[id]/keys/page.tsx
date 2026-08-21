@@ -1,7 +1,7 @@
 import env from '@/app/lib/env';
 import { serversSSRClient } from '@/features/servers/lib/ssr-client';
 
-export default async function ServetKeys({ params }: { params: Promise<{ id: string }> }) {
+export default async function ServerKeys({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params;
 	const server = await serversSSRClient.getById(id);
 	const response = await fetch(`${server.url}:8090/list`, {

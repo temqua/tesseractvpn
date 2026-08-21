@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, VpnServer } from '@prisma/client';
+import { Prisma, VPNProtocol, VpnServer } from '@prisma/client';
 import { DatabaseService } from '../../database.service';
 import { UpdateServerDto } from './dto/update-server.dto';
-import { ServerQueryDto } from './dto/server-query.dto';
+import { ServerQueryDto, ServerUserQueryDto } from './dto/server-query.dto';
 
 @Injectable()
 export class ServersRepository {
@@ -72,15 +72,45 @@ export class ServersRepository {
     });
   }
 
-  async getUsers(id: number) {
-    return await this.databaseService.client.serversUsers.findMany({
-      where: {
-        serverId: id,
-      },
+  async getUsers(id: number, dto?: ServerUserQueryDto) {
+    const where: Prisma.ServersUsersWhereInput = {
+      serverId: id,
+    };
+    if (dto?.id) {
+      where.id = dto.id;
+    }
+    if (dto?.protocol) {
+      where.protocol = dto.protocol as VPNProtocol;
+    }
+    if (dto?.username) {
+      where.username = {
+        mode: 'insensitive',
+        contains: dto?.username,
+      };
+    }
+    const params = {
+      where,
       include: {
         user: {},
       },
-    });
+      orderBy:
+        dto?.orderBy && dto?.orderDirection
+          ? {
+              [dto.orderBy]: dto.orderDirection,
+            }
+          : undefined,
+    };
+    const countParams = {
+      where,
+    };
+    const [data, count] = await this.databaseService.client.$transaction([
+      this.databaseService.client.serversUsers.findMany(params),
+      this.databaseService.client.serversUsers.count(countParams),
+    ]);
+    return {
+      data,
+      count,
+    };
   }
 
   async getById(id: number): Promise<VpnServer | null> {

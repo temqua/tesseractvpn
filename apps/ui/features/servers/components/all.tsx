@@ -13,7 +13,7 @@ import { IListParams } from '@/app/lib/definitions.global';
 import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash } from 'lucide-react';
+import { Pencil, Trash, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -90,6 +90,9 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 						>
 							<Trash />
 						</button>
+						<Link href={`/servers/${row.id}/users`}>
+							<Users />
+						</Link>
 					</ActionsCell>
 				);
 			},

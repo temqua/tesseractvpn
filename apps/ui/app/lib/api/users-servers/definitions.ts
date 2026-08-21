@@ -11,3 +11,11 @@ export interface IUserServer {
 	server: IServer;
 	user: IVPNUser;
 }
+
+export interface IUserServerUI {
+	id: number;
+	userId: number;
+	protocol: string;
+	username: string;
+	assignedAt: string;
+}

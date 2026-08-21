@@ -11,7 +11,7 @@ import {
 import { ServersService } from './servers.service';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
-import { ServerQueryDto } from './dto/server-query.dto';
+import { ServerQueryDto, ServerUserQueryDto } from './dto/server-query.dto';
 
 @Controller('servers')
 export class ServersController {
@@ -46,7 +46,7 @@ export class ServersController {
   }
 
   @Get(':id/users')
-  async getUsers(@Param('id') id: string) {
-    return await this.serversService.getUsers(+id);
+  async getUsers(@Param('id') id: string, @Query() dto: ServerUserQueryDto) {
+    return await this.serversService.getUsers(Number(id), dto);
   }
 }
