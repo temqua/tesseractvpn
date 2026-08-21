@@ -1,13 +1,15 @@
 'use client';
-import { useActionState } from 'react';
 import { auth } from '@/app/lib/actions/auth';
+import { useActionState } from 'react';
 import { Button } from './button';
-import { Input } from './input';
 import { FieldSet } from './field';
 import FormField from './form-field';
+import { Input } from './input';
+import TelegramAuth from './telegram-auth';
 
 export default function LoginForm() {
 	const [state, formAction, isPending] = useActionState(auth, undefined);
+
 	return (
 		<form action={formAction}>
 			<FieldSet className="mb-8">
@@ -33,16 +35,7 @@ export default function LoginForm() {
 				<Button className="cursor-pointer w-full" disabled={isPending} type="submit">
 					{isPending ? 'Loading...' : 'Sign in'}
 				</Button>
-				<script
-					async
-					src="https://oauth.telegram.org/js/telegram-login.js?5"
-					data-client-id={process.env.NEXT_PUBLIC_TG_CLIENT_ID}
-					data-onauth="console.log(data)"
-				></script>
-
-				<button type="button" className="tg-auth-button">
-					Sign In with Telegram
-				</button>
+				<TelegramAuth />
 				{state?.errors.errors.length ? state?.errors.errors.join(',') : ''}
 			</div>
 		</form>

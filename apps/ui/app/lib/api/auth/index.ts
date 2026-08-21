@@ -1,4 +1,5 @@
 export const authSessionKey = 'tesseract_user_session';
+export const tgSessionKey = 'tesseract_tg_user_session';
 
 export function checkJWT(token: string | undefined): boolean {
 	if (typeof token !== 'string') {
@@ -26,3 +27,22 @@ export interface IJWToken {
 	iat: number;
 	exp: number;
 }
+
+export type TGUser = {
+	aud: string;
+	exp: number;
+	family_name: string;
+	given_name: string;
+	iat: number;
+	id: string;
+	iss: string;
+	name: string;
+	picture: string;
+	preferred_username: string;
+	sub: string;
+};
+
+export type TGAuthParams = {
+	id_token: string;
+	user: TGUser;
+};

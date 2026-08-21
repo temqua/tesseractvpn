@@ -1,27 +1,24 @@
 import { OrderDirection } from '@/app/lib/enums';
-import PaymentsClientSide from '@/features/payments/components/all';
-import { paymentsSSRClient } from '@/features/payments/lib/ssr-client';
-import ServersClientSide from '@/features/servers/components/all';
-import { serversSSRClient } from '@/features/servers/lib/ssr-client';
+import UnauthorizedDeliveredMessagesClientSide from '@/features/bot-unauthorized-delivered-messages/components/all';
+import { unauthorizedDeliveredMessagesSSRClient } from '@/features/bot-unauthorized-delivered-messages/lib/ssr-client';
 import { redirect } from 'next/navigation';
 
-export default async function ServersPage(props: {
+export default async function UnauthorizedDeliveredMessagesPage(props: {
 	searchParams: Promise<{
 		page?: string;
 		take?: string;
 		id?: string;
-		url?: string;
-		name?: string;
+		telegramId?: string;
 		orderBy?: string;
 		orderDirection?: OrderDirection;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
+
 	const page = Number(searchParams.page) || 1;
 	const take = Number(searchParams.take) || 25;
 	const id = searchParams.id || '';
-	const url = searchParams.url || '';
-	const name = searchParams.name || '';
+	const telegramId = searchParams.telegramId || '';
 	const orderBy = searchParams.orderBy;
 	const orderDirection = searchParams.orderDirection;
 	if (!searchParams.page || !searchParams.take) {
@@ -33,17 +30,15 @@ export default async function ServersPage(props: {
 				params.set(key, value);
 			}
 		}
-		redirect(`/servers?${params.toString()}`);
+		redirect(`/admin/bot-unauthorized-delivered-messages?${params.toString()}`);
 	}
-	const response = await serversSSRClient.getAll({
+	const response = await unauthorizedDeliveredMessagesSSRClient.getAll({
 		skip: (page - 1) * take,
 		take,
 		...(id && { id }),
-		...(url && { url }),
-		...(name && { name }),
+		...(telegramId && { telegramId }),
 		...(orderBy && { orderBy }),
 		...(orderDirection && { orderDirection }),
 	});
-
-	return <ServersClientSide initialData={response.data} count={response.count} />;
+	return <UnauthorizedDeliveredMessagesClientSide initialData={response.data} count={response.count} />;
 }

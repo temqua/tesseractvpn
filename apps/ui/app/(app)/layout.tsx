@@ -1,12 +1,11 @@
-'use client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Suspense } from 'react';
+import { Toaster } from 'react-hot-toast';
+import ContentArea from '../components/content-area';
 import Header from '../components/header';
 import Sidebar from '../components/sidebar';
+import { AuthProvider } from './auth-provider';
 import styles from './layout.module.css';
-import { Suspense } from 'react';
-import ContentArea from '../components/content-area';
-import { Toaster } from 'react-hot-toast';
-const queryClient = new QueryClient();
+import QueryClientProviderWrapped from './query-client-init';
 
 export default function AppLayout({
 	children,
@@ -14,7 +13,7 @@ export default function AppLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<QueryClientProvider client={queryClient}>
+		<>
 			<div>
 				<Toaster />
 			</div>
@@ -24,10 +23,14 @@ export default function AppLayout({
 				<Sidebar />
 				<Suspense fallback={<ContentArea>Loading...</ContentArea>}>
 					<main className={styles.main}>
-						<div className={styles.content}>{children}</div>
+						<AuthProvider>
+							<QueryClientProviderWrapped>
+								<div className={styles.content}>{children}</div>
+							</QueryClientProviderWrapped>
+						</AuthProvider>
 					</main>
 				</Suspense>
 			</div>
-		</QueryClientProvider>
+		</>
 	);
 }

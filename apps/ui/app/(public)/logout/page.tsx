@@ -1,6 +1,6 @@
 'use client';
 import { redirect, RedirectType } from 'next/navigation';
-import { authSessionKey } from '../../lib/api/auth';
+import { authSessionKey, tgSessionKey } from '../../lib/api/auth';
 import { authClient } from '../../lib/api/auth/client';
 import { useEffect } from 'react';
 
@@ -13,6 +13,7 @@ export default function LogoutPage() {
 			})
 			.finally(() => {
 				localStorage.removeItem(authSessionKey);
+				localStorage.removeItem(tgSessionKey);
 				redirect('/login', RedirectType.replace);
 			});
 	}, []);

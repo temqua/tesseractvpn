@@ -29,7 +29,7 @@ export default async function ReferralTransactionsPage(props: {
 				params.set(key, value);
 			}
 		}
-		redirect(`/referral-transactions?${params.toString()}`);
+		redirect(`/admin/referral-transactions?${params.toString()}`);
 	}
 	const response = await referralTransactionsSSRClient.getAll({
 		skip: (page - 1) * take,

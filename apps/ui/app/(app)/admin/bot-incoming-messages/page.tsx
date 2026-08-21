@@ -1,14 +1,17 @@
 import { OrderDirection } from '@/app/lib/enums';
-import UnauthorizedDeliveredMessagesClientSide from '@/features/bot-unauthorized-delivered-messages/components/all';
-import { unauthorizedDeliveredMessagesSSRClient } from '@/features/bot-unauthorized-delivered-messages/lib/ssr-client';
+import IncomingMessagesClientSide from '@/features/bot-incoming-messages/components/all';
+import { incomingMessagesSSRClient } from '@/features/bot-incoming-messages/lib/ssr-client';
 import { redirect } from 'next/navigation';
 
-export default async function UnauthorizedDeliveredMessagesPage(props: {
+export default async function IncomingMessagesPage(props: {
 	searchParams: Promise<{
 		page?: string;
 		take?: string;
 		id?: string;
+		username?: string;
 		telegramId?: string;
+		firstName?: string;
+		lastName?: string;
 		orderBy?: string;
 		orderDirection?: OrderDirection;
 	}>;
@@ -18,6 +21,9 @@ export default async function UnauthorizedDeliveredMessagesPage(props: {
 	const page = Number(searchParams.page) || 1;
 	const take = Number(searchParams.take) || 25;
 	const id = searchParams.id || '';
+	const username = searchParams.username || '';
+	const firstName = searchParams.firstName || '';
+	const lastName = searchParams.lastName || '';
 	const telegramId = searchParams.telegramId || '';
 	const orderBy = searchParams.orderBy;
 	const orderDirection = searchParams.orderDirection;
@@ -30,15 +36,18 @@ export default async function UnauthorizedDeliveredMessagesPage(props: {
 				params.set(key, value);
 			}
 		}
-		redirect(`/bot-unauthorized-delivered-messages?${params.toString()}`);
+		redirect(`/admin/bot-incoming-messages?${params.toString()}`);
 	}
-	const response = await unauthorizedDeliveredMessagesSSRClient.getAll({
+	const response = await incomingMessagesSSRClient.getAll({
 		skip: (page - 1) * take,
 		take,
 		...(id && { id }),
+		...(firstName && { firstName }),
+		...(lastName && { lastName }),
 		...(telegramId && { telegramId }),
+		...(username && { username }),
 		...(orderBy && { orderBy }),
 		...(orderDirection && { orderDirection }),
 	});
-	return <UnauthorizedDeliveredMessagesClientSide initialData={response.data} count={response.count} />;
+	return <IncomingMessagesClientSide initialData={response.data} count={response.count} />;
 }

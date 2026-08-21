@@ -27,7 +27,7 @@ export default async function DeliveredMessagesPage(props: {
 				params.set(key, value);
 			}
 		}
-		redirect(`/bot-delivered-messages?${params.toString()}`);
+		redirect(`/admin/bot-delivered-messages?${params.toString()}`);
 	}
 	const response = await deliveredMessagesSSRClient.getAll({
 		skip: (page - 1) * take,

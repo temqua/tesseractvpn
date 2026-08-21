@@ -1,30 +1,27 @@
 import { OrderDirection } from '@/app/lib/enums';
-import IncomingMessagesClientSide from '@/features/bot-incoming-messages/components/all';
-import { incomingMessagesSSRClient } from '@/features/bot-incoming-messages/lib/ssr-client';
+import PaymentsClientSide from '@/features/payments/components/all';
+import { paymentsSSRClient } from '@/features/payments/lib/ssr-client';
+import ServersClientSide from '@/features/servers/components/all';
+import { serversSSRClient } from '@/features/servers/lib/ssr-client';
 import { redirect } from 'next/navigation';
 
-export default async function IncomingMessagesPage(props: {
+export default async function ServersPage(props: {
 	searchParams: Promise<{
 		page?: string;
 		take?: string;
 		id?: string;
-		username?: string;
-		telegramId?: string;
-		firstName?: string;
-		lastName?: string;
+		url?: string;
+		name?: string;
 		orderBy?: string;
 		orderDirection?: OrderDirection;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
-
 	const page = Number(searchParams.page) || 1;
 	const take = Number(searchParams.take) || 25;
 	const id = searchParams.id || '';
-	const username = searchParams.username || '';
-	const firstName = searchParams.firstName || '';
-	const lastName = searchParams.lastName || '';
-	const telegramId = searchParams.telegramId || '';
+	const url = searchParams.url || '';
+	const name = searchParams.name || '';
 	const orderBy = searchParams.orderBy;
 	const orderDirection = searchParams.orderDirection;
 	if (!searchParams.page || !searchParams.take) {
@@ -36,18 +33,17 @@ export default async function IncomingMessagesPage(props: {
 				params.set(key, value);
 			}
 		}
-		redirect(`/bot-incoming-messages?${params.toString()}`);
+		redirect(`/admin/servers?${params.toString()}`);
 	}
-	const response = await incomingMessagesSSRClient.getAll({
+	const response = await serversSSRClient.getAll({
 		skip: (page - 1) * take,
 		take,
 		...(id && { id }),
-		...(firstName && { firstName }),
-		...(lastName && { lastName }),
-		...(telegramId && { telegramId }),
-		...(username && { username }),
+		...(url && { url }),
+		...(name && { name }),
 		...(orderBy && { orderBy }),
 		...(orderDirection && { orderDirection }),
 	});
-	return <IncomingMessagesClientSide initialData={response.data} count={response.count} />;
+
+	return <ServersClientSide initialData={response.data} count={response.count} />;
 }

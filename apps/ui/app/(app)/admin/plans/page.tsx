@@ -40,7 +40,7 @@ export default async function PlansPage(props: {
 				params.set(key, value);
 			}
 		}
-		redirect(`/plans?${params.toString()}`);
+		redirect(`/admin/plans?${params.toString()}`);
 	}
 	const response = await plansSSRClient.getAll({
 		skip: (page - 1) * take,

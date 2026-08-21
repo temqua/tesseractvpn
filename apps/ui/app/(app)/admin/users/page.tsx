@@ -1,14 +1,16 @@
 import { OrderDirection } from '@/app/lib/enums';
-import ExpensesClientSide from '@/features/expenses/components/all';
-import { expensesSSRClient } from '@/features/expenses/lib/ssr-client';
+import UsersClientSide from '@/features/users/components/all';
+import { usersSSRClient } from '@/features/users/lib/ssr-client';
 import { redirect } from 'next/navigation';
 
-export default async function ExpensesPage(props: {
+export default async function UsersPage(props: {
 	searchParams: Promise<{
 		page?: string;
 		take?: string;
 		id?: string;
-		amount?: string;
+		username?: string;
+		firstName?: string;
+		lastName?: string;
 		orderBy?: string;
 		orderDirection?: OrderDirection;
 	}>;
@@ -17,10 +19,12 @@ export default async function ExpensesPage(props: {
 
 	const page = Number(searchParams.page) || 1;
 	const take = Number(searchParams.take) || 25;
+	const id = searchParams.id || '';
+	const username = searchParams.username || '';
+	const firstName = searchParams.firstName || '';
+	const lastName = searchParams.lastName || '';
 	const orderBy = searchParams.orderBy;
 	const orderDirection = searchParams.orderDirection;
-	const id = searchParams.id || '';
-	const amount = searchParams.amount || '';
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
@@ -30,15 +34,17 @@ export default async function ExpensesPage(props: {
 				params.set(key, value);
 			}
 		}
-		redirect(`/expenses?${params.toString()}`);
+		redirect(`/admin/users?${params.toString()}`);
 	}
-	const response = await expensesSSRClient.getAll({
+	const response = await usersSSRClient.getAll({
 		skip: (page - 1) * take,
 		take,
 		...(id && { id }),
-		...(amount && { amount }),
+		...(username && { username }),
+		...(firstName && { firstName }),
+		...(lastName && { lastName }),
 		...(orderBy && { orderBy }),
 		...(orderDirection && { orderDirection }),
 	});
-	return <ExpensesClientSide initialData={response.data} count={response.count} />;
+	return <UsersClientSide initialData={response.data} count={response.count}></UsersClientSide>;
 }

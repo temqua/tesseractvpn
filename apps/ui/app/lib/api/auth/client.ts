@@ -1,5 +1,19 @@
 'use client';
+
+import { TGAuthParams } from '.';
+
 export class AuthClient {
+	async authTelegram(params: TGAuthParams): Promise<{ token: string }> {
+		const response = await fetch('/api/auth/login-tg', {
+			method: 'POST',
+			body: JSON.stringify(params),
+		});
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
+		return await response.json();
+	}
+
 	async auth(username: string, password: string): Promise<{ success: boolean; token: string }> {
 		const response = await fetch('/api/auth/login', {
 			method: 'POST',
