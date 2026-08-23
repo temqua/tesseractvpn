@@ -762,7 +762,7 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 					try {
 						await this.rwService.updateUser({
 							uuid: user.rwUUID,
-							expireAt: addDays(new Date(resul t.expiresOn), 1).toISOString(),
+							expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
 						});
 					} catch (err) {
 						const ms = `Request to remnawave failed ${err}`;
