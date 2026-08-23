@@ -714,17 +714,17 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 								});
 						}
 						if (env.BOT_ENV !== 'local') {
-							if (dep.pasarguardId) {
-								try {
-									await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
-										expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
-									});
-								} catch (err) {
-									const ms = `Request to pasarguard failed ${err}`;
-									logger.error(ms);
-									await bot.sendMessage(chatId, ms);
-								}
-							}
+							// if (dep.pasarguardId) {
+							// 	try {
+							// 		await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
+							// 			expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
+							// 		});
+							// 	} catch (err) {
+							// 		const ms = `Request to pasarguard failed ${err}`;
+							// 		logger.error(ms);
+							// 		await bot.sendMessage(chatId, ms);
+							// 	}
+							// }
 
 							if (dep.rwUUID) {
 								try {
@@ -747,22 +747,22 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 				}
 			}
 			if (env.BOT_ENV !== 'local') {
-				if (user.pasarguardId) {
-					try {
-						await this.pasarguardService.updateUser(`${user.username}_${user.id}`, {
-							expire: addDays(new Date(result.expiresOn), 1).toISOString(),
-						});
-					} catch (err) {
-						const ms = `Request to pasarguard failed ${err}`;
-						logger.error(ms);
-						await bot.sendMessage(chatId, ms);
-					}
-				}
+				// if (user.pasarguardId) {
+				// 	try {
+				// 		await this.pasarguardService.updateUser(`${user.username}_${user.id}`, {
+				// 			expire: addDays(new Date(result.expiresOn), 1).toISOString(),
+				// 		});
+				// 	} catch (err) {
+				// 		const ms = `Request to pasarguard failed ${err}`;
+				// 		logger.error(ms);
+				// 		await bot.sendMessage(chatId, ms);
+				// 	}
+				// }
 				if (user.rwUUID) {
 					try {
 						await this.rwService.updateUser({
 							uuid: user.rwUUID,
-							expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
+							expireAt: addDays(new Date(resul t.expiresOn), 1).toISOString(),
 						});
 					} catch (err) {
 						const ms = `Request to remnawave failed ${err}`;
