@@ -141,12 +141,12 @@ Your referral link: https://t.me/tesseract_users_bot?start=${refId}`,
 		en: 'Sign Up',
 	},
 	keys: {
-		ru: '🔑 Мои OpenVPN/Wireguard/IKEv2 ключи',
-		en: '🔑 My OpenVPN/Wireguard/IKEv2 keys',
+		ru: '🔑 Ключи',
+		en: '🔑 Keys',
 	},
 	subscription: {
-		ru: '🔗 Ссылка-ключ',
-		en: '🔗 Subscription link',
+		ru: '🔄 Ключ подписка',
+		en: '🔄 Subscription link',
 	},
 	refLink: {
 		ru: '🔗 Реферальная ссылка',
