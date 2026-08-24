@@ -46,7 +46,7 @@ export class UsersService {
   }
 
   async findOneByTelegram(telegramId: string) {
-    return await this.repository.findUniqueByUsername(telegramId);
+    return await this.repository.findUniqueByTelegram(telegramId);
   }
 
   async findUnpaid() {
