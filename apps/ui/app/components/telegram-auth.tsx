@@ -25,7 +25,7 @@ export default function TelegramAuth({
 					localStorage.setItem(authSessionKey, result.token);
 					localStorage.setItem(tgSessionKey, input.id_token);
 					localStorage.setItem(tgUserKey, JSON.stringify(input.user));
-					redirect('/', RedirectType.replace);
+					location.href = `${location.origin}/`;
 				}
 			} catch (error) {
 				onError(`${error}`);
