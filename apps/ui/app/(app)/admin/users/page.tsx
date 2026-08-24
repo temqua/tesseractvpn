@@ -11,6 +11,7 @@ export default async function UsersPage(props: {
 		username?: string;
 		firstName?: string;
 		lastName?: string;
+		telegramId?: string;
 		orderBy?: string;
 		orderDirection?: OrderDirection;
 	}>;
@@ -23,6 +24,7 @@ export default async function UsersPage(props: {
 	const username = searchParams.username || '';
 	const firstName = searchParams.firstName || '';
 	const lastName = searchParams.lastName || '';
+	const telegramId = searchParams.telegramId || '';
 	const orderBy = searchParams.orderBy;
 	const orderDirection = searchParams.orderDirection;
 	if (!searchParams.page || !searchParams.take) {
@@ -43,6 +45,7 @@ export default async function UsersPage(props: {
 		...(username && { username }),
 		...(firstName && { firstName }),
 		...(lastName && { lastName }),
+		...(telegramId && { telegramId }),
 		...(orderBy && { orderBy }),
 		...(orderDirection && { orderDirection }),
 	});

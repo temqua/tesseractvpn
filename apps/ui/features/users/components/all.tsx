@@ -19,6 +19,7 @@ const baseColumns: IColumn<IVPNUserUI>[] = [
 	{ label: 'Username', prop: 'username', sortable: true },
 	{ label: 'First name', prop: 'firstName', sortable: true },
 	{ label: 'Last name', prop: 'lastName', sortable: true },
+	{ label: 'Telegram ID', prop: 'telegramId', sortable: true },
 	{ label: 'Active', prop: 'active' },
 	{ label: 'Free', prop: 'free' },
 ];
@@ -33,6 +34,7 @@ interface IUserForm {
 	username?: string;
 	firstName?: string;
 	lastName?: string;
+	telegramId?: string;
 	free?: string;
 	active?: string;
 }
@@ -52,6 +54,7 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 	const username = searchParams.get('username') || '';
 	const firstName = searchParams.get('firstName') || '';
 	const lastName = searchParams.get('lastName') || '';
+	const telegramId = searchParams.get('telegramId') || '';
 	const orderBy = (searchParams.get('orderBy') as keyof IUserForm) || '';
 	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
 	const updateParams = useUpdateParams(useRouter(), usePathname());
@@ -74,13 +77,13 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 			actions: row => {
 				return (
 					<ActionsCell>
-						<Link href={`/users/${row.id}`}>
+						<Link href={`/admin/users/${row.id}`}>
 							<Pencil />
 						</Link>
-						<Link href={`/bot-delivered-messages?userId=${row.id}`}>
+						<Link href={`/admin/bot-delivered-messages?userId=${row.id}`}>
 							<Mail />
 						</Link>
-						<Link href={`/payments?userId=${row.id}`}>
+						<Link href={`/admin/payments?userId=${row.id}`}>
 							<CreditCard />
 						</Link>
 					</ActionsCell>
@@ -90,13 +93,27 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 	];
 
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['users', page, take, id, username, firstName, lastName, active, free, orderBy, orderDirection],
+		queryKey: [
+			'users',
+			page,
+			take,
+			id,
+			username,
+			firstName,
+			lastName,
+			active,
+			free,
+			orderBy,
+			orderDirection,
+			telegramId,
+		],
 		queryFn: () => {
 			const params: IListParams & IUserFormWithOrder = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
 			if (username) params.username = username;
 			if (firstName) params.firstName = firstName;
 			if (lastName) params.lastName = lastName;
+			if (telegramId) params.telegramId = telegramId;
 			if (active) params.active = active;
 			if (free) params.free = free;
 			if (orderBy) params.orderBy = orderBy;
@@ -184,6 +201,14 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 						placeholder="Last name"
 						defaultValue={lastName}
 						onChange={e => debouncedUpdateFilter('lastName', e.target.value)}
+					/>
+				</th>
+				<th>
+					<Input
+						type="search"
+						placeholder="Telegram ID"
+						defaultValue={telegramId}
+						onChange={e => debouncedUpdateFilter('telegramId', e.target.value)}
 					/>
 				</th>
 				<th>
