@@ -3,7 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import ContentArea from '../components/content-area';
 import Header from '../components/header';
 import Sidebar from '../components/sidebar';
-import { AuthProvider } from './auth-provider';
+import { UserProvider } from './user-provider';
 import styles from './layout.module.css';
 import QueryClientProviderWrapped from './query-client-init';
 
@@ -23,11 +23,11 @@ export default function AppLayout({
 				<Sidebar />
 				<Suspense fallback={<ContentArea>Loading...</ContentArea>}>
 					<main className={styles.main}>
-						<AuthProvider>
+						<UserProvider>
 							<QueryClientProviderWrapped>
 								<div className={styles.content}>{children}</div>
 							</QueryClientProviderWrapped>
-						</AuthProvider>
+						</UserProvider>
 					</main>
 				</Suspense>
 			</div>

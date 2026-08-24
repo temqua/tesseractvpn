@@ -1,5 +1,8 @@
+import { UserRole } from '../../enums';
+
 export const authSessionKey = 'tesseract_user_session';
 export const tgSessionKey = 'tesseract_tg_user_session';
+export const tgUserKey = 'tesseract_tg_user';
 
 export function checkJWT(token: string | undefined): boolean {
 	if (typeof token !== 'string') {
@@ -26,6 +29,7 @@ export interface IJWToken {
 	username: string;
 	iat: number;
 	exp: number;
+	role: UserRole;
 }
 
 export type TGUser = {

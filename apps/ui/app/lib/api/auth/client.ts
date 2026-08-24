@@ -6,8 +6,19 @@ export class AuthClient {
 	async authTelegram(params: TGAuthParams): Promise<{ token: string }> {
 		const response = await fetch('/api/auth/login-tg', {
 			method: 'POST',
-			body: JSON.stringify(params),
+			body: JSON.stringify({
+				tgToken: params.id_token,
+				telegramId: params.user.id,
+			}),
 		});
+		const isJson = response.headers.get('Content-Type')?.includes('application/json');
+		if (!response.ok && response.body && isJson) {
+			const errorBody = await response.json();
+			if (!errorBody.message) {
+				throw new Error(JSON.stringify(errorBody));
+			}
+			throw new Error(errorBody.message);
+		}
 		if (!response.ok) {
 			throw new Error(response.statusText);
 		}

@@ -287,6 +287,49 @@ export class UsersRepository {
     });
   }
 
+  async findUniqueByTelegram(telegramId: string): Promise<VPNUser | null> {
+    return await this.databaseService.client.user.findUnique({
+      where: {
+        telegramId,
+      },
+      include: {
+        payer: true,
+        payments: {
+          orderBy: {
+            paymentDate: 'desc',
+          },
+        },
+        dependants: true,
+        referrer: true,
+        referred: {
+          where: {
+            payments: {
+              some: {},
+            },
+            referredTransactions: {
+              none: {},
+            },
+          },
+        },
+        messageDeliveries: true,
+        referrerTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
+        referredTransactions: {
+          include: {
+            referrer: true,
+            referred: true,
+            payment: true,
+          },
+        },
+      },
+    });
+  }
+
   async getByUsername(username: string): Promise<VPNUser | null> {
     return await this.databaseService.client.user.findUnique({
       where: {

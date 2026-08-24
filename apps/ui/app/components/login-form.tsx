@@ -1,17 +1,22 @@
 'use client';
 import { auth } from '@/app/lib/actions/auth';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { Button } from './button';
-import { FieldSet } from './field';
+import { FieldError, FieldSet } from './field';
 import FormField from './form-field';
 import { Input } from './input';
 import TelegramAuth from './telegram-auth';
 
 export default function LoginForm() {
 	const [state, formAction, isPending] = useActionState(auth, undefined);
-
+	const [tgErr, setTgErr] = useState<string | null>(null);
 	return (
-		<form action={formAction}>
+		<form
+			action={formAction}
+			onSubmit={e => {
+				setTgErr(null);
+			}}
+		>
 			<FieldSet className="mb-8">
 				<FormField id="username" label="Username" errors={state?.errors?.properties?.username?.errors}>
 					<Input
@@ -35,8 +40,17 @@ export default function LoginForm() {
 				<Button className="cursor-pointer w-full" disabled={isPending} type="submit">
 					{isPending ? 'Loading...' : 'Sign in'}
 				</Button>
-				<TelegramAuth />
-				{state?.errors.errors.length ? state?.errors.errors.join(',') : ''}
+				<TelegramAuth
+					onError={err => {
+						setTgErr(err);
+					}}
+					onSubmit={e => {
+						setTgErr(null);
+					}}
+				/>
+
+				{tgErr ? <FieldError>{tgErr}</FieldError> : ''}
+				<FieldError>{state?.errors.errors.length ? state?.errors.errors.join(',') : ''}</FieldError>
 			</div>
 		</form>
 	);

@@ -123,6 +123,15 @@
 			"problemMatcher": [],
 			"label": "npm: test:e2e - apps/api",
 			"detail": "jest --config ./test/jest-e2e.json"
+		},
+		{
+			"type": "npm",
+			"script": "build",
+			"path": "apps/ui",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: build - apps/ui",
+			"detail": "bun --bun next build"
 		}
 	]
 }

@@ -32,7 +32,31 @@ export class AuthService {
     if (!match) {
       throw new UnauthorizedException();
     }
-    const payload: AuthPayload = { id: user.id, username: user.username };
+
+    const payload: AuthPayload = {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      telegramId: user.telegramId,
+    };
+    return {
+      accessToken: await this.jwtService.signAsync(payload),
+    };
+  }
+
+  async signInViaTelegram(token: string, telegramId: string) {
+    const user = await this.usersService.findOneByUsername(telegramId);
+    if (!user) {
+      throw new NotFoundException(
+        `There is no user with telegram id  ${telegramId} in system`,
+      );
+    }
+    const payload: AuthPayload = {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      telegramId: user.telegramId,
+    };
     return {
       accessToken: await this.jwtService.signAsync(payload),
     };

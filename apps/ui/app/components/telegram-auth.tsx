@@ -1,23 +1,38 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { TGAuthParams, tgSessionKey } from '../lib/api/auth';
-import { authClient } from '../lib/api/auth/client';
 import { redirect, RedirectType } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { TGAuthParams, tgSessionKey, tgUserKey } from '../lib/api/auth';
+import { authClient } from '../lib/api/auth/client';
 
-async function onTelegramAuth(input: TGAuthParams & { error: string }) {
-	console.log('input :>> ', input);
-	if (input.id_token && input.user) {
-		const result = await authClient.authTelegram(input as TGAuthParams);
-		if (result.token) {
-			localStorage.setItem(tgSessionKey, result.token);
-			redirect('/', RedirectType.replace);
-		}
-	} else {
-		console.error(input.error);
-	}
-}
-export default function TelegramAuth() {
+export default function TelegramAuth({
+	onError,
+	onSubmit,
+}: {
+	onError(message: string): void;
+	onSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
+}) {
 	const [isLoaded, setLoaded] = useState(false);
+	async function onTelegramAuth(input: TGAuthParams & { error: string }) {
+		if (process.env.NEXT_PUBLIC_APP_ENV === 'local') {
+			input.id_token = process.env.NEXT_PUBLIC_MOCK_TG_TOKEN ?? '';
+			input.user = JSON.parse(process.env.NEXT_PUBLIC_MOCK_TG_USER ?? '');
+		}
+		console.log('input :>> ', input);
+		if (input.id_token && input.user) {
+			try {
+				const result = await authClient.authTelegram(input as TGAuthParams);
+				if (result.token) {
+					localStorage.setItem(tgSessionKey, result.token);
+					localStorage.setItem(tgUserKey, JSON.stringify(input.user));
+					redirect('/', RedirectType.replace);
+				}
+			} catch (error) {
+				onError(`${error}`);
+			}
+		} else {
+			onError(`${input.error}`);
+		}
+	}
 
 	useEffect(() => {
 		setLoaded(true);
@@ -34,7 +49,13 @@ export default function TelegramAuth() {
 				data-client-id={process.env.NEXT_PUBLIC_TG_CLIENT_ID}
 				data-onauth="onTelegramAuth(data)"
 			></script>
-			<button type="button" className="tg-auth-button">
+			<button
+				onClick={e => {
+					onSubmit(e);
+				}}
+				type="button"
+				className="tg-auth-button"
+			>
 				Sign In with Telegram
 			</button>
 		</>

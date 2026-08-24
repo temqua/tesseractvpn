@@ -24,9 +24,11 @@ export default function Header() {
 	}, [darkTheme]);
 	return (
 		<header className={styles.header}>
-			<h1 style={{ fontSize: '1.25rem', fontFamily: 'BBH Bartle sans-serif', letterSpacing: '1rem' }}>
-				TESSERACT
-			</h1>
+			<div>
+				<h1 style={{ fontSize: '1.25rem', fontFamily: 'BBH Bartle sans-serif', letterSpacing: '1rem' }}>
+					TESSERACT
+				</h1>
+			</div>
 			<div className="flex gap-8 items-center">
 				<Button
 					onClick={() => {

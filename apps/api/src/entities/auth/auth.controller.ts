@@ -12,4 +12,11 @@ export class AuthController {
   signIn(@Body() dto: Record<string, any>) {
     return this.authService.signIn(dto.username, dto.password);
   }
+
+  @IsPublic()
+  @HttpCode(HttpStatus.OK)
+  @Post('/tg')
+  signInViaTg(@Body() dto: Record<string, string>) {
+    return this.authService.signInViaTelegram(dto.tgToken, dto.telegramId);
+  }
 }
