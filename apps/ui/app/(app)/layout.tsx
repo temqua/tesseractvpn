@@ -20,16 +20,16 @@ export default function AppLayout({
 
 			<Header />
 			<div className={styles.root}>
-				<Sidebar />
-				<Suspense fallback={<ContentArea>Loading...</ContentArea>}>
-					<main className={styles.main}>
-						<UserProvider>
+				<UserProvider>
+					<Sidebar />
+					<Suspense fallback={<ContentArea>Loading...</ContentArea>}>
+						<main className={styles.main}>
 							<QueryClientProviderWrapped>
 								<div className={styles.content}>{children}</div>
 							</QueryClientProviderWrapped>
-						</UserProvider>
-					</main>
-				</Suspense>
+						</main>
+					</Suspense>
+				</UserProvider>
 			</div>
 		</>
 	);

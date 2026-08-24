@@ -24,7 +24,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
 		if (savedToken) {
 			const user = parseJWT(savedToken);
 			setRole(user.role);
-			console.log('user in context useEffect: ', user);
 		}
 	}, []);
 

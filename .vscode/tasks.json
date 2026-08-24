@@ -132,6 +132,14 @@
 			"problemMatcher": [],
 			"label": "npm: build - apps/ui",
 			"detail": "bun --bun next build"
+		},
+		{
+			"type": "npm",
+			"script": "lint",
+			"path": "apps/ui",
+			"problemMatcher": [],
+			"label": "npm: lint - apps/ui",
+			"detail": "eslint"
 		}
 	]
 }
