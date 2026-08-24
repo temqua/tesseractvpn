@@ -7,6 +7,7 @@ import { UserRole } from '../lib/enums';
 export default function Sidebar() {
 	const pathname = usePathname();
 	const user = useUser();
+	console.log('user in sidebar', user);
 	const row =
 		user.role === UserRole.ADMIN ? (
 			<>

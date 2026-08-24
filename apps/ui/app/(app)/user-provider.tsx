@@ -14,14 +14,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
 	const [tgToken, setTgToken] = useState<string | null>(null);
 	const [role, setRole] = useState<UserRole | null>(null);
+
 	useEffect(() => {
 		const savedToken = localStorage.getItem(authSessionKey);
 		setToken(savedToken);
 		const savedTgToken = localStorage.getItem(tgSessionKey);
 		setTgToken(savedTgToken);
+
 		if (savedToken) {
 			const user = parseJWT(savedToken);
 			setRole(user.role);
+			console.log('user in context useEffect: ', user);
 		}
 	}, []);
 
