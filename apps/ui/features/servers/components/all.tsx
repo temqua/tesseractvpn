@@ -79,7 +79,7 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 			actions: row => {
 				return (
 					<ActionsCell>
-						<Link href={`/servers/${row.id}`}>
+						<Link href={`/admin/servers/${row.id}`}>
 							<Pencil />
 						</Link>
 						<button
@@ -90,7 +90,7 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 						>
 							<Trash />
 						</button>
-						<Link href={`/servers/${row.id}/users`}>
+						<Link href={`/admin/servers/${row.id}/users`}>
 							<Users />
 						</Link>
 					</ActionsCell>

@@ -2,7 +2,7 @@ import { IsNumber } from 'class-validator';
 
 export class BaseListDto {
   @IsNumber()
-  take: number;
+  take?: number;
   @IsNumber()
-  skip: number;
+  skip?: number;
 }

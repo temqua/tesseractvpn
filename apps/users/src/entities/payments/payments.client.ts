@@ -4,44 +4,44 @@ import { CreatePaymentDto, Payment, PaymentForSheet, PaymentSumDto } from './pay
 
 export class PaymentsClient {
 	async getAll(): Promise<Payment[]> {
-		const { data } = (await client.get(`/payments`)) as ListResponse<Payment>;
+		const { data } = (await client.get(`/admin/payments`)) as ListResponse<Payment>;
 		return data as Payment[];
 	}
 
 	async getAllForSheet() {
 		const params = new URLSearchParams();
 		params.append('sheet', 'true');
-		const result = await client.get(`/payments?${params}`);
+		const result = await client.get(`/admin/payments?${params}`);
 
 		return result as PaymentForSheet[];
 	}
 
 	async getById(id: string): Promise<Payment | null> {
-		const result = await client.get(`/payments/${id}`);
+		const result = await client.get(`/admin/payments/${id}`);
 		return result as Payment;
 	}
 
 	async create(dto: CreatePaymentDto): Promise<Payment | null> {
-		const result = await client.post(`/payments`, {
+		const result = await client.post(`/admin/payments`, {
 			body: JSON.stringify(dto),
 		});
 		return result as Payment | null;
 	}
 
 	async update(id: string, dto: Partial<CreatePaymentDto>): Promise<Payment> {
-		const result = await client.patch(`/payments/${id}`, {
+		const result = await client.patch(`/admin/payments/${id}`, {
 			body: JSON.stringify(dto),
 		});
 		return result as Payment;
 	}
 
 	async delete(id: string): Promise<Payment> {
-		const result = await client.delete(`/payments/${id}`);
+		const result = await client.delete(`/admin/payments/${id}`);
 		return result as Payment;
 	}
 
 	async sum(): Promise<PaymentSumDto> {
-		const result = await client.get('/payments/sum');
+		const result = await client.get('/admin/payments/sum');
 		return result as PaymentSumDto;
 	}
 
@@ -54,16 +54,16 @@ export class PaymentsClient {
 		if (to) {
 			params.append('to', to);
 		}
-		const result = (await client.get(`/payments?${params}`)) as ListResponse<Payment>;
+		const result = (await client.get(`/admin/payments?${params}`)) as ListResponse<Payment>;
 		return result.data as Payment[];
 	}
 
 	async getAllByUserId(userId: number): Promise<Payment[]> {
-		const result = (await client.get(`/payments?userId=${userId}`)) as ListResponse<Payment>;
+		const result = (await client.get(`/admin/payments?userId=${userId}`)) as ListResponse<Payment>;
 		return result.data as Payment[];
 	}
 
 	async export() {
-		return await client.post('/payments/export');
+		return await client.post('/admin/payments/export');
 	}
 }

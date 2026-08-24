@@ -32,4 +32,23 @@ export class PaymentListDto extends BaseListDto {
   @IsEnum(OrderDirection)
   orderDirection?: OrderDirection;
 }
-new URLSearchParams();
+
+export class UserPaymentsListDto extends BaseListDto {
+  @IsString()
+  id?: string;
+  @IsString()
+  from?: string;
+  @IsString()
+  to?: string;
+  @IsNumber()
+  monthsCount?: number;
+  @IsNumber()
+  amount?: number;
+  @IsOptional()
+  @IsEnum(OrderByPaymentField)
+  orderBy?: OrderByPaymentField;
+  @IsString()
+  @IsOptional()
+  @IsEnum(OrderDirection)
+  orderDirection?: OrderDirection;
+}

@@ -70,7 +70,7 @@ export default function ReferralTransactionsClientSide({ initialData, count }: I
 			actions: row => {
 				return (
 					<>
-						<Link href={`/referral-transactions/${row.id}`}>✏️</Link>
+						<Link href={`/admin/referral-transactions/${row.id}`}>✏️</Link>
 						<button
 							onClick={() => {
 								setDeleteId(row.id);

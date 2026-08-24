@@ -116,7 +116,7 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 			actions: row => {
 				return (
 					<ActionsCell>
-						<Link href={`/plans/${row.id}`}>
+						<Link href={`/admin/plans/${row.id}`}>
 							<Pencil />
 						</Link>
 						<button
@@ -260,7 +260,7 @@ export default function PlansClientSide({ initialData, count }: IPlanPageProps) 
 		<div>
 			<ContentArea>
 				<div>
-					<Link href={`/plans/new`}>ADD</Link>
+					<Link href={`/admin/plans/new`}>ADD</Link>
 				</div>
 				<Table
 					searchRow={searchRow}

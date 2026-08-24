@@ -106,7 +106,7 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 			actions: row => {
 				return (
 					<ActionsCell>
-						<Link href={`/expenses/${row.id}`}>
+						<Link href={`/admin/expenses/${row.id}`}>
 							<Pencil />
 						</Link>
 						<button
@@ -187,7 +187,7 @@ export default function ExpensesClientSide({ initialData, count }: IExpensePageP
 		<div>
 			<ContentArea>
 				<div>
-					<Link href={`/expenses/new`}>ADD</Link>
+					<Link href={`/admin/expenses/new`}>ADD</Link>
 				</div>
 				<Table
 					page={page}

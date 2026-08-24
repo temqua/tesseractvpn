@@ -14,7 +14,6 @@ class ApiClient {
 			...params,
 			headers: {
 				'Content-Type': 'application/json',
-				'X-Source': 'bot',
 				'Authorization': `Bearer ${localStorage.getItem(authSessionKey)}`,
 				...(params?.headers ? { ...params.headers } : {}),
 			},

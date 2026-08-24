@@ -6,11 +6,17 @@ export class PaymentsSSRClient {
 	async getAll(listParams: IListParams): Promise<ListResponse<IPayment>> {
 		const params = new URLSearchParams(listParams as Record<string, string>);
 
-		return await ssrClient.get(`/api/v1/payments?${params}`);
+		return await ssrClient.get(`/api/v1/admin/payments?${params}`);
 	}
 
 	async getById(id: string): Promise<IPayment> {
-		return await ssrClient.get(`/api/v1/payments/${id}`);
+		return await ssrClient.get(`/api/v1/admin/payments/${id}`);
+	}
+
+	async getForUser(listParams: IListParams): Promise<ListResponse<IPayment>> {
+		const params = new URLSearchParams(listParams as Record<string, string>);
+
+		return await ssrClient.get(`/api/v1/payments?${params}`);
 	}
 }
 export const paymentsSSRClient = new PaymentsSSRClient();

@@ -1,22 +1,15 @@
 'use client';
-
-import ActionsCell from '@/app/components/actions-cell';
-import { Button } from '@/app/components/button';
 import ContentArea from '@/app/components/content-area';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
-import { deleteAction } from '@/app/lib/actions/payments';
 import { paymentsClient } from '@/app/lib/api/payments/client';
 import { IPayment } from '@/app/lib/api/payments/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
-import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash } from 'lucide-react';
-import Link from 'next/link';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 const baseColumns: IColumn<IPayment>[] = [
 	{
@@ -43,53 +36,36 @@ const baseColumns: IColumn<IPayment>[] = [
 		prop: 'expiresOn',
 		sortable: true,
 	},
-	{
-		label: 'userId',
-		prop: 'userId',
-	},
-	{
-		label: 'planId',
-		prop: 'planId',
-	},
-	{
-		label: 'parentPaymentId',
-		prop: 'parentPaymentId',
-	},
 ];
-interface IPaymentForm {
+
+interface IUserPaymentForm {
 	id?: string;
 	paymentDate?: string;
 	amount?: string;
 	monthsCount?: string;
 	expiresOn?: string;
-	userId?: string;
-	planId?: string;
-	parentPaymentId?: string;
 }
 
-interface IPaymentsPageProps {
+interface IUserPaymentsPageProps {
 	initialData: IPayment[];
 	count?: number;
 }
 
-interface IPaymentFormWithOrder extends IPaymentForm {
-	orderBy?: keyof IPaymentForm;
+interface IUserPaymentFormWithOrder extends IUserPaymentForm {
+	orderBy?: keyof IUserPaymentForm;
 	orderDirection?: OrderDirection;
 }
 
-export default function PaymentsClientSide({ initialData, count }: IPaymentsPageProps) {
-	const [isModalOpened, setModalOpened] = useState(false);
-	const [deleteId, setDeleteId] = useState<string | null>(null);
+export function UserPaymentsClientSide({ initialData, count }: IUserPaymentsPageProps) {
 	const searchParams = useSearchParams();
+
 	const id = searchParams.get('id') || '';
 	const page = Number(searchParams.get('page')) || 1;
 	const take = Number(searchParams.get('take')) || 25;
-	const userId = searchParams.get('userId');
 	const monthsCount = searchParams.get('monthsCount');
 	const amount = searchParams.get('amount');
-	const orderBy = (searchParams.get('orderBy') as keyof IPaymentForm) || '';
+	const orderBy = (searchParams.get('orderBy') as keyof IUserPaymentForm) || '';
 	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
-
 	const updateParams = useUpdateParams(useRouter(), usePathname());
 	const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const debouncedUpdateFilter = useCallback(
@@ -101,45 +77,22 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 		},
 		[updateParams],
 	);
-	const columns: IColumn<IPayment>[] = [
-		...baseColumns,
-		{
-			label: 'Actions',
-			actions: row => {
-				return (
-					<ActionsCell>
-						<Link href={`/admin/payments/${row.id}`}>
-							<Pencil />
-						</Link>
-						<button
-							onClick={() => {
-								setDeleteId(row.id);
-								setModalOpened(true);
-							}}
-						>
-							<Trash />
-						</button>
-					</ActionsCell>
-				);
-			},
-		},
-	];
 
 	const { data: fetched, isLoading } = useQuery({
-		queryKey: ['payments', page, take, id, userId, monthsCount, orderBy, orderDirection, amount],
+		queryKey: ['user-payments', page, take, id, monthsCount, orderBy, orderDirection, amount],
 		queryFn: () => {
-			const params: IListParams & Partial<IPaymentFormWithOrder> = { skip: (page - 1) * take, take };
+			const params: IListParams & Partial<IUserPaymentFormWithOrder> = { skip: (page - 1) * take, take };
 			if (id) params.id = id;
-			if (userId) params.userId = userId;
 			if (monthsCount) params.monthsCount = monthsCount;
 			if (amount) params.amount = amount;
 			if (orderBy) params.orderBy = orderBy;
 			if (orderDirection) params.orderDirection = orderDirection;
-			return paymentsClient.getAll(params);
+			return paymentsClient.getForUser(params);
 		},
 		placeholderData: keepPreviousData,
 		initialData: page === 1 ? { data: initialData, count: count ?? 0 } : undefined,
 	});
+
 	const searchRow = useMemo(
 		() => (
 			<>
@@ -167,17 +120,6 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 						onChange={e => debouncedUpdateFilter('monthsCount', e.target.value)}
 					/>
 				</th>
-				<th></th>
-				<th>
-					<Input
-						type="search"
-						placeholder="User ID"
-						defaultValue={userId ?? undefined}
-						onChange={e => debouncedUpdateFilter('userId', e.target.value)}
-					/>
-				</th>
-				<th></th>
-				<th></th>
 				<th></th>
 			</>
 		),
@@ -210,55 +152,20 @@ export default function PaymentsClientSide({ initialData, count }: IPaymentsPage
 		},
 		[take, updateParams],
 	);
-	const queryClient = useQueryClient();
 	return (
-		<div>
-			<ContentArea>
-				<div>
-					<Link href={`/admin/payments/new`}>ADD</Link>
-				</div>
-				<Table
-					searchRow={searchRow}
-					columns={columns}
-					data={fetched?.data ?? []}
-					count={fetched?.count ?? 0}
-					page={page}
-					take={take}
-					onChangePage={handlePageChange}
-					onChangeTake={handleTakeChange}
-					onSort={handleSort}
-					loading={isLoading}
-				/>
-			</ContentArea>
-			<Dialog open={isModalOpened}>
-				<DialogContent className="sm:max-w-sm">
-					<DialogHeader>
-						<DialogTitle>Confirm</DialogTitle>
-					</DialogHeader>
-					Are you sure you want to delete payment?
-					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => {
-								setModalOpened(false);
-								if (deleteId) {
-									deleteAction(deleteId, queryClient);
-								}
-							}}
-						>
-							Confirm
-						</Button>
-						<Button
-							variant="outline"
-							onClick={() => {
-								setModalOpened(false);
-							}}
-						>
-							Cancel
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-		</div>
+		<ContentArea>
+			<Table
+				searchRow={searchRow}
+				columns={baseColumns}
+				data={fetched?.data ?? []}
+				count={fetched?.count ?? 0}
+				page={page}
+				take={take}
+				onChangePage={handlePageChange}
+				onChangeTake={handleTakeChange}
+				onSort={handleSort}
+				loading={isLoading}
+			/>
+		</ContentArea>
 	);
 }

@@ -14,7 +14,7 @@ export default function LogoutPage() {
 			.finally(() => {
 				localStorage.removeItem(authSessionKey);
 				localStorage.removeItem(tgSessionKey);
-				redirect('/login', RedirectType.replace);
+				location.href = '/login';
 			});
 	}, []);
 

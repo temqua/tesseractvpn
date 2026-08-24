@@ -91,6 +91,10 @@ export default function Table<T extends Record<keyof T, React.ReactNode> = Recor
 		return 'Loading...';
 	}
 
+	if (!data.length) {
+		return 'Нет данных';
+	}
+
 	return (
 		<div>
 			<div className={styles.paginationWrapper}>

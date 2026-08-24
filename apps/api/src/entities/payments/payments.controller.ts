@@ -13,7 +13,7 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentsService } from './payments.service';
 import { PaymentListDto } from './dto/list-dto';
 
-@Controller('payments')
+@Controller('admin/payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
