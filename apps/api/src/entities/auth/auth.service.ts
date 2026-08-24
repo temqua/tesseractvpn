@@ -45,7 +45,7 @@ export class AuthService {
   }
 
   async signInViaTelegram(token: string, telegramId: string) {
-    const user = await this.usersService.findOneByUsername(telegramId);
+    const user = await this.usersService.findOneByTelegram(telegramId);
     if (!user) {
       throw new NotFoundException(
         `There is no user with telegram id  ${telegramId} in system`,
