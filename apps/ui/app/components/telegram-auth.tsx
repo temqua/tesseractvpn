@@ -1,7 +1,7 @@
 'use client';
 import { redirect, RedirectType } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { TGAuthParams, tgSessionKey, tgUserKey } from '../lib/api/auth';
+import { authSessionKey, TGAuthParams, tgSessionKey, tgUserKey } from '../lib/api/auth';
 import { authClient } from '../lib/api/auth/client';
 
 export default function TelegramAuth({
@@ -22,7 +22,8 @@ export default function TelegramAuth({
 			try {
 				const result = await authClient.authTelegram(input as TGAuthParams);
 				if (result.token) {
-					localStorage.setItem(tgSessionKey, result.token);
+					localStorage.setItem(authSessionKey, result.token);
+					localStorage.setItem(tgSessionKey, input.id_token);
 					localStorage.setItem(tgUserKey, JSON.stringify(input.user));
 					redirect('/', RedirectType.replace);
 				}

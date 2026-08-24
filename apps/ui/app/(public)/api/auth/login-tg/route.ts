@@ -1,4 +1,4 @@
-import { tgSessionKey } from '@/app/lib/api/auth';
+import { authSessionKey, tgSessionKey } from '@/app/lib/api/auth';
 import env from '@/app/lib/env';
 import { NextResponse } from 'next/server';
 
@@ -20,9 +20,15 @@ export async function POST(req: Request) {
 	if (!res.ok) {
 		return NextResponse.json({ message: data.message }, { status: res.status });
 	}
-	const response = NextResponse.json({ tg_token: body.id_token }, { status: 200 });
+	const response = NextResponse.json({ token: data.accessToken }, { status: 200 });
 
 	response.cookies.set(tgSessionKey, body.id_token, {
+		httpOnly: true,
+		secure: true,
+		sameSite: 'lax',
+		path: '/',
+	});
+	response.cookies.set(authSessionKey, data.accessToken, {
 		httpOnly: true,
 		secure: true,
 		sameSite: 'lax',
