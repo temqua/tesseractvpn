@@ -10,6 +10,7 @@ export interface IUserServer {
 	assignedAt: string;
 	server: IServer;
 	user: IVPNUser;
+	downloadLink: string;
 }
 
 export interface IUserServerUI {
@@ -18,4 +19,5 @@ export interface IUserServerUI {
 	protocol: string;
 	username: string;
 	assignedAt: string;
+	downloadLink: string;
 }

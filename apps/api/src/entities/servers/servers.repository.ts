@@ -92,6 +92,7 @@ export class ServersRepository {
       where,
       include: {
         user: {},
+        server: {},
       },
       orderBy:
         dto?.orderBy && dto?.orderDirection

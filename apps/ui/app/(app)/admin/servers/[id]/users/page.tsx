@@ -34,7 +34,7 @@ export default async function ServerUsers(props: {
 				params.set(key, value);
 			}
 		}
-		redirect(`/servers/${id}/users?${params.toString()}`);
+		redirect(`/admin/servers/${id}/users?${params.toString()}`);
 	}
 	const { data, count } = await serversSSRClient.getUsers(id, {
 		skip: (page - 1) * take,

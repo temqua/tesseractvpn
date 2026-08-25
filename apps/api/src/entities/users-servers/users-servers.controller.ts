@@ -18,7 +18,7 @@ export class UsersServersController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersServersService.findOne(+id);
+    return this.usersServersService.findOne(Number(id));
   }
 
   @Delete(':id')

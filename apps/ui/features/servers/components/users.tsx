@@ -1,4 +1,5 @@
 'use client';
+import ActionsCell from '@/app/components/actions-cell';
 import ContentArea from '@/app/components/content-area';
 import { Input } from '@/app/components/input';
 import Table, { IColumn } from '@/app/components/table';
@@ -8,6 +9,7 @@ import { IListParams } from '@/app/lib/definitions.global';
 import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Download } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef } from 'react';
 
@@ -146,6 +148,7 @@ export default function ServerUsersClientSide({ initialData, id: serverId, count
 				</th>
 
 				<th></th>
+				<th></th>
 			</>
 		),
 		[debouncedUpdateFilter],
@@ -159,15 +162,31 @@ export default function ServerUsersClientSide({ initialData, id: serverId, count
 				assignedAt: us.assignedAt,
 				protocol: us.protocol,
 				userId: us.userId,
+				downloadLink: us.downloadLink,
 			};
 		}) ?? [];
+	const columns: IColumn<IUserServerUI>[] = [
+		...baseColumns,
+		{
+			label: 'Actions',
+			actions: row => {
+				return (
+					<ActionsCell>
+						<a href={row.downloadLink} target="_blank">
+							<Download />
+						</a>
+					</ActionsCell>
+				);
+			},
+		},
+	];
 
 	const queryClient = useQueryClient();
 	return (
 		<ContentArea>
 			<Table
 				searchRow={searchRow}
-				columns={baseColumns}
+				columns={columns}
 				data={prepared}
 				count={fetched?.count ?? 0}
 				page={page}
