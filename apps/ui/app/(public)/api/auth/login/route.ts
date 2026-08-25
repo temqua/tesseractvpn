@@ -28,6 +28,7 @@ export async function POST(req: Request) {
 		secure: true,
 		sameSite: 'lax',
 		path: '/',
+		domain: '.tesseractnpv.com'
 	});
 	return response;
 }
