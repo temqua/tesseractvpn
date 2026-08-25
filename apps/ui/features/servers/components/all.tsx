@@ -177,7 +177,7 @@ export default function ServersClientSide({ initialData, count }: IServersPagePr
 		<div>
 			<ContentArea>
 				<div>
-					<Link href={`/servers/new`}>ADD</Link>
+					<Link href={`/admin/servers/new`}>ADD</Link>
 				</div>
 				<Table
 					searchRow={searchRow}
