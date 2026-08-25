@@ -139,12 +139,19 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 func authMiddleware(next http.Handler) http.Handler {
 	token := getEnvOrFail("SERVICE_TOKEN")
+	cookieName := getEnvOrFail("COOKIE_NAME")
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Authorization") != token {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		cookie, err := r.Cookie(cookieName)
+		if err == nil {
+			next.ServeHTTP(w, r)
 			return
 		}
-		next.ServeHTTP(w, r)
+		if r.Header.Get("Authorization") == token {
+			next.ServeHTTP(w, r)
+			return
+		}
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 	})
 }
 

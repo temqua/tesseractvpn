@@ -172,7 +172,7 @@ export default function ServerUsersClientSide({ initialData, id: serverId, count
 			actions: row => {
 				return (
 					<ActionsCell>
-						<a href={row.downloadLink} target="_blank">
+						<a href={row.downloadLink}>
 							<Download />
 						</a>
 					</ActionsCell>
