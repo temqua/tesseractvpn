@@ -1,6 +1,6 @@
 {
 	"name": "@tesseractvpn/root",
-	"version": "4.1.0",
+	"version": "5.0.0",
 	"description": "Infrastructure and bunch of Telegram bots for Tesseract VPN management",
 	"main": "src/main.ts",
 	"type": "module",
