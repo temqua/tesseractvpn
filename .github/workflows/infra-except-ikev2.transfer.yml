@@ -83,12 +83,12 @@ jobs:
               run: |
                   ssh ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} '
                     cd ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}
-                    tee wireguard/.env <<'EOF'
+                    tee wireguard/.env <<EOF
                       JWT_SECRET=${{ secrets.JWT_SECRET }}
                       SERVICE_TOKEN=${{ secrets.SERVICE_TOKEN }}
                       COOKIE_NAME=${{ secrets.COOKIE_NAME }}
                     EOF      
-                    tee openvpn/.env <<'EOF'
+                    tee openvpn/.env <<EOF
                       JWT_SECRET=${{ secrets.JWT_SECRET }}
                       SERVICE_TOKEN=${{ secrets.SERVICE_TOKEN }}
                       COOKIE_NAME=${{ secrets.COOKIE_NAME }}
