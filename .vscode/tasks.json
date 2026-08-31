@@ -140,6 +140,15 @@
 			"problemMatcher": [],
 			"label": "npm: lint - apps/ui",
 			"detail": "eslint"
+		},
+		{
+			"type": "typescript",
+			"tsconfig": "apps/backups/tsconfig.json",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build",
+			"label": "tsc: build - apps/backups/tsconfig.json"
 		}
 	]
 }

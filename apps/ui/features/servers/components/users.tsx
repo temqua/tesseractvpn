@@ -1,15 +1,17 @@
 'use client';
 import ActionsCell from '@/app/components/actions-cell';
+import { Combobox, ComboboxInput } from '@/app/components/combobox';
 import ContentArea from '@/app/components/content-area';
 import { Input } from '@/app/components/input';
+import { Select } from '@/app/components/select';
 import Table, { IColumn } from '@/app/components/table';
 import { serversClient } from '@/app/lib/api/servers/client';
-import { IUserServer, IUserServerUI } from '@/app/lib/api/users-servers/definitions';
+import { IUserServer, IServerUserUI } from '@/app/lib/api/users-servers/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
 import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download } from 'lucide-react';
+import { Download, QrCode } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef } from 'react';
 
@@ -19,7 +21,7 @@ export interface IServerUsersPageProps {
 	id: string;
 }
 
-const baseColumns: IColumn<IUserServerUI>[] = [
+const baseColumns: IColumn<IServerUserUI>[] = [
 	{
 		label: 'ID',
 		prop: 'id',
@@ -94,7 +96,7 @@ export default function ServerUsersClientSide({ initialData, id: serverId, count
 	);
 
 	const handleSort = useCallback(
-		(prop?: keyof IUserServerUI) => {
+		(prop?: keyof IServerUserUI) => {
 			if (!prop) {
 				return;
 			}
@@ -139,12 +141,17 @@ export default function ServerUsersClientSide({ initialData, id: serverId, count
 					></Input>
 				</th>
 				<th>
-					<Input
-						type="search"
-						placeholder={'Protocol'}
-						defaultValue={protocol ?? undefined}
+					<Select
+						value={protocol ?? undefined}
 						onChange={event => debouncedUpdateFilter('protocol', event.target.value)}
-					></Input>
+						id="protocol"
+						name="protocol"
+					>
+						<option value=""></option>
+						<option value="IKEv2">IKEv2</option>
+						<option value="WireGuard">WireGuard</option>
+						<option value="OpenVPN">OpenVPN</option>
+					</Select>
 				</th>
 
 				<th></th>
@@ -154,7 +161,7 @@ export default function ServerUsersClientSide({ initialData, id: serverId, count
 		[debouncedUpdateFilter],
 	);
 
-	const prepared: IUserServerUI[] =
+	const prepared: IServerUserUI[] =
 		fetched?.data.map(us => {
 			return {
 				id: us.id,
@@ -163,9 +170,10 @@ export default function ServerUsersClientSide({ initialData, id: serverId, count
 				protocol: us.protocol,
 				userId: us.userId,
 				downloadLink: us.downloadLink,
+				qrLink: us.qrLink,
 			};
 		}) ?? [];
-	const columns: IColumn<IUserServerUI>[] = [
+	const columns: IColumn<IServerUserUI>[] = [
 		...baseColumns,
 		{
 			label: 'Actions',
@@ -175,6 +183,11 @@ export default function ServerUsersClientSide({ initialData, id: serverId, count
 						<a href={row.downloadLink}>
 							<Download />
 						</a>
+						{row.qrLink && (
+							<a href={row.qrLink}>
+								<QrCode />
+							</a>
+						)}
 					</ActionsCell>
 				);
 			},

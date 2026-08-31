@@ -10,7 +10,7 @@ import { IListParams } from '@/app/lib/definitions.global';
 import { OrderDirection } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { CreditCard, Mail, Pencil } from 'lucide-react';
+import { CreditCard, Mail, Pencil, Server } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef } from 'react';
@@ -85,6 +85,9 @@ export default function UsersClientSide({ initialData, count }: IUsersPageProps)
 						</Link>
 						<Link href={`/admin/payments?userId=${row.id}`}>
 							<CreditCard />
+						</Link>
+						<Link href={`/admin/users/${row.id}/servers`}>
+							<Server />
 						</Link>
 					</ActionsCell>
 				);

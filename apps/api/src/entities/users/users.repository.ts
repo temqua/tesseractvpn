@@ -548,15 +548,27 @@ export class UsersRepository {
   }
 
   async listUserServers(userId: number) {
-    return await this.databaseService.client.serversUsers.findMany({
-      where: {
-        userId,
-      },
+    const where = {
+      userId,
+    };
+    const params = {
+      where,
       include: {
         server: {},
         user: {},
       },
-    });
+    };
+    const countParams = {
+      where,
+    };
+    const [data, count] = await this.databaseService.client.$transaction([
+      this.databaseService.client.serversUsers.findMany(params),
+      this.databaseService.client.serversUsers.count(countParams),
+    ]);
+    return {
+      data,
+      count,
+    };
   }
 
   async listUserServerRecords(userId: number, serverId: number) {

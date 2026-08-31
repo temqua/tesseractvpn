@@ -100,8 +100,8 @@ export class UsersClient {
 	}
 
 	async getUserServers(userId: number) {
-		const result = await client.get(`/users/${userId}/servers`);
-		return <UserServerDTO[]>result;
+		const result: ListResponse<UserServerDTO> = await client.get(`/users/${userId}/servers`);
+		return result.data;
 	}
 
 	async createSubscription(userId: string) {

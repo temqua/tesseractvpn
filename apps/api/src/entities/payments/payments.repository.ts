@@ -46,6 +46,9 @@ export class PaymentsRepository {
     if (dto?.userId) {
       where.userId = Number(dto?.userId);
     }
+    if (dto?.planId) {
+      where.planId = Number(dto?.planId);
+    }
 
     const params = {
       skip: dto?.skip ? Number(dto.skip) : undefined,

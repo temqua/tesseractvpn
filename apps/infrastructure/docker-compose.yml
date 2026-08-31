@@ -1,8 +1,8 @@
 services:
     ikev2_service:
         build:
-            context: ./ikev2
-            dockerfile: ./Dockerfile
+            context: .
+            dockerfile: ./ikev2/Dockerfile
         container_name: ikev2-manager
         image: ikev2_service
         environment:
@@ -35,8 +35,8 @@ services:
             - /etc/ssl/certs/api:/etc/ssl/certs/api:ro
     wg_service:
         build:
-            context: ./wireguard
-            dockerfile: ./Dockerfile
+            context: .
+            dockerfile: ./wireguard/Dockerfile
         container_name: wg-manager
         image: wg_service
         environment:
@@ -60,8 +60,8 @@ services:
             - /etc/ssl/certs/api:/etc/ssl/certs/api:ro
     openvpn_service:
         build:
-            context: ./openvpn
-            dockerfile: ./Dockerfile
+            context: .
+            dockerfile: ./openvpn/Dockerfile
         container_name: openvpn-manager
         image: openvpn_service
         environment:

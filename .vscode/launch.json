@@ -5,20 +5,28 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "IKEv2 receiver",
+			"name": "IKEv2 api",
 			"type": "go",
 			"request": "launch",
 			"mode": "debug",
-			"program": "${workspaceFolder}/apps/infrastructure/ikev2/receiver.go",
+			"program": "${workspaceFolder}/apps/infrastructure/ikev2/api.go",
 			"envFile": "${workspaceFolder}/apps/infrastructure/ikev2/.env"
 		},
 		{
-			"name": "WireGuard receiver",
+			"name": "WireGuard api",
 			"type": "go",
 			"request": "launch",
 			"mode": "debug",
-			"program": "${workspaceFolder}/apps/infrastructure/wireguard/receiver.go",
+			"program": "${workspaceFolder}/apps/infrastructure/wireguard/api.go",
 			"envFile": "${workspaceFolder}/apps/infrastructure/wireguard/.env"
+		},
+		{
+			"name": "OpenVPN api",
+			"type": "go",
+			"request": "launch",
+			"mode": "debug",
+			"program": "${workspaceFolder}/apps/infrastructure/openvpn/api.go",
+			"envFile": "${workspaceFolder}/apps/infrastructure/openvpn/.env"
 		},
 		{
 			"name": "Keys Bot",
@@ -39,6 +47,16 @@
 			"envFile": "${workspaceFolder}/apps/users/.env",
 			"outFiles": ["${workspaceFolder}/apps/users/dist/src/**/*.js"],
 			"preLaunchTask": "tsc: build - apps/users/tsconfig.dev.json"
+		},
+		{
+			"name": "Backups Bot",
+			"program": "${workspaceFolder}/apps/backups/src/index.ts",
+			"request": "launch",
+			"skipFiles": ["<node_internals>/**"],
+			"type": "node",
+			"envFile": "${workspaceFolder}/apps/backups/.env",
+			"outFiles": ["${workspaceFolder}/apps/backups/dist/src/**/*.js"],
+			"preLaunchTask": "tsc: build - apps/backups/tsconfig.json"
 		},
 		{
 			"name": "API",

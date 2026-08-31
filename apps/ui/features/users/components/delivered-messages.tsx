@@ -2,7 +2,6 @@
 import ContentArea from '@/app/components/content-area';
 import Table, { IColumn } from '@/app/components/table';
 import { IBotDeliveredMessage } from '@/app/lib/api/bot-delivered-messages/definitions';
-import { IPayment } from '@/app/lib/api/payments/definitions';
 
 interface IUserDeliveredMessagesPageProps {
 	initialData: IBotDeliveredMessage[];

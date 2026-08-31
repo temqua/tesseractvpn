@@ -11,5 +11,9 @@ export class UsersSSRClient {
 	async getById(id: string): Promise<IVPNUserDTO> {
 		return await ssrClient.get(`/api/v1/users/${id}`);
 	}
+
+	async getServers(id: string) {
+		return await ssrClient.get(`/api/v1/users/${id}/servers`);
+	}
 }
 export const usersSSRClient = new UsersSSRClient();

@@ -12,7 +12,6 @@ on:
                     - us2
                     - neth
                     - msk
-                    - norway
                     - sweden
                     - austria
                     - france
@@ -88,9 +87,36 @@ jobs:
               run: |
                   cat ./apps/infrastructure/docker-compose.yml | ssh ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} "cat > ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}/docker-compose.yml"
 
-            - name: Restart containers on server
+            - name: Update .env and restart containers on server
               run: |
                   ssh ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} '
                     cd ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}
+                    tee ikev2/.env <<'EOF'
+                      JWT_SECRET=${{ secrets.JWT_SECRET }}
+                      SERVICE_TOKEN=${{ secrets.SERVICE_TOKEN }}
+                      COOKIE_NAME=${{ secrets.COOKIE_NAME }}
+                    EOF 
+                    tee wireguard/.env <<'EOF'
+                      JWT_SECRET=${{ secrets.JWT_SECRET }}
+                      SERVICE_TOKEN=${{ secrets.SERVICE_TOKEN }}
+                      COOKIE_NAME=${{ secrets.COOKIE_NAME }}
+                    EOF      
+                    tee wireguard/.env <<'EOF'
+                      JWT_SECRET=${{ secrets.JWT_SECRET }}
+                      SERVICE_TOKEN=${{ secrets.SERVICE_TOKEN }}
+                      COOKIE_NAME=${{ secrets.COOKIE_NAME }}
+                    EOF      
+                    if [ -n "${{ secrets.KEY_PATH }}" ]; then
+                      echo "KEY_PATH=${{ secrets.KEY_PATH }}" >> ikev2/.env
+                      echo "KEY_PATH=${{ secrets.KEY_PATH }}" >> wireguard/.env
+                      echo "KEY_PATH=${{ secrets.KEY_PATH }}" >> openvpn/.env
+                    fi
+
+                    if [ -n "${{ secrets.CERT_PATH }}" ]; then
+                      echo "CERT_PATH=${{ secrets.CERT_PATH }}" >> ikev2/.env
+                      echo "CERT_PATH=${{ secrets.CERT_PATH }}" >> wireguard/.env
+                      echo "CERT_PATH=${{ secrets.CERT_PATH }}" >> openvpn/.env
+                    fi
+                                                                                                               
                     docker compose up -d
                   '

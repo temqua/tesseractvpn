@@ -1,9 +1,11 @@
 FROM golang:1.25-alpine AS builder
 WORKDIR /src
-COPY ./receiver.go .
-COPY ./scripts/ ./scripts/
+COPY go.mod ./
+COPY base/ ./base/
+COPY wireguard/api.go wireguard/
+COPY wireguard/scripts/ wireguard/scripts/
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o receiver receiver.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o api ./wireguard
 
 
 FROM debian:latest
@@ -12,9 +14,9 @@ WORKDIR /server
 
 RUN apt-get update && apt-get install -yqq qrencode
 
-COPY --from=builder /src/receiver /server/receiver
-COPY --from=builder /src/scripts /server/scripts
+COPY --from=builder /src/api /server/api
+COPY --from=builder /src/wireguard/scripts /server/scripts
 
 EXPOSE 8091
 
-CMD ["/server/receiver"]
+CMD ["/server/api"]

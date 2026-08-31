@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
+import { formatISO } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 
 export const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
@@ -21,4 +22,10 @@ export function isValidDate(date: Date | undefined) {
 		return false;
 	}
 	return !isNaN(date.getTime());
+}
+
+export function formatISODate(date: string | number | Date) {
+	return formatISO(date, {
+		representation: 'date',
+	});
 }

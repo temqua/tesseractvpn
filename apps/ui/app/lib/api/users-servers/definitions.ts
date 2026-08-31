@@ -11,13 +11,25 @@ export interface IUserServer {
 	server: IServer;
 	user: IVPNUser;
 	downloadLink: string;
+	qrLink: string | null;
 }
 
-export interface IUserServerUI {
+export interface IServerUserUI {
 	id: number;
 	userId: number;
 	protocol: string;
 	username: string;
 	assignedAt: string;
 	downloadLink: string;
+	qrLink: string | null;
+}
+
+export interface IUserServerUI {
+	id: number;
+	protocol: string;
+	url: string;
+	assignedAt: string;
+	username: string;
+	downloadLink: string;
+	qrLink: string | null;
 }

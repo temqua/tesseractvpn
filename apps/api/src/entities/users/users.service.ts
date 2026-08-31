@@ -4,13 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import env from '../../env';
-import { exportToSheet } from '../../utils';
+import { exportToSheet, generateDownloadLink, getQRLink } from '../../utils';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { RemnawaveService } from './rw.service';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
+import { VPNProtocol } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -95,7 +96,13 @@ export class UsersService {
   }
 
   async listUserServers(id: number) {
-    return await this.repository.listUserServers(id);
+    const result = await this.repository.listUserServers(id);
+    result.data = result.data.map((record) => ({
+      ...record,
+      downloadLink: generateDownloadLink(record),
+      qrLink: getQRLink(record),
+    }));
+    return result;
   }
 
   async getUserServerRecordById(id: number) {

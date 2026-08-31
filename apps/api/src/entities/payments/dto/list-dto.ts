@@ -15,6 +15,8 @@ export class PaymentListDto extends BaseListDto {
   @IsString()
   userId?: string;
   @IsString()
+  planId?: string;
+  @IsString()
   from?: string;
   @IsString()
   to?: string;

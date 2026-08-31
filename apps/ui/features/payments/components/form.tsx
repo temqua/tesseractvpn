@@ -79,7 +79,6 @@ export default function PaymentClientSide({ data, id }: { data: IPayment; id: st
 								id="expiresOn"
 								name="expiresOn"
 								value={expiresOn}
-								placeholder="June 01, 2025"
 								readOnly
 								onChange={e => {
 									const date = new Date(e.target.value);

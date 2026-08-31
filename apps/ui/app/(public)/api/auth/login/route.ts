@@ -23,12 +23,14 @@ export async function POST(req: Request) {
 
 	const response = NextResponse.json({ token: data.accessToken }, { status: 200 });
 
+	const domain = env.APP_ENV === 'local' ? 'localhost' : env.COOKIE_DOMAIN;
+
 	response.cookies.set(authSessionKey, data.accessToken, {
 		httpOnly: true,
 		secure: true,
 		sameSite: 'lax',
 		path: '/',
-		domain: '.tesseractnpv.com'
+		domain: domain,
 	});
 	return response;
 }

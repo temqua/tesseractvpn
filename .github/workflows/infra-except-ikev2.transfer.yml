@@ -10,10 +10,8 @@ on:
                 type: choice
                 options:
                     - austria
-                    - greece
                     - msk
                     - neth
-                    - norway
                     - sweden
                     - us2
                     - de

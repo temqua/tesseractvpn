@@ -7,7 +7,7 @@ import path from 'node:path';
 import util from 'node:util';
 import env from './env';
 import logger from './logger';
-import { isAdmin } from './utils';
+import { isAdmin, splitStringByLength } from './utils';
 
 const bot = new TelegramBot(env.BACKUPS_BOT_TOKEN, { polling: true });
 const exec = util.promisify(childProcess.exec);
@@ -19,13 +19,17 @@ setInterval(() => {
 async function sendDump() {
 	const date = new Date();
 	const fileName = `vpn_db_${date.getFullYear()}_${date.getMonth() + 1}_${date.getDate()}_${date.getHours()}_${date.getMinutes()}.backup`;
-	dump(fileName).then(() => {
-		send(fileName);
+	dump(fileName).then(success => {
+		if (success) {
+			send(fileName);
+		}
 	});
 	const rwFileName = `rw_db_${date.getFullYear()}_${date.getMonth() + 1}_${date.getDate()}_${date.getHours()}_${date.getMinutes()}.backup`;
 
-	dumpRemnawave(rwFileName).then(() => {
-		send(rwFileName);
+	dumpRemnawave(rwFileName).then(success => {
+		if (success) {
+			send(rwFileName);
+		}
 	});
 }
 
@@ -38,14 +42,17 @@ async function dump(fileName: string) {
 			const errorMsg = `stderr: ${stderr}`;
 			logger.error(errorMsg);
 			await bot.sendMessage(env.ADMIN_USER_ID, errorMsg);
-			return;
+			return false;
 		}
+
 		await bot.sendMessage(env.ADMIN_USER_ID, stdout);
 		logger.success('dump has been successfully created');
+		return true;
 	} catch (error) {
 		const errorMsg = `Error while creating vpn database dump: ${error}`;
 		logger.error(errorMsg);
 		await bot.sendMessage(env.ADMIN_USER_ID, errorMsg);
+		return false;
 	}
 }
 
@@ -57,15 +64,23 @@ async function dumpRemnawave(fileName: string) {
 		if (stderr) {
 			const errorMsg = `stderr: ${stderr}`;
 			logger.error(errorMsg);
-			await bot.sendMessage(env.ADMIN_USER_ID, errorMsg);
-			return;
+			const parts = splitStringByLength(stderr, 4095);
+			for (const part of parts) {
+				await bot.sendMessage(env.ADMIN_USER_ID, part);
+			}
+			return false;
 		}
-		await bot.sendMessage(env.ADMIN_USER_ID, stdout);
-		logger.success('dump has been successfully created');
+		const parts = splitStringByLength(stdout, 4095);
+		for (const part of parts) {
+			await bot.sendMessage(env.ADMIN_USER_ID, part);
+		}
+		logger.success('remnawave dump has been successfully created');
+		return true;
 	} catch (error) {
-		const errorMsg = `Error while creating vpn database dump: ${error}`;
+		const errorMsg = `Error while creating remnawave database dump: ${error}`;
 		logger.error(errorMsg);
 		await bot.sendMessage(env.ADMIN_USER_ID, errorMsg);
+		return false;
 	}
 }
 
