@@ -3,6 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import env from '../../env';
 import { exportToSheet, generateDownloadLink, getQRLink } from '../../utils';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -10,8 +11,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { RemnawaveService } from './rw.service';
 import { UsersRepository } from './users.repository';
-import * as bcrypt from 'bcrypt';
-import { VPNProtocol } from '@prisma/client';
 
 @Injectable()
 export class UsersService {

@@ -126,31 +126,31 @@ export const getUserMenu = (userId: number, isChildUser: boolean = false) => {
 				}),
 			},
 		],
+		// [
+		// 	{
+		// 		text: 'Create Subscription',
+		// 		callback_data: JSON.stringify({
+		// 			[CmdCode.Scope]: CommandScope.Users,
+		// 			[CmdCode.Context]: {
+		// 				[CmdCode.Command]: VPNUserCommand.CreateSubscriptionAdmin,
+		// 				id: userId,
+		// 			},
+		// 		}),
+		// 	},
+		// 	{
+		// 		text: 'Delete Subscription',
+		// 		callback_data: JSON.stringify({
+		// 			[CmdCode.Scope]: CommandScope.Users,
+		// 			[CmdCode.Context]: {
+		// 				[CmdCode.Command]: VPNUserCommand.DeleteSubscriptionAdmin,
+		// 				id: userId,
+		// 			},
+		// 		}),
+		// 	},
+		// ],
 		[
 			{
 				text: 'Create Subscription',
-				callback_data: JSON.stringify({
-					[CmdCode.Scope]: CommandScope.Users,
-					[CmdCode.Context]: {
-						[CmdCode.Command]: VPNUserCommand.CreateSubscriptionAdmin,
-						id: userId,
-					},
-				}),
-			},
-			{
-				text: 'Delete Subscription',
-				callback_data: JSON.stringify({
-					[CmdCode.Scope]: CommandScope.Users,
-					[CmdCode.Context]: {
-						[CmdCode.Command]: VPNUserCommand.DeleteSubscriptionAdmin,
-						id: userId,
-					},
-				}),
-			},
-		],
-		[
-			{
-				text: 'Create RW Subscription',
 				callback_data: JSON.stringify({
 					[CmdCode.Scope]: CommandScope.Users,
 					[CmdCode.Context]: {
@@ -160,7 +160,7 @@ export const getUserMenu = (userId: number, isChildUser: boolean = false) => {
 				}),
 			},
 			{
-				text: 'Delete RW Subscription',
+				text: 'Delete Subscription',
 				callback_data: JSON.stringify({
 					[CmdCode.Scope]: CommandScope.Users,
 					[CmdCode.Context]: {

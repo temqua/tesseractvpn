@@ -1,4 +1,4 @@
-import { addDays, addMonths, parse } from 'date-fns';
+import { addDays, addMonths } from 'date-fns';
 import type { Message, User as TGUser } from 'node-telegram-bot-api';
 import { basename } from 'path';
 import bot from '../../bot';
@@ -13,7 +13,6 @@ import { PlansClient } from '../plans/plans.client';
 import { Plan } from '../plans/plans.types';
 import { ReferralTransactionsClient } from '../referral-transactions/referral-transactions.client';
 import { NalogService } from '../users/nalog.service';
-import { PasarguardService } from '../users/pasarguard.service';
 import { RemnawaveService } from '../users/rw.service';
 import { acceptKeyboard, getExpirationDateKeyboard, getUserKeyboard } from '../users/users.buttons';
 import { UsersClient } from '../users/users.client';
@@ -34,7 +33,6 @@ type AvailableFields =
 	| 'referred';
 export class PaymentsService {
 	constructor(
-		private pasarguardService: PasarguardService = new PasarguardService(),
 		private client: PaymentsClient = new PaymentsClient(),
 		private usersClient: UsersClient = new UsersClient(),
 		private plansClient: PlansClient = new PlansClient(),
@@ -870,17 +868,17 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 								});
 						}
 						if (env.BOT_ENV !== 'local') {
-							if (dep.pasarguardId) {
-								try {
-									await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
-										expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
-									});
-								} catch (err) {
-									const ms = `Request to pasarguard failed ${err}`;
-									logger.error(ms);
-									await bot.sendMessage(chatId, ms);
-								}
-							}
+							// if (dep.pasarguardId) {
+							// 	try {
+							// 		await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
+							// 			expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
+							// 		});
+							// 	} catch (err) {
+							// 		const ms = `Request to pasarguard failed ${err}`;
+							// 		logger.error(ms);
+							// 		await bot.sendMessage(chatId, ms);
+							// 	}
+							// }
 
 							if (dep.rwUUID) {
 								try {
@@ -904,17 +902,17 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 			}
 
 			if (env.BOT_ENV !== 'local') {
-				if (referrer.pasarguardId) {
-					try {
-						await this.pasarguardService.updateUser(`${referrer.username}_${referrer.id}`, {
-							expire: addDays(new Date(result.expiresOn), 1).toISOString(),
-						});
-					} catch (err) {
-						const ms = `Request to pasarguard failed ${err}`;
-						logger.error(ms);
-						await bot.sendMessage(chatId, ms);
-					}
-				}
+				// if (referrer.pasarguardId) {
+				// 	try {
+				// 		await this.pasarguardService.updateUser(`${referrer.username}_${referrer.id}`, {
+				// 			expire: addDays(new Date(result.expiresOn), 1).toISOString(),
+				// 		});
+				// 	} catch (err) {
+				// 		const ms = `Request to pasarguard failed ${err}`;
+				// 		logger.error(ms);
+				// 		await bot.sendMessage(chatId, ms);
+				// 	}
+				// }
 				if (referrer.rwUUID) {
 					try {
 						await this.rwService.updateUser({
