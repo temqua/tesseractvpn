@@ -42,7 +42,7 @@ async function dump(fileName: string) {
 			const errorMsg = `stderr: ${stderr}`;
 			logger.error(errorMsg);
 			await bot.sendMessage(env.ADMIN_USER_ID, errorMsg);
-			return false;
+			return true;
 		}
 
 		await bot.sendMessage(env.ADMIN_USER_ID, stdout);
@@ -68,7 +68,7 @@ async function dumpRemnawave(fileName: string) {
 			for (const part of parts) {
 				await bot.sendMessage(env.ADMIN_USER_ID, part);
 			}
-			return false;
+			return true;
 		}
 		const parts = splitStringByLength(stdout, 4095);
 		for (const part of parts) {
