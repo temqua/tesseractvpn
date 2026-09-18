@@ -83,7 +83,7 @@ export class NalogService {
       requestTime: new Date().toISOString(),
       services: [
         {
-          name: `Аренда сервера. ID платежа ${paymentId}`,
+          name: `Tesseract. ${paymentId}`,
           amount: amount,
           quantity: 1,
         },

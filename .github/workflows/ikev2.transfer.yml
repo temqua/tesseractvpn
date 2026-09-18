@@ -20,6 +20,7 @@ on:
                     - france
                     - de
                     - fin
+                    - latvia
 jobs:
     build-deploy:
         runs-on: ubuntu-latest

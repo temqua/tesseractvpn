@@ -1,3 +1,3 @@
-export interface Job {
-  execute(): Promise<void>;
+export interface Job<T = object> {
+  execute(body?: T): Promise<void>;
 }

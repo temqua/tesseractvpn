@@ -63,7 +63,7 @@ export enum VPNUserCommand {
 	Expand = 'e',
 	RequestCreation = 'rc',
 	RequestCreationAdmin = 'rca',
-	SendMessage = 'sm',
+	SendMessage = 'sme',
 	ShowInstallationGuide = 'sig',
 	ShowPaymentGuide = 'spg',
 	ShowPaymentIntroGuide = 'spig',

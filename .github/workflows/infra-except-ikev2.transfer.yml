@@ -27,6 +27,8 @@ on:
                     - swiss-subs
                     - turkey
                     - france
+                    - latvia
+
 jobs:
     build-deploy:
         runs-on: ubuntu-latest

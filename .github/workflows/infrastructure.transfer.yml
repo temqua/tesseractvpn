@@ -19,6 +19,7 @@ on:
                     - spain
                     - de
                     - fin
+                    - latvia
 
 jobs:
     build-deploy:
