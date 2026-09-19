@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -61,7 +62,10 @@ export class UsersController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const user = await this.usersService.findOne(+id);
+    if (isNaN(Number(id))) {
+      throw new BadRequestException('You must provide valid id');
+    }
+    const user = await this.usersService.findOne(Number(id));
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }

@@ -5,14 +5,18 @@ export default function FormField({
 	label,
 	errors,
 	children,
+	orientation,
+	className,
 }: {
 	id: string;
 	label: string;
 	errors?: string[];
 	children?: ReactNode;
+	orientation?: 'vertical' | 'horizontal' | 'responsive';
+	className?: string;
 }) {
 	return (
-		<Field data-invalid={errors?.length}>
+		<Field className={className} orientation={orientation} data-invalid={errors?.length}>
 			<FieldLabel htmlFor={id}>{label}</FieldLabel>
 			{children}
 			{errors && <FieldDescription>{errors.join()}</FieldDescription>}

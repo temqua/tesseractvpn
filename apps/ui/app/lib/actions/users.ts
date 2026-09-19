@@ -9,11 +9,11 @@ export function getUpdateAction(id: string) {
 	return async function (state: UserFormState, formData: FormData) {
 		const body = {
 			username: (formData.get('username') as string) ?? undefined,
-			firstName: (formData.get('firstName') as string) ?? undefined,
-			lastName: (formData.get('lastName') as string) ?? undefined,
-			rwLink: (formData.get('rwLink') as string) ?? undefined,
+			firstName: (formData.get('firstName') as string) == '' ? null : formData.get('firstName'),
+			lastName: (formData.get('lastName') as string) == '' ? null : formData.get('lastName'),
+			rwLink: (formData.get('rwLink') as string) == '' ? null : formData.get('rwLink'),
 			telegramId: (formData.get('telegramId') as string) ?? undefined,
-			telegramLink: (formData.get('telegramLink') as string) ?? undefined,
+			telegramLink: (formData.get('telegramLink') as string) == '' ? null : formData.get('telegramLink'),
 			price: formData.get('price') ? Number(formData.get('price')) : undefined,
 			active: Boolean(formData.get('active')),
 			free: Boolean(formData.get('free')),
@@ -34,6 +34,7 @@ export function getUpdateAction(id: string) {
 				data,
 			};
 		} catch (err) {
+			console.error(err);
 			return {
 				errors: {
 					errors: [err instanceof Error ? err.message : String(err)],

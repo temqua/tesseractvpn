@@ -15,11 +15,12 @@ export const UserCreateFormSchema = z.object({
 
 export const UserEditFormSchema = z.object({
 	username: z.string().optional(),
-	firstName: z.string().optional(),
-	lastName: z.string().optional(),
+	firstName: z.string().optional().nullable(),
+	lastName: z.string().optional().nullable(),
 	telegramId: z.string().optional(),
+	telegramLink: z.string().optional().nullable(),
 	price: z.number().optional(),
-	rwLink: z.string().optional(),
+	rwLink: z.string().optional().nullable(),
 	free: z.boolean().optional(),
 	active: z.boolean().optional(),
 });

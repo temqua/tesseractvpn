@@ -7,6 +7,7 @@ export enum OrderByPlanField {
   Price = 'price',
   Id = 'id',
   ExpiresOn = 'expiresOn',
+  Months = 'months',
 }
 
 export class SearchPlanDto extends BaseListDto {

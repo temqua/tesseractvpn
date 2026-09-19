@@ -1,13 +1,14 @@
 'use client';
+import { Button } from '@/app/components/button';
+import { Checkbox } from '@/app/components/checkbox';
 import ContentArea from '@/app/components/content-area';
-import { FieldSet } from '@/app/components/field';
+import { FieldGroup, FieldSet } from '@/app/components/field';
 import FormField from '@/app/components/form-field';
 import { Input } from '@/app/components/input';
+import { getUpdateAction } from '@/app/lib/actions/users';
 import { IVPNUser } from '@/app/lib/api/users/definitions';
 import { useActionState, useState } from 'react';
 import { UserFormState } from '../lib/definitions';
-import { getUpdateAction } from '@/app/lib/actions/users';
-import { Button } from '@/app/components/button';
 
 // username: string;
 // password: string | null;
@@ -37,7 +38,7 @@ export default function UserClientSide({ user, id }: { user: IVPNUser; id: strin
 	const updateAction = getUpdateAction(id);
 
 	const [state, formAction, isPendingUpdate] = useActionState<UserFormState, FormData>(updateAction, {});
-
+	
 	const [username, setUsername] = useState(user?.username);
 	const [telegramId, setTelegramId] = useState(user?.telegramId ?? '');
 	const [telegramLink, setTelegramLink] = useState(user?.telegramLink ?? '');
@@ -131,34 +132,39 @@ export default function UserClientSide({ user, id }: { user: IVPNUser; id: strin
 							aria-invalid={Boolean(state?.errors?.properties?.rwLink?.errors?.length)}
 						/>
 					</FormField>
-					<FormField id="free" label="Free" errors={state?.errors?.properties?.free?.errors}>
-						<Input
-							className="w-fit"
-							fullWidth={false}
-							checked={free}
-							onChange={event => {
-								setFree(event.target.checked);
-							}}
-							type="checkbox"
+					<FieldGroup className={'w-fit'}>
+						<FormField
 							id="free"
-							name="free"
-							placeholder="Free"
-							aria-invalid={Boolean(state?.errors?.properties?.free?.errors?.length)}
-						/>
-					</FormField>
-					<FormField id="active" label="Active" errors={state?.errors?.properties?.active?.errors}>
-						<Input
-							fullWidth={false}
-							className="w-fit"
-							checked={active}
-							onChange={event => setActive(event.target.checked)}
-							type="checkbox"
+							label="Free"
+							orientation="horizontal"
+							errors={state?.errors?.properties?.free?.errors}
+						>
+							<Checkbox
+								checked={free}
+								onCheckedChange={setFree}
+								id="free"
+								name="free"
+								aria-invalid={Boolean(state?.errors?.properties?.free?.errors?.length)}
+							/>
+						</FormField>
+					</FieldGroup>
+					<FieldGroup className={'w-fit'}>
+						<FormField
 							id="active"
-							name="active"
-							placeholder="Active"
-							aria-invalid={Boolean(state?.errors?.properties?.active?.errors?.length)}
-						/>
-					</FormField>
+							label="Active"
+							orientation="horizontal"
+							errors={state?.errors?.properties?.active?.errors}
+						>
+							<Checkbox
+								checked={active}
+								onCheckedChange={setActive}
+								id="active"
+								name="active"
+								aria-invalid={Boolean(state?.errors?.properties?.active?.errors?.length)}
+							/>
+						</FormField>
+					</FieldGroup>
+
 					<Button type="submit">Submit</Button>
 				</FieldSet>
 			</form>
