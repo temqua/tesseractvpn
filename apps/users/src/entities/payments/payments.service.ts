@@ -4,11 +4,11 @@ import { basename } from 'path';
 import bot from '../../bot';
 import { getFrequestPaymentAmountsKeyboard, getReferredKeyboard, getYesNoKeyboard } from '../../buttons';
 import { dict } from '../../dict';
-import { CmdCode, CommandScope, PaymentCommand, UserRequest, VPNUserCommand } from '../../enums';
+import { CmdCode, CommandScope, PaymentStatus, UserRequest, VPNUserCommand } from '../../enums';
 import env from '../../env';
 import { globalHandler } from '../../global.handler';
 import logger from '../../logger';
-import { formatDate, setActiveStep, uuid32to36 } from '../../utils';
+import { formatDate, resetSteps, setActiveStep, uuid32to36 } from '../../utils';
 import { PlansClient } from '../plans/plans.client';
 import { Plan } from '../plans/plans.types';
 import { ReferralTransactionsClient } from '../referral-transactions/referral-transactions.client';
@@ -29,6 +29,7 @@ type AvailableFields =
 	| 'months'
 	| 'dependants'
 	| 'plan'
+	| 'paymentId'
 	| 'referrer'
 	| 'referred';
 export class PaymentsService {
@@ -61,6 +62,11 @@ export class PaymentsService {
 		from: false,
 		to: false,
 	};
+
+	private paymentSteps = {
+		sendDetails: false,
+	};
+	private paymentRequestParams = new Map();
 
 	async showPayments(message: Message, context: UsersContext, from?: TGUser) {
 		const lang = from?.is_bot ? 'ru' : from?.language_code;
@@ -258,6 +264,185 @@ export class PaymentsService {
 		} finally {
 			globalHandler.finishCommand();
 		}
+	}
+
+	async paymentRequest(message: Message, context: UsersContext, from?: TGUser, start = true) {
+		this.log(`paymentRequest. Active step ${this.getActiveStep(this.paymentSteps) ?? 'start'}`);
+		const lang: string = from?.is_bot || !from ? 'ru' : (from?.language_code ?? 'ru');
+
+		if (start) {
+			this.paymentRequestParams.set(
+				'user_info',
+				`${from.username ?? ''} ${from.first_name ?? ''} ${from.last_name ?? ''}`,
+			);
+			const user = await this.usersClient.getByTelegramId(message.chat.id.toString());
+			const dependantsCount = user?.dependants.length
+				? user.dependants.filter(d => d.active && !d.free).length
+				: 0;
+			const count = 1 + dependantsCount;
+			const plans = await this.plansClient.getAll({ price: user?.price, count });
+
+			this.paymentRequestParams.set('user_id', user.id);
+
+			try {
+				const keyboard = plans
+					.toSorted((p1, p2) => p1.months - p2.months)
+					.map(plan => [
+						{
+							text: `${plan.amount} ${plan.currency} — ${dict.months[lang]}: ${plan.months}`,
+							callback_data: JSON.stringify({
+								[CmdCode.Scope]: CommandScope.Users,
+								[CmdCode.Context]: {
+									[CmdCode.Command]: VPNUserCommand.UserPay,
+									plid: plan.id,
+								},
+								[CmdCode.Processing]: 1,
+							}),
+						},
+					]);
+				const text = dict.select_plan[lang];
+
+				const ms = await bot.editMessageText(text, {
+					chat_id: message.chat.id,
+					message_id: message.message_id,
+					parse_mode: 'MarkdownV2',
+					reply_markup: {
+						inline_keyboard: keyboard,
+					},
+				});
+				this.usersClient.captureDelivery(user.id, text);
+				this.paymentRequestParams.set('msg_id', ms.message_id);
+				this.usersClient.createAction(user.id, 'UserPay', dict.pay[lang]);
+				setActiveStep('sendDetails', this.paymentSteps);
+			} catch (error) {
+				this.sendAndCaptureMessage(message.chat.id, user.id, `Ошибка обработки платежа ${error}`);
+				bot.sendMessage(
+					env.ADMIN_USER_ID,
+					`Ошибка обработки платежа для пользователя ${message.chat.id} ${error}`,
+				);
+				this.paymentRequestParams.clear();
+				this.params.clear();
+				globalHandler.finishCommand();
+			}
+			return;
+		}
+
+		if (this.paymentSteps.sendDetails) {
+			const planId = Number(context.plid);
+			this.paymentRequestParams.set('plan_id', planId);
+			const userId = this.paymentRequestParams.get('user_id');
+			const text = `${env.PAYMENT_CARDS}\n${dict.click_to_confirm_payment[lang]}`;
+			bot.editMessageText(text, {
+				chat_id: message.chat.id,
+				message_id: this.paymentRequestParams.get('msg_id'),
+				parse_mode: 'MarkdownV2',
+				reply_markup: {
+					inline_keyboard: [
+						[
+							{
+								text: dict.paid[lang],
+								callback_data: JSON.stringify({
+									[CmdCode.Scope]: CommandScope.Users,
+									[CmdCode.Context]: {
+										[CmdCode.Command]: VPNUserCommand.UserPay,
+										id: userId,
+									},
+									[CmdCode.Processing]: 1,
+								}),
+							},
+						],
+					],
+				},
+			});
+			this.usersClient.captureDelivery(userId, text);
+			resetSteps(this.paymentSteps);
+			return;
+		}
+
+		const userInfo = this.paymentRequestParams.get('user_info') ?? '';
+		const planId = this.paymentRequestParams.get('plan_id');
+		const [user, plan] = await Promise.all([
+			this.usersClient.getById(Number(context.id)),
+			this.plansClient.getById(planId),
+		]);
+		const mesId = this.paymentRequestParams.get('msg_id');
+		const id = await this.init(user.id, planId);
+		bot.editMessageText(dict.payment_request[lang], {
+			reply_markup: getUserKeyboard(lang),
+			message_id: mesId,
+			chat_id: message.chat.id,
+		});
+		this.usersClient.captureDelivery(user.id, dict.payment_request[lang]);
+		this.usersClient.createAction(user.id, 'UserPay', `${dict.paid[lang]}`);
+		await bot.sendMessage(
+			env.ADMIN_USER_ID,
+			`Пользователь ${user.username} (id = ${context.id}) ${userInfo} оставил заявку на платёж в ${plan?.amount}`,
+			{
+				reply_markup: {
+					inline_keyboard: [
+						[
+							{
+								text: dict.confirm_payment[lang],
+								callback_data: JSON.stringify({
+									[CmdCode.Scope]: CommandScope.Users,
+									[CmdCode.Context]: {
+										[CmdCode.Command]: VPNUserCommand.ApprovePayment,
+									},
+								}),
+							},
+						],
+					],
+				},
+			},
+		);
+		this.paymentRequestParams.clear();
+		globalHandler.finishCommand();
+	}
+
+	async init(userId: number, planId: number) {
+		const id = await this.client.init(userId, planId);
+		this.params.set('paymentId', id);
+		return id;
+	}
+
+	async approvePaymentNew(message: Message, context: UsersContext, start: boolean) {
+		this.log('approvePayment');
+		if (start) {
+			const paymentId: string = this.params.get('paymentId');
+			const payment = await this.client.getById(paymentId);
+			if (!payment) {
+				await bot.sendMessage(message.chat.id, `Ошибка при подтверждении платежа ${context.id}`);
+				this.params.clear();
+				globalHandler.finishCommand();
+				return;
+			}
+			await bot.sendMessage(
+				message.chat.id,
+				`Найден платёж 
+${this.formatPayment(payment)}`,
+				{
+					parse_mode: 'MarkdownV2',
+				},
+			);
+			await bot.sendMessage(message.chat.id, `Добавить налог?`, {
+				reply_markup: {
+					inline_keyboard: getYesNoKeyboard(VPNUserCommand.ApprovePayment),
+				},
+			});
+			this.params.set('paymentId', payment.id);
+			this.params.set('nalog', false);
+			return;
+		}
+		const pid: string = this.params.get('paymentId');
+		const nalog = this.params.get('nalog');
+		const result: Payment = await this.client.approve(pid, nalog);
+		if (result.status === PaymentStatus.SUCCEEDED) {
+			await bot.sendMessage(message.chat.id, `Платёж ${result.id} успешно подтверждён`);
+		} else {
+			await bot.sendMessage(message.chat.id, `Платёж ${result.id} не подтверждён`);
+		}
+		this.params.clear();
+		globalHandler.finishCommand();
 	}
 
 	async approvePayment(message: Message, context: UsersContext, start: boolean) {
@@ -643,6 +828,7 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 				monthsCount: Number(monthsCount),
 				expiresOn: expiresOn.toISOString(),
 				planId: plan?.id,
+				status: PaymentStatus.SUCCEEDED,
 			});
 			if (!result) {
 				const errMessage = `По непредвиденным обстоятельствам платеж для пользователя ${user.username} c ID ${user.id} не был создан`;
@@ -686,6 +872,7 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 						expiresOn: expiresOn.toISOString(),
 						planId: plan?.id,
 						parentPaymentId: result.id,
+						status: PaymentStatus.SUCCEEDED,
 					});
 					if (childResult) {
 						const successMessage = `Платёж на ${monthsCount} месяцев был успешно обработан для пользователя ${dep.username} (${dep.id}) дочернего от ${user.username} (${user.id}). 
@@ -783,7 +970,6 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 		const amount: number = 0;
 		const monthsCount: number = 1;
 		const expiresOn = this.params.get('expires') as Date;
-		console.log('expiresOn :>> ', expiresOn);
 		const addDependants = this.params.get('dependants') as boolean | undefined;
 		const referredId = this.params.get('referred') as string;
 		await bot.sendMessage(chatId, `Вычисленная дата окончания работы: ${formatDate(expiresOn)}`);
@@ -794,6 +980,7 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 				amount: Number(amount),
 				monthsCount: Number(monthsCount),
 				expiresOn: expiresOn.toISOString(),
+				status: PaymentStatus.SUCCEEDED,
 			});
 
 			if (!result) {
@@ -842,6 +1029,7 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 						monthsCount: Number(monthsCount),
 						expiresOn: expiresOn.toISOString(),
 						parentPaymentId: result.id,
+						status: PaymentStatus.SUCCEEDED,
 					});
 					if (childResult) {
 						const successMessage = `Реферальный платёж на ${monthsCount} месяцев был успешно обработан для пользователя ${dep.username} (${dep.id}) дочернего от ${referrer.username} (${referrer.id}). 
@@ -937,13 +1125,13 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 	}
 
 	private async showPaymentInfo(message: Message, p: Payment) {
-		const cd = JSON.stringify({
-			[CmdCode.Scope]: CommandScope.Payments,
-			[CmdCode.Context]: {
-				[CmdCode.Command]: PaymentCommand.DeleteExec,
-				id: p.id.replaceAll('-', ''),
-			},
-		});
+		// const cd = JSON.stringify({
+		// 	[CmdCode.Scope]: CommandScope.Payments,
+		// 	[CmdCode.Context]: {
+		// 		[CmdCode.Command]: PaymentCommand.DeleteExec,
+		// 		id: p.id.replaceAll('-', ''),
+		// 	},
+		// });
 
 		// const button = [
 		// 	{
@@ -1015,6 +1203,11 @@ Amount: ${parentPayment.amount} ${parentPayment.currency}`,
 			return result[0];
 		}
 		return null;
+	}
+
+	private async sendAndCaptureMessage(chatId: number, userId: number, text: string) {
+		await bot.sendMessage(chatId, text);
+		this.usersClient.captureDelivery(userId, text);
 	}
 
 	private log(message: string) {

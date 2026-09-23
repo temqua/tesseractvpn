@@ -1190,7 +1190,7 @@ currently have a trial period `,
 			}
 			if (!assign) {
 				const service = new CertificatesService(created.protocol, created.server.url);
-				await service.create(message, created.username, this.createKeyParams.get('message_id'));
+				await service.create(message, created.username);
 			}
 		} catch (err) {
 			bot.editMessageText(`Error occurred while creating user key for server ${err}`, {
@@ -1323,7 +1323,7 @@ Created at ${record.assignedAt}`,
 			);
 			if (!unassign) {
 				const service = new CertificatesService(protocol, record.server.url);
-				await service.delete(message, record.username, message.message_id);
+				await service.delete(message, record.username);
 			}
 		} catch (error) {
 			bot.editMessageText(
