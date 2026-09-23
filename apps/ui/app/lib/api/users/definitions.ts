@@ -84,10 +84,10 @@ export interface IVPNUserUI {
 
 export interface ICreateUserDto {
 	username: string;
-	firstName: string;
+	firstName: string | null;
 
 	telegramId: string | null;
-	telegramLink?: string;
+	telegramLink?: string | null;
 
 	lastName?: string;
 	languageCode?: string;
@@ -97,7 +97,19 @@ export interface ICreateUserDto {
 	devices?: Device[];
 }
 
-export interface IUpdateUserDto extends Partial<ICreateUserDto> {
+export interface IUpdateUserDto {
+	username?: string;
+	firstName?: string | null;
+
+	telegramId?: string | null;
+	telegramLink?: string | null;
+
+	lastName?: string | null;
+	languageCode?: string;
+	payerId?: number | null;
+	price?: number;
+	referrerId?: number | null;
+	devices?: Device[];
 	subLink?: string | null;
 	rwLink?: string | null;
 	rwUsername?: string | null;
