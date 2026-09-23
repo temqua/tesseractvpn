@@ -7,10 +7,13 @@ import { AppModule } from '../src/app.module';
 import { DatabaseService } from '../src/database.service';
 import {
   SEED_PAYMENTS,
+  SEED_PLAN,
   SUM_TOTAL,
   cleanupByIds,
+  cleanupPlan,
   cleanupUser,
   seedPayments,
+  seedPlan,
   seedUser,
 } from './payments-seed';
 const AUTH_HEADER = `Bearer ${process.env.API_TOKEN ?? 'test-api-token'}`;
@@ -20,6 +23,7 @@ describe('Payments (e2e)', () => {
   let prisma: PrismaClient;
   let seededIds: string[];
   let userId: number;
+  let planId: number;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -36,6 +40,9 @@ describe('Payments (e2e)', () => {
     const user = await seedUser(prisma);
     userId = user.id;
 
+    const plan = await seedPlan(prisma);
+    planId = plan.id;
+
     await prisma.payment.deleteMany({ where: { userId } });
     const created = await seedPayments(prisma, userId);
     seededIds = created.map((p) => p.id);
@@ -43,6 +50,7 @@ describe('Payments (e2e)', () => {
 
   afterAll(async () => {
     await cleanupUser(prisma, userId);
+    await cleanupPlan(prisma, planId);
     await app.close();
   });
 
@@ -236,6 +244,118 @@ describe('Payments (e2e)', () => {
       await request(app.getHttpServer())
         .delete(`/api/v1/admin/payments/${seededIds[0]}`)
         .expect(401);
+    });
+  });
+
+  describe('POST /api/v1/admin/payments/init', () => {
+    it('should initialize a payment for a user with a plan', async () => {
+      const dto = {
+        userId,
+        planId,
+      };
+
+      const res = await request(app.getHttpServer())
+        .post('/api/v1/admin/payments/init')
+        .set('Authorization', AUTH_HEADER)
+        .send(dto)
+        .expect(200);
+
+      expect(res.body.id).toBeDefined();
+      expect(Number(res.body.amount)).toBe(SEED_PLAN.amount);
+      expect(res.body.userId).toBe(userId);
+      expect(Number(res.body.monthsCount)).toBe(SEED_PLAN.months);
+      expect(Number(res.body.planId)).toBe(planId);
+
+      await cleanupByIds(prisma, [res.body.id]);
+    });
+
+    it('should return 401 without auth', async () => {
+      await request(app.getHttpServer())
+        .post('/api/v1/admin/payments/init')
+        .send({ userId, planId })
+        .expect(401);
+    });
+
+    it('should return 404 for non-existent plan', async () => {
+      const dto = {
+        userId,
+        planId: 999999,
+      };
+
+      await request(app.getHttpServer())
+        .post('/api/v1/admin/payments/init')
+        .set('Authorization', AUTH_HEADER)
+        .send(dto)
+        .expect(404);
+    });
+  });
+
+  describe('POST /api/v1/admin/payments/approve/:id', () => {
+    it('should approve a payment and set status to SUCCEEDED', async () => {
+      const createRes = await request(app.getHttpServer())
+        .post('/api/v1/admin/payments')
+        .set('Authorization', AUTH_HEADER)
+        .send({
+          userId,
+          amount: 1000,
+          monthsCount: 1,
+          expiresOn: '2026-01-01T00:00:00.000Z',
+        })
+        .expect(201);
+
+      const id = createRes.body.id;
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/v1/admin/payments/approve/${id}`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ addNalog: true })
+        .expect(200);
+
+      expect(res.body.status).toBe('succeeded');
+
+      await cleanupByIds(prisma, [id]);
+    });
+
+    it('should approve a payment with addNalog flag', async () => {
+      const createRes = await request(app.getHttpServer())
+        .post('/api/v1/admin/payments')
+        .set('Authorization', AUTH_HEADER)
+        .send({
+          userId,
+          amount: 2000,
+          monthsCount: 1,
+          expiresOn: '2026-02-01T00:00:00.000Z',
+        })
+        .expect(201);
+
+      const id = createRes.body.id;
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/v1/admin/payments/approve/${id}`)
+        .set('Authorization', AUTH_HEADER)
+        .send({ addNalog: false })
+        .expect(200);
+
+      expect(res.body.status).toBe('succeeded');
+
+      await cleanupByIds(prisma, [id]);
+    });
+
+    it('should return 401 without auth', async () => {
+      await request(app.getHttpServer())
+        .post(`/api/v1/admin/payments/approve/${seededIds[0]}`)
+        .send({ addNalog: true })
+        .expect(401);
+    });
+
+    it('should return 404 for non-existent payment id', async () => {
+      await request(app.getHttpServer())
+        .post(
+          '/api/v1/admin/payments/approve/00000000-0000-0000-0000-000000000000',
+        )
+        .set('Authorization', AUTH_HEADER)
+        .send({ addNalog: true })
+        .expect(404);
     });
   });
 });

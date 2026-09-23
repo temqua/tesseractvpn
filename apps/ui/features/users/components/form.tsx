@@ -38,7 +38,7 @@ export default function UserClientSide({ user, id }: { user: IVPNUser; id: strin
 	const updateAction = getUpdateAction(id);
 
 	const [state, formAction, isPendingUpdate] = useActionState<UserFormState, FormData>(updateAction, {});
-	
+
 	const [username, setUsername] = useState(user?.username);
 	const [telegramId, setTelegramId] = useState(user?.telegramId ?? '');
 	const [telegramLink, setTelegramLink] = useState(user?.telegramLink ?? '');

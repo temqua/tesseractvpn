@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { Payment, Prisma } from '@prisma/client';
+import { Payment, PaymentStatus, Prisma } from '@prisma/client';
 import { endOfDay, parse, startOfDay } from 'date-fns';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentListDto } from './dto/list-dto';
@@ -148,6 +148,17 @@ export class PaymentsRepository {
     return await this.databaseService.client.payment.findMany({
       where: {
         userId,
+      },
+    });
+  }
+
+  async approve(id: string) {
+    return await this.databaseService.client.payment.update({
+      where: {
+        id,
+      },
+      data: {
+        status: PaymentStatus.SUCCEEDED,
       },
     });
   }

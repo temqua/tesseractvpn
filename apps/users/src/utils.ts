@@ -39,3 +39,8 @@ export function uuid32to36(u: string): string {
 }
 
 export const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+export function resetSteps(steps: { [key: string]: boolean }) {
+	Object.keys(steps).forEach(k => {
+		steps[k] = false;
+	});
+}

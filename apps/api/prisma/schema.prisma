@@ -68,6 +68,7 @@ model Payment {
   parentPayment        Payment?              @relation("PaymentToChildPayment", fields: [parentPaymentId], references: [id])
   childPayments        Payment[]             @relation("PaymentToChildPayment")
   referralTransactions ReferralTransaction[] @relation("ReferrerTransactionsToPayment")
+  status               PaymentStatus         @default(PENDING)
 
   @@map("payments")
 }
@@ -240,4 +241,12 @@ enum UserRole {
   ADMIN
 
   @@map("user_role")
+}
+
+enum PaymentStatus {
+  SUCCEEDED
+  CANCELLED
+  PENDING
+
+  @@map("payment_status")
 }

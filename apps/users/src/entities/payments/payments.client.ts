@@ -66,4 +66,22 @@ export class PaymentsClient {
 	async export() {
 		return await client.post('/admin/payments/export');
 	}
+
+	async init(userId: number, planId: number) {
+		const response = await client.post(`/admin/payments/init`, {
+			body: JSON.stringify({
+				userId,
+				planId,
+			}),
+		});
+		return response.id;
+	}
+
+	async approve(id: string, nalog: boolean = false) {
+		return await client.post(`/admin/payments/approve/${id}`, {
+			body: JSON.stringify({
+				addNalog: nalog,
+			}),
+		});
+	}
 }

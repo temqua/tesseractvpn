@@ -250,6 +250,14 @@ For pricing information, please tap "Prices".
 If you do not see the menu, send  /start to the bot.
 If you experience any issues, please send a direct message to the тессеракт клуб channel or contact @whirliswaiting`,
 	},
+	select_plan: {
+		ru: 'Выберите план',
+		en: 'Select plan',
+	},
+	months: {
+		ru: 'месяцев',
+		en: 'months',
+	},
 };
 
 export const getPeopleCountMessage = (minCount: number, lang: string) => {

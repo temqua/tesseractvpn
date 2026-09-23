@@ -1,4 +1,4 @@
-import { CmdCode, PaymentCommand } from '../../enums';
+import { CmdCode, PaymentCommand, PaymentStatus } from '../../enums';
 import { Plan } from '../plans/plans.types';
 import { VPNUser } from '../users/users.types';
 
@@ -19,6 +19,7 @@ export interface CreatePaymentDto {
 	planId?: number | null;
 
 	parentPaymentId?: string | null;
+	status?: PaymentStatus;
 }
 
 export interface PaymentSumDto {
@@ -41,4 +42,5 @@ export type Payment = {
 	parentPaymentId: string | null;
 	planId: number | null;
 	plan: Plan;
+	status: PaymentStatus;
 };

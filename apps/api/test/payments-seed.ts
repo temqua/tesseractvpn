@@ -10,6 +10,15 @@ export const SEED_USER = {
   currency: 'RUB',
 };
 
+export const SEED_PLAN = {
+  name: 'Test Plan',
+  amount: 1000,
+  months: 12,
+  price: 150,
+  minCount: 1,
+  maxCount: 1,
+};
+
 export const SEED_PAYMENTS = [
   {
     userId: 0,
@@ -50,6 +59,11 @@ export async function seedUser(prisma: PrismaClient) {
   return user;
 }
 
+export async function seedPlan(prisma: PrismaClient) {
+  const plan = await prisma.plan.create({ data: SEED_PLAN });
+  return plan;
+}
+
 export async function seedPayments(prisma: PrismaClient, userId: number) {
   const created = [];
   for (const payment of SEED_PAYMENTS) {
@@ -64,6 +78,10 @@ export async function seedPayments(prisma: PrismaClient, userId: number) {
 export async function cleanupByIds(prisma: PrismaClient, ids: string[]) {
   if (ids.length === 0) return;
   await prisma.payment.deleteMany({ where: { id: { in: ids } } });
+}
+
+export async function cleanupPlan(prisma: PrismaClient, planId: number) {
+  await prisma.plan.deleteMany({ where: { id: planId } });
 }
 
 export async function cleanupUser(prisma: PrismaClient, userId: number) {

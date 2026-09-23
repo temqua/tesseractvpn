@@ -5,11 +5,20 @@ import { PaymentsRepository } from './payments.repository';
 
 import env from '../../env';
 import { exportToSheet } from '../../utils';
+import { PlansService } from '../plans/plans.service';
+import { UsersService } from '../users/users.service';
+import { PaymentInitDto } from './dto/init-payment.dto';
 import { PaymentListDto } from './dto/list-dto';
-import { IYooKassaWebHook } from './yookassa.definitions';
+import { IYooKassaWebHook, WebhookEventEnum } from './yookassa.definitions';
+import { addMonths } from 'date-fns';
+import { PaymentApproveDto } from './dto/approve-payment.dto';
 @Injectable()
 export class PaymentsService {
-  constructor(private repository: PaymentsRepository) {}
+  constructor(
+    private repository: PaymentsRepository,
+    private usersService: UsersService,
+    private plansService: PlansService,
+  ) {}
 
   async create(createPaymentDto: CreatePaymentDto) {
     return await this.repository.create(createPaymentDto);
@@ -81,6 +90,47 @@ export class PaymentsService {
   }
 
   async handleHook(dto: IYooKassaWebHook) {
+    if (dto.event === WebhookEventEnum.PaymentSucceeded) {
+      return await this.approve(dto.object?.metadata?.id ?? null, {
+        addNalog: env.APP_ENV === 'production',
+      });
+    }
     return JSON.stringify(dto);
+  }
+
+  async init(dto: PaymentInitDto) {
+    const [user, plan] = await Promise.all([
+      this.usersService.findOne(Number(dto.userId)),
+      this.plansService.findOne(Number(dto.planId)),
+    ]);
+    let startPoint = new Date();
+    if (user?.payments?.length) {
+      const lastPayment = user.payments[0];
+      if (lastPayment.expiresOn) {
+        const expiresOnLastPayment = new Date(lastPayment.expiresOn);
+        if (expiresOnLastPayment > new Date()) {
+          startPoint = expiresOnLastPayment;
+        }
+      }
+    }
+    const calculated = addMonths(startPoint, plan.months);
+    return await this.repository.create({
+      amount: plan.amount,
+      monthsCount: plan.months,
+      planId: plan.id,
+      userId: dto.userId,
+      expiresOn: calculated.toISOString(),
+    });
+  }
+
+  async approve(id: string | null, dto: PaymentApproveDto) {
+    if (!id) {
+      return;
+    }
+    const payment = await this.repository.findOne(id);
+    if (!payment) {
+      throw new NotFoundException(`Payment with id ${id} not found`);
+    }
+    return await this.repository.approve(id);
   }
 }

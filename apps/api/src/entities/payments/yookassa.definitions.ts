@@ -3,21 +3,21 @@ import { IConfirmation } from './yookassa.confirmation.definitions';
 
 export enum WebhookEventEnum {
   /** Платёж ожидает подтверждения */
-  'payment.waiting_for_capture' = 'payment.waiting_for_capture',
+  PaymentWaitingForCapture = 'payment.waiting_for_capture',
   /** Платёж успешно завершён */
-  'payment.succeeded' = 'payment.succeeded',
+  PaymentSucceeded = 'payment.succeeded',
   /** Платёж отменён */
-  'payment.canceled' = 'payment.canceled',
+  PaymentCanceled = 'payment.canceled',
   /** Возврат успешно завершён */
-  'refund.succeeded' = 'refund.succeeded',
+  RefundSucceeded = 'refund.succeeded',
   /** Выплата успешно завершена */
-  'payout.succeeded' = 'payout.succeeded',
+  PayoutSucceeded = 'payout.succeeded',
   /** Выплата отменена */
-  'payout.canceled' = 'payout.canceled',
+  PayoutCanceled = 'payout.canceled',
   /** Сделка закрыта */
-  'deal.closed' = 'deal.closed',
+  DealClosed = 'deal.closed',
   /** Способ оплаты активен (привязка на нулевую сумму завершена) */
-  'payment_method.active' = 'payment_method.active',
+  PaymentMethodActive = 'payment_method.active',
 }
 
 export enum CurrencyEnum {

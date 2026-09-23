@@ -179,3 +179,9 @@ export enum ReferralTransactionCommand {
 	List = 'l',
 	GetById = 'g',
 }
+
+export enum PaymentStatus {
+	PENDING = 'PENDING',
+	SUCCEEDED = 'SUCCEEDED',
+	CANCELLED = 'CANCELLED',
+}

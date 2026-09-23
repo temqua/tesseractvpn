@@ -15,6 +15,8 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentsService } from './payments.service';
 import type { IYooKassaWebHook } from './yookassa.definitions';
 import { IsPublic } from '../../decorators/is-public';
+import { PaymentInitDto } from './dto/init-payment.dto';
+import { PaymentApproveDto } from './dto/approve-payment.dto';
 
 @Controller('admin/payments')
 export class PaymentsController {
@@ -70,5 +72,15 @@ export class PaymentsController {
   hookTest(@Body() dto: IYooKassaWebHook) {
     this.logger.log(dto);
     return JSON.stringify(dto);
+  }
+
+  @Post('/init')
+  async init(@Body() dto: PaymentInitDto) {
+    return await this.paymentsService.init(dto);
+  }
+
+  @Post('/approve/:id')
+  async approve(@Param('id') id: string, @Body() dto: PaymentApproveDto) {
+    return await this.paymentsService.approve(id, dto);
   }
 }
