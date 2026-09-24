@@ -76,10 +76,13 @@ export class PlansService {
 		const plans = await this.client.getAll({ price: user.price });
 		const plansGroupped = Object.groupBy(plans, p => p.minCount);
 		this.usersClient.createAction(user.id, 'ShowPlans', `${dict.last_payment[lang]}`);
+		for (const k of Object.keys(plansGroupped)) {
+			plansGroupped[k] = plansGroupped[k]?.toSorted((p1, p2) => p1.months - p2.months);
+		}
 		const prepared = Object.keys(plansGroupped)
 			.map(k => {
 				const count = Number(k);
-				const plans = plansGroupped[k];
+				const plans: Plan[] = plansGroupped[k];
 
 				const header = `${getPeopleCountMessage(count, lang)}:\n`;
 				const together = plans
@@ -87,12 +90,10 @@ export class PlansService {
 						return `⚫️ ${getMonthsCountMessage(p.months, lang)} — ${p.amount} RUB`;
 					})
 					.join('\n');
-				return count === 1 ? together : header.concat(together);
+				return header.concat(together);
 			})
 			.join('\n');
-		const finalMessage = `${getPeopleCountMessage(1, lang)}:
-⚫️${getMonthsCountMessage(1, lang)} — ${user.price} RUB`.concat(`\n${prepared}`);
-		bot.editMessageText(finalMessage, {
+		bot.editMessageText(prepared, {
 			message_id: message.message_id,
 			chat_id: message.chat.id,
 			reply_markup: getUserKeyboard(lang),
