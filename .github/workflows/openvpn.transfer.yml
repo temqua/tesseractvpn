@@ -15,7 +15,6 @@ on:
                     - sweden
                     - us2
                     - de
-                    - fin
                     - turkey
                     - france
                     - switzerland
@@ -23,6 +22,7 @@ on:
                     - spain
                     - fin
                     - latvia
+                    - spb
 
 jobs:
     build-deploy:

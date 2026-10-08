@@ -28,6 +28,7 @@ on:
                     - turkey
                     - france
                     - latvia
+                    - spb
 
 jobs:
     build-deploy:
