@@ -21,6 +21,7 @@ on:
                     - fin
                     - latvia
                     - spb
+                    - msk2
 
 jobs:
     build-deploy:
