@@ -16,3 +16,7 @@ export type SendMessageBody = {
   reply_parameters?: object;
   reply_markup?: object;
 };
+
+export type SendMessageParams = Partial<
+  Omit<SendMessageBody, 'chat_id' | 'text'>
+>;

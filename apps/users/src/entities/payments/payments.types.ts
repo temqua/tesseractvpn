@@ -44,3 +44,8 @@ export type Payment = {
 	plan: Plan;
 	status: PaymentStatus;
 };
+
+export interface IPaymentProcessDto {
+	dependants?: boolean;
+	nalog: boolean;
+}

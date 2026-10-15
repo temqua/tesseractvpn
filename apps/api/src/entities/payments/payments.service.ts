@@ -1,24 +1,42 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentsRepository } from './payments.repository';
 
+import { addDays, addMonths } from 'date-fns';
 import env from '../../env';
-import { exportToSheet } from '../../utils';
+import { exportToSheet, formatDate } from '../../utils';
 import { PlansService } from '../plans/plans.service';
 import { UsersService } from '../users/users.service';
 import { PaymentInitDto } from './dto/init-payment.dto';
 import { PaymentListDto } from './dto/list-dto';
 import { IYooKassaWebHook, WebhookEventEnum } from './yookassa.definitions';
-import { addMonths } from 'date-fns';
-import { PaymentApproveDto } from './dto/approve-payment.dto';
+import { NalogService } from '../nalog/nalog.service';
+import { RemnawaveService } from '../remnawave/remnawave.service';
+import { TelegramBotService } from '../telegram/telegram.bot.service';
+import { TelegramJobsService } from '../telegram/telegram.jobs.service';
+import { dict } from '../../dict';
+import { PaymentStatus } from '@prisma/client';
+import { IChildResult } from './payments.types';
+import { IPaymentProcessDto } from './dto/process-payment.dto';
 @Injectable()
 export class PaymentsService {
   constructor(
     private repository: PaymentsRepository,
     private usersService: UsersService,
     private plansService: PlansService,
+    private nalogService: NalogService,
+    private remnawaveService: RemnawaveService,
+    private telegramJobsService: TelegramJobsService,
+    private telegramBotService: TelegramBotService,
   ) {}
+
+  private readonly logger = new Logger(PaymentsService.name);
 
   async create(createPaymentDto: CreatePaymentDto) {
     return await this.repository.create(createPaymentDto);
@@ -91,9 +109,9 @@ export class PaymentsService {
 
   async handleHook(dto: IYooKassaWebHook) {
     if (dto.event === WebhookEventEnum.PaymentSucceeded) {
-      return await this.approve(dto.object?.metadata?.id ?? null, {
-        addNalog: env.APP_ENV === 'production',
-      });
+      // return this.jobsService.execute(TesseractJob.ApprovePayment, {
+      //   addNalog: env.APP_ENV === 'production',
+      // });
     }
     return JSON.stringify(dto);
   }
@@ -123,7 +141,7 @@ export class PaymentsService {
     });
   }
 
-  async approve(id: string | null, dto: PaymentApproveDto) {
+  async approve(id: string | null) {
     if (!id) {
       return;
     }
@@ -131,6 +149,188 @@ export class PaymentsService {
     if (!payment) {
       throw new NotFoundException(`Payment with id ${id} not found`);
     }
-    return await this.repository.approve(id);
+
+    const result = await this.repository.approve(id);
+    if (result) {
+      const successMessage = `Платёж ${payment.id} количеством ${payment.amount} рублей на ${payment.monthsCount} месяцев был успешно подтверждён для пользователя ${payment.user.username}.
+    Новая дата истечения срока ${payment.expiresOn ? formatDate(payment.expiresOn) : 'null'}.`;
+      this.logger.log(successMessage);
+      this.telegramJobsService.send(successMessage);
+      this.telegramJobsService.send(
+        `ID платежа: \`${payment.id.replace(/[-.*#_]/g, (match) => `\\${match}`)}\``,
+        {
+          parse_mode: 'MarkdownV2',
+        },
+      );
+    }
+    return result;
+  }
+
+  async process(id: string, params: IPaymentProcessDto) {
+    const payment = await this.repository.findOne(id);
+
+    if (!payment) {
+      throw new NotFoundException(`Payment with id ${id} not found`);
+    }
+    if (payment.status !== PaymentStatus.SUCCEEDED) {
+      throw new InternalServerErrorException('Payment is not succeeded');
+    }
+    const dependants: IChildResult[] = [];
+    let nalog = false;
+    let notified = false;
+    let renewed = false;
+    let activated = false;
+    if (!payment.user.active) {
+      try {
+        const result = await this.usersService.update(payment.user.id, {
+          active: true,
+        });
+        activated = result.active;
+        if (!result) {
+          this.telegramJobsService.send(
+            `Ошибка при активации юзера ${payment.user.username}. Не вернулся результат из this.usersService.update`,
+          );
+        }
+      } catch (err) {
+        this.telegramJobsService.send(
+          `Ошибка при активации юзера ${payment.user.username} ${err}`,
+        );
+      }
+    }
+
+    if (payment.user.telegramId) {
+      try {
+        this.telegramBotService.send(dict.payment_processed.ru, {
+          chat_id: Number(payment.user.telegramId),
+        });
+        notified = true;
+      } catch (err) {
+        this.logger.error(`${err}`);
+      }
+    }
+    if (env.APP_ENV === 'local') {
+      return {
+        nalog,
+        dependants,
+        notified,
+        renewed,
+        activated,
+      };
+    }
+    if (payment.user.rwUUID) {
+      try {
+        const result = await this.remnawaveService.updateUser({
+          uuid: payment.user.rwUUID,
+          expireAt: addDays(
+            new Date(payment.expiresOn as Date),
+            1,
+          ).toISOString(),
+        });
+        renewed = Boolean(result);
+      } catch (err) {
+        const ms = `Request to remnawave failed ${err}`;
+        this.logger.error(ms);
+        this.telegramJobsService.send(ms);
+      }
+    }
+    if (params.nalog) {
+      nalog = await this.addPaymentNalog(
+        payment.id,
+        payment?.user.username,
+        payment?.amount,
+      );
+    }
+    if (params.dependants) {
+      for (const dep of payment.user.dependants.filter((u) => u.active)) {
+        const current: IChildResult = {
+          id: dep.id,
+          username: dep.username,
+        };
+        const childResult = await this.create({
+          userId: dep.id,
+          amount: 0,
+          monthsCount: payment.monthsCount,
+          expiresOn: payment.expiresOn?.toISOString() ?? null,
+          planId: payment.plan?.id ?? null,
+          parentPaymentId: payment.id,
+          status: PaymentStatus.SUCCEEDED,
+        });
+        current.created = Boolean(childResult);
+        dependants.push(current);
+        if (!childResult) {
+          const errMessage = `По непредвиденным обстоятельствам платеж для дочернего пользователя ${dep.username} не был создан`;
+          this.logger.error(errMessage);
+          this.telegramJobsService.send(errMessage);
+          continue;
+        }
+        const successMessage = `Платёж на ${payment.monthsCount} месяцев был успешно обработан для пользователя ${dep.username} (${dep.id}) дочернего от ${payment.user.username} (${payment.user.id}). 
+Новая дата истечения срока ${formatDate(payment.expiresOn as Date)}`;
+        this.logger.log(successMessage);
+        this.telegramJobsService.send(successMessage);
+        this.telegramJobsService.send(
+          `ID платежа: \`${childResult.id.replace(/[-.*#_]/g, (match) => `\\${match}`)}\``,
+          {
+            parse_mode: 'MarkdownV2',
+          },
+        );
+        if (!dep.active) {
+          try {
+            const childUpdateResult = await this.usersService.update(dep.id, {
+              active: true,
+            });
+            current.activated = Boolean(childUpdateResult);
+          } catch (err) {
+            this.telegramJobsService.send(
+              `Ошибка при активации юзера ${childResult.user.username} ${err}`,
+            );
+          }
+        }
+
+        if (dep.rwUUID) {
+          try {
+            await this.remnawaveService.updateUser({
+              uuid: dep.rwUUID,
+              expireAt: addDays(childResult.expiresOn as Date, 1).toISOString(),
+            });
+            current.renewed = true;
+          } catch (err) {
+            current.renewed = false;
+            const ms = `Request to remnawave failed ${err}`;
+            this.logger.error(ms);
+            this.telegramJobsService.send(ms);
+          }
+        }
+      }
+    }
+    return {
+      nalog,
+      activated,
+      dependants,
+      notify: notified,
+      renewed,
+    };
+  }
+
+  async addPaymentNalog(id: string, username: string, amount: number) {
+    let success = false;
+    try {
+      const token = await this.nalogService.auth();
+      const paymentId = await this.nalogService.addNalog(token, amount, id);
+      if (!paymentId) {
+        const errMessage = `Ошибка! При добавлении налога за пользователя ${username} не получен ID операции`;
+        this.logger.error(errMessage);
+        this.telegramJobsService.send(errMessage);
+      } else {
+        const successMessage = `Налог успешно добавлен за пользователя ${username}`;
+        this.logger.log(successMessage);
+        this.telegramJobsService.send(successMessage);
+        success = true;
+      }
+    } catch (err) {
+      const errMessage = `Ошибка при добавлении налога для пользователя ${username}: ${err}`;
+      this.logger.error(errMessage);
+      this.telegramJobsService.send(errMessage);
+    }
+    return success;
   }
 }

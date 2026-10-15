@@ -4,7 +4,7 @@ import { VPNProtocol } from '@prisma/client';
 import { subDays } from 'date-fns';
 import { DatabaseService } from '../../../database.service';
 import env from '../../../env';
-import { TelegramService } from '../../telegram/telegram.service';
+import { TelegramJobsService } from '../../telegram/telegram.jobs.service';
 import { Job } from '../jobs.definitions';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class DeactivateUnpaidJob implements Job {
 
   constructor(
     private databaseService: DatabaseService,
-    private telegramService: TelegramService,
+    private telegramService: TelegramJobsService,
   ) {}
 
   private portMap = {

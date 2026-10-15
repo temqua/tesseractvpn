@@ -10,16 +10,21 @@ import { PaymentListDto } from './dto/list-dto';
 export class PaymentsRepository {
   constructor(private databaseService: DatabaseService) {}
 
-  async create(createPaymentDto: CreatePaymentDto) {
+  async create(dto: CreatePaymentDto) {
     return await this.databaseService.client.payment.create({
       data: {
-        userId: createPaymentDto.userId,
-        amount: createPaymentDto.amount,
-        monthsCount: createPaymentDto.monthsCount,
-        expiresOn: createPaymentDto.expiresOn,
-        planId: createPaymentDto.planId ?? null,
-        parentPaymentId: createPaymentDto.parentPaymentId ?? null,
+        userId: dto.userId,
+        amount: dto.amount,
+        monthsCount: dto.monthsCount,
+        expiresOn: dto.expiresOn,
+        planId: dto.planId ?? null,
+        status: dto.status,
+        parentPaymentId: dto.parentPaymentId ?? null,
         currency: 'RUB',
+      },
+      include: {
+        user: true,
+        plan: true,
       },
     });
   }
@@ -78,6 +83,14 @@ export class PaymentsRepository {
     return await this.databaseService.client.payment.findUnique({
       where: {
         id,
+      },
+      include: {
+        user: {
+          include: {
+            dependants: true,
+          },
+        },
+        plan: {},
       },
     });
   }
@@ -159,6 +172,10 @@ export class PaymentsRepository {
       },
       data: {
         status: PaymentStatus.SUCCEEDED,
+      },
+      include: {
+        user: {},
+        plan: {},
       },
     });
   }

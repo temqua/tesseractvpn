@@ -9,14 +9,17 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { IsPublic } from '../../decorators/is-public';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { PaymentInitDto } from './dto/init-payment.dto';
 import { PaymentListDto } from './dto/list-dto';
+import { IPaymentProcessDto } from './dto/process-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentsService } from './payments.service';
-import type { IYooKassaWebHook } from './yookassa.definitions';
-import { IsPublic } from '../../decorators/is-public';
-import { PaymentInitDto } from './dto/init-payment.dto';
-import { PaymentApproveDto } from './dto/approve-payment.dto';
+import {
+  WebhookEventEnum,
+  type IYooKassaWebHook,
+} from './yookassa.definitions';
 
 @Controller('admin/payments')
 export class PaymentsController {
@@ -80,7 +83,12 @@ export class PaymentsController {
   }
 
   @Post('/approve/:id')
-  async approve(@Param('id') id: string, @Body() dto: PaymentApproveDto) {
-    return await this.paymentsService.approve(id, dto);
+  async approve(@Param('id') id: string) {
+    return await this.paymentsService.approve(id);
+  }
+
+  @Post('/process/:id')
+  async process(@Param('id') id: string, @Body() body: IPaymentProcessDto) {
+    return await this.paymentsService.process(id, body);
   }
 }

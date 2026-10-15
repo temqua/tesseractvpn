@@ -7,7 +7,7 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { JobsService } from './jobs.service';
+import { JobsService, TesseractJob } from './jobs.service';
 
 @Controller('jobs')
 export class JobsController {
@@ -20,7 +20,7 @@ export class JobsController {
 
   @Post('/:name/execute')
   @HttpCode(HttpStatus.OK)
-  execute(@Param('name') name: string, @Body() body) {
+  execute(@Param('name') name: TesseractJob, @Body() body) {
     return this.jobsService.execute(name, body);
   }
 }

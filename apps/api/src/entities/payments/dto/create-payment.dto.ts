@@ -1,3 +1,4 @@
+import { PaymentStatus } from '@prisma/client';
 import { IsNumber, IsString } from 'class-validator';
 
 export class CreatePaymentDto {
@@ -8,10 +9,12 @@ export class CreatePaymentDto {
   amount: number;
 
   @IsNumber()
-  monthsCount: number;
+  monthsCount: number | null;
 
   @IsString()
-  expiresOn: string;
+  expiresOn: string | null;
+
+  status?: PaymentStatus;
 
   @IsNumber()
   planId?: number | null;

@@ -2,6 +2,7 @@ import { google } from 'googleapis';
 import creds from '../sheets-api.json';
 import env from './env';
 import { VPNProtocol, VpnServer } from '@prisma/client';
+import { format } from 'date-fns';
 
 export const isJSONErrorResponse = (response: Response) => {
   return (
@@ -58,3 +59,10 @@ export function getQRLink(us: {
   const url = env.APP_ENV === 'local' ? 'http://localhost' : us?.server.url;
   return `${url}:${port}/qr?username=${us?.username}`;
 }
+
+export const formatDate = (
+  date: Date | string,
+  dateFormat = 'yyyy-MM-dd',
+): string => {
+  return format(date, dateFormat);
+};

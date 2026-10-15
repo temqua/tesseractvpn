@@ -5,13 +5,23 @@ import { DatabaseModule } from '../../database.module';
 import { PaymentsRepository } from './payments.repository';
 import { UsersModule } from '../users/users.module';
 import { PlansModule } from '../plans/plans.module';
+import { TelegramModule } from '../telegram/telegram.module';
+import { NalogModule } from '../nalog/nalog.module';
+import { RemnawaveModule } from '../remnawave/remnawave.module';
 
 describe('PaymentsController', () => {
   let controller: PaymentsController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [UsersModule, PlansModule, DatabaseModule],
+      imports: [
+        UsersModule,
+        PlansModule,
+        DatabaseModule,
+        TelegramModule,
+        NalogModule,
+        RemnawaveModule,
+      ],
       controllers: [PaymentsController],
       providers: [PaymentsService, PaymentsRepository],
     }).compile();

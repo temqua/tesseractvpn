@@ -818,6 +818,7 @@ currently have a trial period `,
 
 	async notifyUnpaid() {
 		this.log('notifyUnpaid');
+		bot.sendMessage(env.ADMIN_USER_ID, 'Notify Unpaid job started');
 		const oldtimersPromise = this.client.list({
 			expiresAfterDays: this.TRIAL_PERIOD,
 			trial: false,
@@ -847,8 +848,9 @@ currently have a trial period `,
 						diff <= 0
 							? dict.expired[user.languageCode](false)
 							: dict.expiresAfter[user.languageCode](diff, false);
-					bot.sendMessage(user.telegramId, msg);
-					this.client.captureDelivery(user.id, msg);
+					bot.sendMessage(user.telegramId, msg).then(m => {
+						this.client.captureDelivery(user.id, msg);
+					});
 				} catch (err) {
 					logger.error(err);
 				}
@@ -862,8 +864,9 @@ currently have a trial period `,
 						diff >= this.TRIAL_PERIOD
 							? dict.expired[user.languageCode](true)
 							: dict.expiresAfter[user.languageCode](this.TRIAL_PERIOD - diff, true);
-					bot.sendMessage(user.telegramId, msg);
-					this.client.captureDelivery(user.id, msg);
+					bot.sendMessage(user.telegramId, msg).then(m => {
+						this.client.captureDelivery(user.id, msg);
+					});
 				} catch (err) {
 					logger.error(err);
 				}
@@ -883,15 +886,17 @@ currently have a trial period `,
 				chat_id: message.chat.id,
 				message_id: message.message_id,
 				reply_markup: getUserKeyboard(lang),
+			}).then(m => {
+				this.client.captureDelivery(user.id, dict.installation_guide[lang](user.rwLink));
 			});
-			this.client.captureDelivery(user.id, dict.installation_guide[lang](user.rwLink));
 		} else {
 			bot.editMessageText(dict.no_sub[lang], {
 				message_id: message.message_id,
 				chat_id: message.chat.id,
 				reply_markup: getUserKeyboard(lang),
+			}).then(m => {
+				this.client.captureDelivery(user.id, dict.no_sub[lang]);
 			});
-			this.client.captureDelivery(user.id, dict.no_sub[lang]);
 		}
 		// if (user?.subLink) {
 		// 	bot.editMessageText(dict.installation_guide[lang](`${env.PASARGUARD_ROOT}${user.subLink}`), {

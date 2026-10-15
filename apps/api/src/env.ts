@@ -21,11 +21,13 @@ const env = cleanEnv(process.env, {
   WG_RECEIVER_PORT: num({ default: 8091 }),
   OVPN_RECEIVER_PORT: num({ default: 8092 }),
   BOT_TOKEN: str({ default: '' }),
+  JOBS_BOT_TOKEN: str({ default: '' }),
   TG_NOTIFICATIONS_CHAT_ID: str({ default: '' }),
   CORS_ALLOWED_ORIGINS: json({ default: '[]' }),
   NALOG_USERNAME: str({ default: '' }),
   NALOG_PASSWORD: str({ default: '' }),
   NALOG_DEVICE_ID: str({ default: '' }),
+  ADMIN_TG_USER_ID: num(),
 });
 
 export default env;

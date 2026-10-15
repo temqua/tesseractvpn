@@ -411,7 +411,10 @@ export class PaymentsService {
 			const paymentId: string = this.params.get('paymentId');
 			const payment = await this.client.getById(paymentId);
 			if (!payment) {
-				await bot.sendMessage(message.chat.id, `Ошибка при подтверждении платежа ${context.id}`);
+				await bot.sendMessage(
+					message.chat.id,
+					`Ошибка при подтверждении платежа ${context.id}. Платёж не найден`,
+				);
 				this.params.clear();
 				globalHandler.finishCommand();
 				return;
@@ -429,18 +432,24 @@ ${this.formatPayment(payment)}`,
 					inline_keyboard: getYesNoKeyboard(VPNUserCommand.ApprovePayment),
 				},
 			});
+
 			this.params.set('paymentId', payment.id);
 			this.params.set('nalog', false);
 			return;
 		}
 		const pid: string = this.params.get('paymentId');
-		const nalog = this.params.get('nalog');
+		const nalog: boolean = this.params.get('nalog');
 		const result: Payment = await this.client.approve(pid, nalog);
 		if (result.status === PaymentStatus.SUCCEEDED) {
 			await bot.sendMessage(message.chat.id, `Платёж ${result.id} успешно подтверждён`);
 		} else {
 			await bot.sendMessage(message.chat.id, `Платёж ${result.id} не подтверждён`);
 		}
+		const processResult = await this.client.process(pid, { nalog });
+		await bot.sendMessage(
+			message.chat.id,
+			`Результат процессинга платежа: ${this.formatPaymentProcessResult(processResult)}`,
+		);
 		this.params.clear();
 		globalHandler.finishCommand();
 	}
@@ -1191,6 +1200,10 @@ Amount: ${parentPayment.amount} ${parentPayment.currency}`,
 		} finally {
 			globalHandler.finishCommand();
 		}
+	}
+
+	private formatPaymentProcessResult(result) {
+		return JSON.stringify(result);
 	}
 
 	private setPaymentStep(current: keyof typeof this.paymentSteps) {
