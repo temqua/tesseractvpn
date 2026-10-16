@@ -188,10 +188,10 @@ class UsersCommandsHandler implements ICommandHandler {
 			await this.service.showMenu(message, from);
 		}
 		if (context[CmdCode.Command] === VPNUserCommand.UserPay) {
-			await this.service.paymentRequest(message, context, from, this.state.init);
+			await this.paymentsService.paymentRequest(message, context, from, this.state.init);
 		}
 		if (context[CmdCode.Command] === VPNUserCommand.ApprovePayment) {
-			await this.paymentsService.approvePayment(message, context, this.state.init);
+			await this.paymentsService.approvePaymentNew(message, context, this.state.init);
 		}
 		if (context[CmdCode.Command] === VPNUserCommand.RequestCreation) {
 			await this.service.signUpUser(message, context, from, this.state.init);

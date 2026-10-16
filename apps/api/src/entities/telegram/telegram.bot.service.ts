@@ -8,10 +8,8 @@ export class TelegramBotService {
   private readonly logger = new Logger(TelegramBotService.name);
   private readonly client = new TelegramClient(env.BOT_TOKEN);
   private readonly chatId = env.ADMIN_TG_USER_ID;
-  async send(text: string, body: Partial<SendMessageBody>): Promise<void> {
-    // if (env.APP_ENV === 'local') {
-    //   return;
-    // }
+  async send(text: string, body: Partial<SendMessageBody>): Promise<boolean> {
+    let sent = false;
     try {
       const sendMessageBody: SendMessageBody = {
         text,
@@ -31,10 +29,12 @@ export class TelegramBotService {
           this.logger.error(parsed);
         }
       }
+      sent = response.ok;
     } catch (err) {
       this.logger.error(
         `Failed to send to telegram message ${body.text}. ${err}`,
       );
     }
+    return sent;
   }
 }

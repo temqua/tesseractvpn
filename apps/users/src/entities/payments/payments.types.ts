@@ -49,3 +49,19 @@ export interface IPaymentProcessDto {
 	dependants?: boolean;
 	nalog: boolean;
 }
+
+export interface IChildResult {
+	userId: number;
+	username: string;
+	created?: boolean;
+	active?: boolean;
+	renewed?: boolean;
+}
+
+export interface IPaymentProcessResult {
+	nalog: boolean;
+	dependants: IChildResult[];
+	notified: boolean;
+	renewed: boolean;
+	active: boolean;
+}

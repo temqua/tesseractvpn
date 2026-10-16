@@ -18,7 +18,7 @@ import { acceptKeyboard, getExpirationDateKeyboard, getUserKeyboard } from '../u
 import { UsersClient } from '../users/users.client';
 import { UsersContext, VPNUser } from '../users/users.types';
 import { PaymentsClient } from './payments.client';
-import { Payment, PaymentsContext } from './payments.types';
+import { IChildResult, IPaymentProcessResult, Payment, PaymentsContext } from './payments.types';
 type AvailableFields =
 	| 'amount'
 	| 'from'
@@ -57,6 +57,10 @@ export class PaymentsService {
 		nalog: false,
 		dependants: false,
 		expires: false,
+	};
+	private approveSteps = {
+		nalog: false,
+		dependants: false,
 	};
 	private findByDateRangeSteps = {
 		from: false,
@@ -432,24 +436,42 @@ ${this.formatPayment(payment)}`,
 					inline_keyboard: getYesNoKeyboard(VPNUserCommand.ApprovePayment),
 				},
 			});
-
+			setActiveStep('dependants', this.approveSteps);
 			this.params.set('paymentId', payment.id);
 			this.params.set('nalog', false);
 			return;
 		}
+		if (this.approveSteps.dependants) {
+			this.params.set('nalog', context.accept);
+			await bot.sendMessage(message.chat.id, `Добавить платежи для дочерних пользователей?`, {
+				reply_markup: {
+					inline_keyboard: getYesNoKeyboard(VPNUserCommand.ApprovePayment),
+				},
+			});
+			resetSteps(this.approveSteps);
+			return;
+		}
+
+		const dependants = Boolean(context.accept);
 		const pid: string = this.params.get('paymentId');
-		const nalog: boolean = this.params.get('nalog');
-		const result: Payment = await this.client.approve(pid, nalog);
+		const nalog: boolean = Boolean(this.params.get('nalog'));
+		const result: Payment = await this.client.approve(pid);
 		if (result.status === PaymentStatus.SUCCEEDED) {
 			await bot.sendMessage(message.chat.id, `Платёж ${result.id} успешно подтверждён`);
 		} else {
 			await bot.sendMessage(message.chat.id, `Платёж ${result.id} не подтверждён`);
 		}
-		const processResult = await this.client.process(pid, { nalog });
+		const processResult: IPaymentProcessResult = await this.client.process(pid, { nalog, dependants });
 		await bot.sendMessage(
 			message.chat.id,
-			`Результат процессинга платежа: ${this.formatPaymentProcessResult(processResult)}`,
+			`Результат процессинга платежа ${result.id}
+${this.formatPaymentProcessResult(processResult)}`,
 		);
+		if (processResult.dependants.length) {
+			for (const dependantProcessed of processResult.dependants) {
+				await bot.sendMessage(message.chat.id, this.formatChildPaymentProcessResult(dependantProcessed));
+			}
+		}
 		this.params.clear();
 		globalHandler.finishCommand();
 	}
@@ -1202,8 +1224,18 @@ Amount: ${parentPayment.amount} ${parentPayment.currency}`,
 		}
 	}
 
-	private formatPaymentProcessResult(result) {
-		return JSON.stringify(result);
+	private formatPaymentProcessResult(result: IPaymentProcessResult) {
+		return `Налог добавлен: ${result.nalog}
+Пользователь active: ${result.active}
+Пользователь уведомлён: ${result.notified}
+Подписка обновлена: ${result.renewed}
+		`;
+	}
+
+	private formatChildPaymentProcessResult(result: IChildResult) {
+		return `Платёж создан для ${result.username} (${result.userId}): ${result.created}
+Подписка продлена: ${result.renewed}		
+Пользователь active: ${result.active}`;
 	}
 
 	private setPaymentStep(current: keyof typeof this.paymentSteps) {

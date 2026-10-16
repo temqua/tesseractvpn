@@ -275,5 +275,11 @@ export const getMonthsCountMessage = (count: number, lang: string) => {
 	if (count === 1) {
 		return lang === 'en' ? '1 month' : '1 месяц';
 	}
-	return lang === 'en' ? `${count} months` : `${count} месяцев`;
+	if (lang === 'en') {
+		return `${count} months`;
+	}
+	if (count > 1 && count < 5) {
+		return `${count} месяца`;
+	}
+	return `${count} месяцев`;
 };

@@ -5,9 +5,16 @@ export interface SearchPaymentDto {
   sheet?: string;
 }
 export interface IChildResult {
-  id: number;
+  userId: number;
   username: string;
   created?: boolean;
-  activated?: boolean;
+  active?: boolean;
   renewed?: boolean;
+}
+export interface IPaymentProcessResultDto {
+  nalog: boolean;
+  dependants: IChildResult[];
+  notified: boolean;
+  renewed: boolean;
+  active: boolean;
 }

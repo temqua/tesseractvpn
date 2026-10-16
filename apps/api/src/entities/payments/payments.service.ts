@@ -22,7 +22,7 @@ import { TelegramBotService } from '../telegram/telegram.bot.service';
 import { TelegramJobsService } from '../telegram/telegram.jobs.service';
 import { dict } from '../../dict';
 import { PaymentStatus } from '@prisma/client';
-import { IChildResult } from './payments.types';
+import { IChildResult, IPaymentProcessResultDto } from './payments.types';
 import { IPaymentProcessDto } from './dto/process-payment.dto';
 @Injectable()
 export class PaymentsService {
@@ -153,9 +153,9 @@ export class PaymentsService {
     const result = await this.repository.approve(id);
     if (result) {
       const successMessage = `Платёж ${payment.id} количеством ${payment.amount} рублей на ${payment.monthsCount} месяцев был успешно подтверждён для пользователя ${payment.user.username}.
-    Новая дата истечения срока ${payment.expiresOn ? formatDate(payment.expiresOn) : 'null'}.`;
+Новая дата истечения срока ${payment.expiresOn ? formatDate(payment.expiresOn) : 'null'}.`;
       this.logger.log(successMessage);
-      this.telegramJobsService.send(successMessage);
+      await this.telegramJobsService.send(successMessage);
       this.telegramJobsService.send(
         `ID платежа: \`${payment.id.replace(/[-.*#_]/g, (match) => `\\${match}`)}\``,
         {
@@ -166,7 +166,10 @@ export class PaymentsService {
     return result;
   }
 
-  async process(id: string, params: IPaymentProcessDto) {
+  async process(
+    id: string,
+    params: IPaymentProcessDto,
+  ): Promise<IPaymentProcessResultDto> {
     const payment = await this.repository.findOne(id);
 
     if (!payment) {
@@ -179,16 +182,21 @@ export class PaymentsService {
     let nalog = false;
     let notified = false;
     let renewed = false;
-    let activated = false;
+    let active = payment.user.active;
+    const isLocal = env.APP_ENV === 'local';
     if (!payment.user.active) {
       try {
         const result = await this.usersService.update(payment.user.id, {
           active: true,
         });
-        activated = result.active;
+        active = result.active;
         if (!result) {
           this.telegramJobsService.send(
             `Ошибка при активации юзера ${payment.user.username}. Не вернулся результат из this.usersService.update`,
+          );
+        } else if (!result.active) {
+          this.telegramJobsService.send(
+            `Ошибка при активации юзера ${payment.user.username}. Вернулся result.active false`,
           );
         }
       } catch (err) {
@@ -200,24 +208,17 @@ export class PaymentsService {
 
     if (payment.user.telegramId) {
       try {
-        this.telegramBotService.send(dict.payment_processed.ru, {
-          chat_id: Number(payment.user.telegramId),
-        });
-        notified = true;
+        notified = await this.telegramBotService.send(
+          dict.payment_processed[payment.user.languageCode || 'ru'],
+          {
+            chat_id: Number(payment.user.telegramId),
+          },
+        );
       } catch (err) {
         this.logger.error(`${err}`);
       }
     }
-    if (env.APP_ENV === 'local') {
-      return {
-        nalog,
-        dependants,
-        notified,
-        renewed,
-        activated,
-      };
-    }
-    if (payment.user.rwUUID) {
+    if (payment.user.rwUUID && !isLocal) {
       try {
         const result = await this.remnawaveService.updateUser({
           uuid: payment.user.rwUUID,
@@ -233,7 +234,7 @@ export class PaymentsService {
         this.telegramJobsService.send(ms);
       }
     }
-    if (params.nalog) {
+    if (params.nalog && !isLocal) {
       nalog = await this.addPaymentNalog(
         payment.id,
         payment?.user.username,
@@ -243,8 +244,11 @@ export class PaymentsService {
     if (params.dependants) {
       for (const dep of payment.user.dependants.filter((u) => u.active)) {
         const current: IChildResult = {
-          id: dep.id,
+          userId: dep.id,
           username: dep.username,
+          active: dep.active,
+          renewed: false,
+          created: false,
         };
         const childResult = await this.create({
           userId: dep.id,
@@ -255,18 +259,19 @@ export class PaymentsService {
           parentPaymentId: payment.id,
           status: PaymentStatus.SUCCEEDED,
         });
-        current.created = Boolean(childResult);
-        dependants.push(current);
-        if (!childResult) {
+        current.created = Boolean(childResult.id);
+
+        if (!childResult.id) {
           const errMessage = `По непредвиденным обстоятельствам платеж для дочернего пользователя ${dep.username} не был создан`;
           this.logger.error(errMessage);
           this.telegramJobsService.send(errMessage);
+          dependants.push(current);
           continue;
         }
         const successMessage = `Платёж на ${payment.monthsCount} месяцев был успешно обработан для пользователя ${dep.username} (${dep.id}) дочернего от ${payment.user.username} (${payment.user.id}). 
 Новая дата истечения срока ${formatDate(payment.expiresOn as Date)}`;
         this.logger.log(successMessage);
-        this.telegramJobsService.send(successMessage);
+        await this.telegramJobsService.send(successMessage);
         this.telegramJobsService.send(
           `ID платежа: \`${childResult.id.replace(/[-.*#_]/g, (match) => `\\${match}`)}\``,
           {
@@ -278,7 +283,7 @@ export class PaymentsService {
             const childUpdateResult = await this.usersService.update(dep.id, {
               active: true,
             });
-            current.activated = Boolean(childUpdateResult);
+            current.active = Boolean(childUpdateResult.active);
           } catch (err) {
             this.telegramJobsService.send(
               `Ошибка при активации юзера ${childResult.user.username} ${err}`,
@@ -286,13 +291,14 @@ export class PaymentsService {
           }
         }
 
-        if (dep.rwUUID) {
+        if (dep.rwUUID && !isLocal) {
           try {
-            await this.remnawaveService.updateUser({
+            const newDate = addDays(childResult.expiresOn as Date, 1);
+            const result = await this.remnawaveService.updateUser({
               uuid: dep.rwUUID,
-              expireAt: addDays(childResult.expiresOn as Date, 1).toISOString(),
+              expireAt: newDate.toISOString(),
             });
-            current.renewed = true;
+            current.renewed = result.response.expireAt == newDate.toISOString();
           } catch (err) {
             current.renewed = false;
             const ms = `Request to remnawave failed ${err}`;
@@ -300,13 +306,14 @@ export class PaymentsService {
             this.telegramJobsService.send(ms);
           }
         }
+        dependants.push(current);
       }
     }
     return {
       nalog,
-      activated,
+      active,
       dependants,
-      notify: notified,
+      notified,
       renewed,
     };
   }
