@@ -8,7 +8,10 @@ export class TelegramJobsService {
   private readonly logger = new Logger(TelegramJobsService.name);
   private readonly client = new TelegramClient(env.JOBS_BOT_TOKEN);
   private readonly chatId = env.TG_NOTIFICATIONS_CHAT_ID;
-  async send(text: string, params: SendMessageParams = {}): Promise<void> {
+  async sendMessage(
+    text: string,
+    params: SendMessageParams = {},
+  ): Promise<void> {
     try {
       const sendMessageBody: SendMessageBody = {
         chat_id: this.chatId,

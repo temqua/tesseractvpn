@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { differenceInDays } from 'date-fns';
-import { TelegramJobsService } from 'src/entities/telegram/telegram.jobs.service';
+import { TelegramJobsService } from '../../../entities/telegram/telegram.jobs.service';
 import { dict } from '../../../dict';
 import { TelegramBotService } from '../../../entities/telegram/telegram.bot.service';
 import { DeliveredMessagesService } from '../../../entities/users/delivered-messages/delivered-messages.service';
@@ -42,7 +42,7 @@ export class NotifyUnpaidJob implements Job {
           const lang = user.languageCode ?? 'ru';
           const lastPaymentExpiresOn = user.payments[0].expiresOn;
           if (lastPaymentExpiresOn == null) {
-            this.telegramJobsService.send(
+            this.telegramJobsService.sendMessage(
               `Для пользователя ${user.id} ${user.username} нет даты последнего платежа ${user.payments[0].id}`,
             );
             continue;
@@ -52,7 +52,7 @@ export class NotifyUnpaidJob implements Job {
             diff <= 0
               ? dict.expired[lang](false)
               : dict.expiresAfter[lang](diff, false);
-          const sent = await this.telegramBotService.send(msg, {
+          const sent = await this.telegramBotService.sendMessage(msg, {
             chat_id: user.telegramId,
           });
           if (sent) {
@@ -62,11 +62,11 @@ export class NotifyUnpaidJob implements Job {
                 message: msg,
               },
             );
-            this.telegramJobsService.send(
+            this.telegramJobsService.sendMessage(
               `Сообщение ${delivery.id} "${msg}" доставлено пользователю ${user.telegramId} ${user.username}`,
             );
           } else {
-            this.telegramJobsService.send(
+            this.telegramJobsService.sendMessage(
               `Сообщение "${msg}" не доставлено пользователю ${user.telegramId} ${user.username}`,
             );
           }
@@ -84,7 +84,7 @@ export class NotifyUnpaidJob implements Job {
             diff >= this.TRIAL_PERIOD
               ? dict.expired[lang](true)
               : dict.expiresAfter[lang](this.TRIAL_PERIOD - diff, true);
-          const sent = await this.telegramBotService.send(msg, {
+          const sent = await this.telegramBotService.sendMessage(msg, {
             chat_id: user.telegramId,
           });
           if (sent) {
@@ -94,11 +94,11 @@ export class NotifyUnpaidJob implements Job {
                 message: msg,
               },
             );
-            this.telegramJobsService.send(
+            this.telegramJobsService.sendMessage(
               `Сообщение "${delivery.id}" "${msg}" доставлено пользователю ${user.telegramId} ${user.username}`,
             );
           } else {
-            this.telegramJobsService.send(
+            this.telegramJobsService.sendMessage(
               `Сообщение "${msg}" не доставлено пользователю ${user.telegramId} ${user.username}`,
             );
           }

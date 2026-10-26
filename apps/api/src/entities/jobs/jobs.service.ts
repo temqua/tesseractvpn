@@ -2,9 +2,13 @@ import { Injectable, Logger, NotFoundException, Type } from '@nestjs/common';
 import { DeactivateUnpaidJob } from './deactivate_unpaid';
 import { Job } from './jobs.definitions';
 import { ModuleRef } from '@nestjs/core';
+import { ShowUnpaidJob } from './show_unpaid';
+import { NotifyUnpaidJob } from './notify_unpaid';
 
 export enum TesseractJob {
   DeactiveUnpaid = 'deactivate_unpaid',
+  ShowUnpaid = 'show_unpaid',
+  NotifyUnpaid = 'notify_unpaid',
 }
 
 @Injectable()
@@ -13,6 +17,8 @@ export class JobsService {
 
   private jobClasses: Record<TesseractJob, Type<Job>> = {
     deactivate_unpaid: DeactivateUnpaidJob,
+    show_unpaid: ShowUnpaidJob,
+    notify_unpaid: NotifyUnpaidJob,
   };
 
   constructor(private readonly moduleRef: ModuleRef) {}

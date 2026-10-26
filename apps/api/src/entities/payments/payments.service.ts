@@ -155,8 +155,8 @@ export class PaymentsService {
       const successMessage = `Платёж ${payment.id} количеством ${payment.amount} рублей на ${payment.monthsCount} месяцев был успешно подтверждён для пользователя ${payment.user.username}.
 Новая дата истечения срока ${payment.expiresOn ? formatDate(payment.expiresOn) : 'null'}.`;
       this.logger.log(successMessage);
-      await this.telegramJobsService.send(successMessage);
-      this.telegramJobsService.send(
+      await this.telegramJobsService.sendMessage(successMessage);
+      this.telegramJobsService.sendMessage(
         `ID платежа: \`${payment.id.replace(/[-.*#_]/g, (match) => `\\${match}`)}\``,
         {
           parse_mode: 'MarkdownV2',
@@ -191,16 +191,16 @@ export class PaymentsService {
         });
         active = result.active;
         if (!result) {
-          this.telegramJobsService.send(
+          this.telegramJobsService.sendMessage(
             `Ошибка при активации юзера ${payment.user.username}. Не вернулся результат из this.usersService.update`,
           );
         } else if (!result.active) {
-          this.telegramJobsService.send(
+          this.telegramJobsService.sendMessage(
             `Ошибка при активации юзера ${payment.user.username}. Вернулся result.active false`,
           );
         }
       } catch (err) {
-        this.telegramJobsService.send(
+        this.telegramJobsService.sendMessage(
           `Ошибка при активации юзера ${payment.user.username} ${err}`,
         );
       }
@@ -209,7 +209,7 @@ export class PaymentsService {
     if (payment.user.telegramId) {
       try {
         const lang = payment.user.languageCode || 'ru';
-        notified = await this.telegramBotService.send(
+        notified = await this.telegramBotService.sendMessage(
           dict.payment_processed[lang](payment.amount),
           {
             chat_id: Number(payment.user.telegramId),
@@ -232,7 +232,7 @@ export class PaymentsService {
       } catch (err) {
         const ms = `Request to remnawave failed ${err}`;
         this.logger.error(ms);
-        this.telegramJobsService.send(ms);
+        this.telegramJobsService.sendMessage(ms);
       }
     }
     if (params.nalog && !isLocal) {
@@ -265,15 +265,15 @@ export class PaymentsService {
         if (!childResult.id) {
           const errMessage = `По непредвиденным обстоятельствам платеж для дочернего пользователя ${dep.username} не был создан`;
           this.logger.error(errMessage);
-          this.telegramJobsService.send(errMessage);
+          this.telegramJobsService.sendMessage(errMessage);
           dependants.push(current);
           continue;
         }
         const successMessage = `Платёж на ${payment.monthsCount} месяцев был успешно обработан для пользователя ${dep.username} (${dep.id}) дочернего от ${payment.user.username} (${payment.user.id}). 
 Новая дата истечения срока ${formatDate(payment.expiresOn as Date)}`;
         this.logger.log(successMessage);
-        await this.telegramJobsService.send(successMessage);
-        this.telegramJobsService.send(
+        await this.telegramJobsService.sendMessage(successMessage);
+        this.telegramJobsService.sendMessage(
           `ID платежа: \`${childResult.id.replace(/[-.*#_]/g, (match) => `\\${match}`)}\``,
           {
             parse_mode: 'MarkdownV2',
@@ -286,7 +286,7 @@ export class PaymentsService {
             });
             current.active = Boolean(childUpdateResult.active);
           } catch (err) {
-            this.telegramJobsService.send(
+            this.telegramJobsService.sendMessage(
               `Ошибка при активации юзера ${childResult.user.username} ${err}`,
             );
           }
@@ -304,7 +304,7 @@ export class PaymentsService {
             current.renewed = false;
             const ms = `Request to remnawave failed ${err}`;
             this.logger.error(ms);
-            this.telegramJobsService.send(ms);
+            this.telegramJobsService.sendMessage(ms);
           }
         }
         dependants.push(current);
@@ -327,17 +327,17 @@ export class PaymentsService {
       if (!paymentId) {
         const errMessage = `Ошибка! При добавлении налога за пользователя ${username} не получен ID операции`;
         this.logger.error(errMessage);
-        this.telegramJobsService.send(errMessage);
+        this.telegramJobsService.sendMessage(errMessage);
       } else {
         const successMessage = `Налог успешно добавлен за пользователя ${username}`;
         this.logger.log(successMessage);
-        this.telegramJobsService.send(successMessage);
+        this.telegramJobsService.sendMessage(successMessage);
         success = true;
       }
     } catch (err) {
       const errMessage = `Ошибка при добавлении налога для пользователя ${username}: ${err}`;
       this.logger.error(errMessage);
-      this.telegramJobsService.send(errMessage);
+      this.telegramJobsService.sendMessage(errMessage);
     }
     return success;
   }

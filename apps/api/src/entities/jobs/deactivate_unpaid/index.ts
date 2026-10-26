@@ -82,12 +82,12 @@ export class DeactivateUnpaidJob implements Job {
     for (const user of updated) {
       const deactivatedMsg = `User ${user.username} has been deactivated`;
       this.logger.log(deactivatedMsg);
-      this.telegramService.send(deactivatedMsg);
+      this.telegramService.sendMessage(deactivatedMsg);
     }
     for (const user of deactivatedChildren) {
       const deactivatedMsg = `User ${user.username} has been deactivated`;
       this.logger.log(deactivatedMsg);
-      this.telegramService.send(deactivatedMsg);
+      this.telegramService.sendMessage(deactivatedMsg);
     }
     for (const user of usersWithKeys) {
       for (const key of user.servers) {
@@ -102,11 +102,11 @@ export class DeactivateUnpaidJob implements Job {
             if (response.ok) {
               const okMessage = `${result}: ${key.protocol} key ${key.username} on server ${key.server.url} port ${this.portMap[key.protocol]} for user ${user.username} has been successfully deleted ${response.status} ${response.statusText}`;
               this.logger.log(okMessage);
-              this.telegramService.send(okMessage);
+              this.telegramService.sendMessage(okMessage);
             } else {
               const errMessage = `${key.protocol} key ${key.username} on ${key.server.url} for user ${user.username} deletion failed. Response: ${result}. Status: ${response.status} ${response.statusText}`;
               this.logger.error(errMessage);
-              this.telegramService.send(errMessage);
+              this.telegramService.sendMessage(errMessage);
             }
           }
           await this.databaseService.client.serversUsers.delete({
@@ -121,7 +121,7 @@ export class DeactivateUnpaidJob implements Job {
         }
       }
     }
-    this.telegramService.send('DeactivateUnpaidJob executed');
+    this.telegramService.sendMessage('DeactivateUnpaidJob executed');
     this.logger.log('DeactivateUnpaidJob executed');
   }
 

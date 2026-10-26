@@ -13,5 +13,6 @@ import { DeliveredMessagesService } from './delivered-messages.service';
     DeliveredMessagesRepository,
     UserExistsPipe,
   ],
+  exports: [DeliveredMessagesService],
 })
 export class DeliveredMessagesModule {}

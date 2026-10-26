@@ -15,23 +15,23 @@ async function createAgenda() {
 
 async function registerJobs() {
 	const agenda = await createAgenda();
-	agenda.define('show-unpaid', () => {
-		globalHandler.execute(
-			{
-				scope: CommandScope.Users,
-				context: {
-					[CmdCode.Command]: VPNUserCommand.ShowUnpaid,
-				},
-			},
-			{
-				message: {
-					chat: {
-						id: env.ADMIN_USER_ID,
-					},
-				},
-			} as TelegramBot.CallbackQuery,
-		);
-	});
+	// agenda.define('show-unpaid', () => {
+	// 	globalHandler.execute(
+	// 		{
+	// 			scope: CommandScope.Users,
+	// 			context: {
+	// 				[CmdCode.Command]: VPNUserCommand.ShowUnpaid,
+	// 			},
+	// 		},
+	// 		{
+	// 			message: {
+	// 				chat: {
+	// 					id: env.ADMIN_USER_ID,
+	// 				},
+	// 			},
+	// 		} as TelegramBot.CallbackQuery,
+	// 	);
+	// });
 
 	agenda.define('notify-unpaid', () => {
 		globalHandler.execute(
@@ -48,7 +48,7 @@ async function registerJobs() {
 	});
 
 	await agenda.start();
-	await agenda.every('1 day', 'show-unpaid');
+	// await agenda.every('1 day', 'show-unpaid');
 	await agenda.every('1 day', 'notify-unpaid');
 }
 
