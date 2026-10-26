@@ -43,6 +43,7 @@ export type Payment = {
 	planId: number | null;
 	plan: Plan;
 	status: PaymentStatus;
+	user: VPNUser;
 };
 
 export interface IPaymentProcessDto {

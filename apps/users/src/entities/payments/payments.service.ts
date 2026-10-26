@@ -436,7 +436,9 @@ ${this.formatPayment(payment)}`,
 					inline_keyboard: getYesNoKeyboard(VPNUserCommand.ApprovePayment),
 				},
 			});
-			setActiveStep('dependants', this.approveSteps);
+			if (payment.user.dependants.length) {
+				setActiveStep('dependants', this.approveSteps);
+			}
 			this.params.set('paymentId', payment.id);
 			this.params.set('nalog', false);
 			return;
@@ -452,7 +454,7 @@ ${this.formatPayment(payment)}`,
 			return;
 		}
 
-		const dependants = Boolean(context.accept);
+		const dependants = Boolean(context.accept || false);
 		const pid: string = this.params.get('paymentId');
 		const nalog: boolean = Boolean(this.params.get('nalog'));
 		const result: Payment = await this.client.approve(pid);
@@ -874,119 +876,133 @@ ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 			await bot.sendMessage(chatId, `ID платежа: \`${result.id.replace(/[-.*#_]/g, match => `\\${match}`)}\``, {
 				parse_mode: 'MarkdownV2',
 			});
-			if (user.telegramId) {
-				try {
-					await bot.sendMessage(user.telegramId, dict.payment_processed['ru']);
-				} catch (err) {
-					logger.error(`${err}`);
+			const processResult = await this.client.process(result.id, {
+				nalog,
+				dependants: addDependants,
+			});
+			await bot.sendMessage(
+				chatId,
+				`Результат процессинга платежа ${result.id}
+${this.formatPaymentProcessResult(processResult)}`,
+			);
+			if (processResult.dependants.length) {
+				for (const dependantProcessed of processResult.dependants) {
+					await bot.sendMessage(chatId, this.formatChildPaymentProcessResult(dependantProcessed));
 				}
 			}
-			if (!user.active) {
-				this.usersClient
-					.update(user.id, {
-						active: true,
-					})
-					.catch(err => {
-						bot.sendMessage(env.ADMIN_USER_ID, `Ошибка при активации юзера ${user.username} ${err}`);
-					});
-			}
+			// 			if (user.telegramId) {
+			// 				try {
+			// 					await bot.sendMessage(user.telegramId, dict.payment_processed['ru']);
+			// 				} catch (err) {
+			// 					logger.error(`${err}`);
+			// 				}
+			// 			}
+			// 			if (!user.active) {
+			// 				this.usersClient
+			// 					.update(user.id, {
+			// 						active: true,
+			// 					})
+			// 					.catch(err => {
+			// 						bot.sendMessage(env.ADMIN_USER_ID, `Ошибка при активации юзера ${user.username} ${err}`);
+			// 					});
+			// 			}
 
-			if (nalog) {
-				await this.addPaymentNalog(chatId, user.username, amount, result.id);
-			}
-			if (addDependants) {
-				for (const dep of user.dependants.filter(u => u.active)) {
-					const childResult = await this.client.create({
-						userId: dep.id,
-						amount: 0,
-						monthsCount: Number(monthsCount),
-						expiresOn: expiresOn.toISOString(),
-						planId: plan?.id,
-						parentPaymentId: result.id,
-						status: PaymentStatus.SUCCEEDED,
-					});
-					if (childResult) {
-						const successMessage = `Платёж на ${monthsCount} месяцев был успешно обработан для пользователя ${dep.username} (${dep.id}) дочернего от ${user.username} (${user.id}). 
-Новая дата истечения срока ${formatDate(expiresOn)}`;
-						logger.success(`${basename(__filename)}: ${successMessage}`);
-						await bot.sendMessage(chatId, successMessage);
-						await bot.sendMessage(
-							chatId,
-							`ID платежа: \`${result.id.replace(/[-.*#_]/g, match => `\\${match}`)}\``,
-							{
-								parse_mode: 'MarkdownV2',
-							},
-						);
-						if (!dep.active) {
-							this.usersClient
-								.update(dep.id, {
-									active: true,
-								})
-								.catch(err => {
-									bot.sendMessage(
-										env.ADMIN_USER_ID,
-										`Ошибка при активации юзера ${user.username} ${err}`,
-									);
-								});
-						}
-						if (env.BOT_ENV !== 'local') {
-							// if (dep.pasarguardId) {
-							// 	try {
-							// 		await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
-							// 			expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
-							// 		});
-							// 	} catch (err) {
-							// 		const ms = `Request to pasarguard failed ${err}`;
-							// 		logger.error(ms);
-							// 		await bot.sendMessage(chatId, ms);
-							// 	}
-							// }
+			// 			if (nalog) {
+			// 				await this.addPaymentNalog(chatId, user.username, amount, result.id);
+			// 			}
+			// 			if (addDependants) {
+			// 				for (const dep of user.dependants.filter(u => u.active)) {
+			// 					const childResult = await this.client.create({
+			// 						userId: dep.id,
+			// 						amount: 0,
+			// 						monthsCount: Number(monthsCount),
+			// 						expiresOn: expiresOn.toISOString(),
+			// 						planId: plan?.id,
+			// 						parentPaymentId: result.id,
+			// 						status: PaymentStatus.SUCCEEDED,
+			// 					});
+			// 					if (childResult) {
+			// 						const successMessage = `Платёж на ${monthsCount} месяцев был успешно обработан для пользователя ${dep.username} (${dep.id}) дочернего от ${user.username} (${user.id}).
+			// Новая дата истечения срока ${formatDate(expiresOn)}`;
+			// 						logger.success(`${basename(__filename)}: ${successMessage}`);
+			// 						await bot.sendMessage(chatId, successMessage);
+			// 						await bot.sendMessage(
+			// 							chatId,
+			// 							`ID платежа: \`${result.id.replace(/[-.*#_]/g, match => `\\${match}`)}\``,
+			// 							{
+			// 								parse_mode: 'MarkdownV2',
+			// 							},
+			// 						);
+			// 						if (!dep.active) {
+			// 							this.usersClient
+			// 								.update(dep.id, {
+			// 									active: true,
+			// 								})
+			// 								.catch(err => {
+			// 									bot.sendMessage(
+			// 										env.ADMIN_USER_ID,
+			// 										`Ошибка при активации юзера ${user.username} ${err}`,
+			// 									);
+			// 								});
+			// 						}
+			// 						if (env.BOT_ENV !== 'local') {
+			// 							// if (dep.pasarguardId) {
+			// 							// 	try {
+			// 							// 		await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
+			// 							// 			expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
+			// 							// 		});
+			// 							// 	} catch (err) {
+			// 							// 		const ms = `Request to pasarguard failed ${err}`;
+			// 							// 		logger.error(ms);
+			// 							// 		await bot.sendMessage(chatId, ms);
+			// 							// 	}
+			// 							// }
 
-							if (dep.rwUUID) {
-								try {
-									await this.rwService.updateUser({
-										uuid: dep.rwUUID,
-										expireAt: addDays(new Date(childResult.expiresOn), 1).toISOString(),
-									});
-								} catch (err) {
-									const ms = `Request to remnawave failed ${err}`;
-									logger.error(ms);
-									await bot.sendMessage(chatId, ms);
-								}
-							}
-						}
-					} else {
-						const errMessage = `По непредвиденным обстоятельствам платеж для дочернего пользователя ${dep.username} не был создан`;
-						logger.error(`[${basename(__filename)}]: ${errMessage}`);
-						await bot.sendMessage(chatId, errMessage);
-					}
-				}
-			}
-			if (env.BOT_ENV !== 'local') {
-				// if (user.pasarguardId) {
-				// 	try {
-				// 		await this.pasarguardService.updateUser(`${user.username}_${user.id}`, {
-				// 			expire: addDays(new Date(result.expiresOn), 1).toISOString(),
-				// 		});
-				// 	} catch (err) {
-				// 		const ms = `Request to pasarguard failed ${err}`;
-				// 		logger.error(ms);
-				// 		await bot.sendMessage(chatId, ms);
-				// 	}
-				// }
-				if (user.rwUUID) {
-					try {
-						await this.rwService.updateUser({
-							uuid: user.rwUUID,
-							expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
-						});
-					} catch (err) {
-						const ms = `Request to remnawave failed ${err}`;
-						logger.error(ms);
-						await bot.sendMessage(chatId, ms);
-					}
-				}
-			}
+			// 							if (dep.rwUUID) {
+			// 								try {
+			// 									await this.rwService.updateUser({
+			// 										uuid: dep.rwUUID,
+			// 										expireAt: addDays(new Date(childResult.expiresOn), 1).toISOString(),
+			// 									});
+			// 								} catch (err) {
+			// 									const ms = `Request to remnawave failed ${err}`;
+			// 									logger.error(ms);
+			// 									await bot.sendMessage(chatId, ms);
+			// 								}
+			// 							}
+			// 						}
+			// 					} else {
+			// 						const errMessage = `По непредвиденным обстоятельствам платеж для дочернего пользователя ${dep.username} не был создан`;
+			// 						logger.error(`[${basename(__filename)}]: ${errMessage}`);
+			// 						await bot.sendMessage(chatId, errMessage);
+			// 					}
+			// 				}
+			// 			}
+			// 			if (env.BOT_ENV !== 'local') {
+			// 				// if (user.pasarguardId) {
+			// 				// 	try {
+			// 				// 		await this.pasarguardService.updateUser(`${user.username}_${user.id}`, {
+			// 				// 			expire: addDays(new Date(result.expiresOn), 1).toISOString(),
+			// 				// 		});
+			// 				// 	} catch (err) {
+			// 				// 		const ms = `Request to pasarguard failed ${err}`;
+			// 				// 		logger.error(ms);
+			// 				// 		await bot.sendMessage(chatId, ms);
+			// 				// 	}
+			// 				// }
+			// 				if (user.rwUUID) {
+			// 					try {
+			// 						await this.rwService.updateUser({
+			// 							uuid: user.rwUUID,
+			// 							expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
+			// 						});
+			// 					} catch (err) {
+			// 						const ms = `Request to remnawave failed ${err}`;
+			// 						logger.error(ms);
+			// 						await bot.sendMessage(chatId, ms);
+			// 					}
+			// 				}
+			// 			}
 		} catch (err) {
 			const errMessage = `Ошибка при обработке платежа для пользователя ${user.username} ${err}`;
 			logger.error(`[${basename(__filename)}]: ${errMessage}`);

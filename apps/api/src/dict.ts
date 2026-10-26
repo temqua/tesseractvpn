@@ -230,8 +230,10 @@ Your referral link: https://t.me/tesseract_users_bot?start=${refId}`,
     ru: 'Вы были зарегистрированы в системе',
   },
   payment_processed: {
-    en: 'Your payment has been successfully processed',
-    ru: 'Ваш платёж был успешно обработан',
+    en: (amount: number) =>
+      `Your payment has been successfully processed. Payment amount: ${amount}`,
+    ru: (amount: number) =>
+      `Ваш платёж был успешно обработан. Сумма платежа: ${amount}`,
   },
   referral_payment_processed: {
     en: "You've successfully earned a bonus month for referring a user",

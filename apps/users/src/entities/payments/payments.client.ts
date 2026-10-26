@@ -1,6 +1,13 @@
 import client from '../../api-client';
 import { ListResponse } from '../../definitions';
-import { CreatePaymentDto, IPaymentProcessDto, Payment, PaymentForSheet, PaymentSumDto } from './payments.types';
+import {
+	CreatePaymentDto,
+	IPaymentProcessDto,
+	IPaymentProcessResult,
+	Payment,
+	PaymentForSheet,
+	PaymentSumDto,
+} from './payments.types';
 
 export class PaymentsClient {
 	async getAll(): Promise<Payment[]> {
@@ -81,7 +88,10 @@ export class PaymentsClient {
 		return await client.post(`/admin/payments/approve/${id}`);
 	}
 
-	async process(id: string, { nalog = false, dependants = false }: IPaymentProcessDto) {
+	async process(
+		id: string,
+		{ nalog = false, dependants = false }: IPaymentProcessDto,
+	): Promise<IPaymentProcessResult> {
 		return await client.post(`/admin/payments/process/${id}`, {
 			body: JSON.stringify({
 				nalog: nalog,

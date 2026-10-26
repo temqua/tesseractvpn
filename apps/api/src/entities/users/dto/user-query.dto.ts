@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { BaseListDto } from '../../../dto/base-dto';
 import { OrderDirection } from '../../../enums';
 
@@ -36,20 +36,20 @@ export class UserQueryDto extends BaseListDto {
   @IsOptional()
   @IsEnum(OrderDirection)
   orderDirection?: OrderDirection;
-  @IsString()
+  @IsBoolean()
   @IsOptional()
   active?: string;
-  @IsString()
+  @IsBoolean()
   @IsOptional()
   free?: string;
-  @IsString()
+  @IsBoolean()
   @IsOptional()
   muted?: string;
   @IsString()
   @IsOptional()
   @IsEnum(OrderDirection)
   paymentsOrder?: OrderDirection;
-  expiresAfterDays?: string;
+  expiresAfterDays?: number;
   trial?: string;
   @IsString()
   @IsOptional()

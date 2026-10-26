@@ -208,8 +208,9 @@ export class PaymentsService {
 
     if (payment.user.telegramId) {
       try {
+        const lang = payment.user.languageCode || 'ru';
         notified = await this.telegramBotService.send(
-          dict.payment_processed[payment.user.languageCode || 'ru'],
+          dict.payment_processed[lang](payment.amount),
           {
             chat_id: Number(payment.user.telegramId),
           },
