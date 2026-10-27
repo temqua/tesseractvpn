@@ -99,4 +99,8 @@ export class PaymentsClient {
 			}),
 		});
 	}
+
+	async checkout(id: string) {
+		return await client.post(`/admin/payments/checkout/${id}`);
+	}
 }

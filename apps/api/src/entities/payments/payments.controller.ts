@@ -72,9 +72,9 @@ export class PaymentsController {
 
   @IsPublic()
   @Post('/webhook-test')
-  hookTest(@Body() dto: IYooKassaWebHook) {
+  async hookTest(@Body() dto: IYooKassaWebHook) {
     this.logger.log(dto);
-    return JSON.stringify(dto);
+    return await this.paymentsService.handleHook(dto, true);
   }
 
   @Post('/init')
@@ -90,5 +90,10 @@ export class PaymentsController {
   @Post('/process/:id')
   async process(@Param('id') id: string, @Body() body: IPaymentProcessDto) {
     return await this.paymentsService.process(id, body);
+  }
+
+  @Post('/checkout/:id')
+  async checkout(@Param('id') id: string) {
+    return await this.paymentsService.checkout(id);
   }
 }

@@ -371,6 +371,7 @@ export class PaymentsService {
 		]);
 		const mesId = this.paymentRequestParams.get('msg_id');
 		const id = await this.init(user.id, planId);
+		// const yookassa = await this.yookassaCheckout(id);
 		bot.editMessageText(dict.payment_request[lang], {
 			reply_markup: getUserKeyboard(lang),
 			message_id: mesId,
@@ -401,6 +402,10 @@ export class PaymentsService {
 		);
 		this.paymentRequestParams.clear();
 		globalHandler.finishCommand();
+	}
+
+	async yookassaCheckout(paymentId: string) {
+		return await this.client.checkout(paymentId);
 	}
 
 	async init(userId: number, planId: number) {

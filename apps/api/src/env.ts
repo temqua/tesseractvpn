@@ -28,6 +28,10 @@ const env = cleanEnv(process.env, {
   NALOG_PASSWORD: str({ default: '' }),
   NALOG_DEVICE_ID: str({ default: '' }),
   ADMIN_TG_USER_ID: num(),
+  YOOKASSA_USERNAME: str({ default: '' }),
+  YOOKASSA_PASSWORD: str({ default: '' }),
+  YOOKASSA_TEST_USERNAME: str({ default: '' }),
+  YOOKASSA_TEST_PASSWORD: str({ default: '' }),
 });
 
 export default env;

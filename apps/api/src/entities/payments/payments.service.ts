@@ -24,6 +24,7 @@ import { dict } from '../../dict';
 import { PaymentStatus } from '@prisma/client';
 import { IChildResult, IPaymentProcessResultDto } from './payments.types';
 import { IPaymentProcessDto } from './dto/process-payment.dto';
+import { YookassaClient } from './yookassa.client';
 @Injectable()
 export class PaymentsService {
   constructor(
@@ -34,6 +35,7 @@ export class PaymentsService {
     private remnawaveService: RemnawaveService,
     private telegramJobsService: TelegramJobsService,
     private telegramBotService: TelegramBotService,
+    private yookassaClient: YookassaClient,
   ) {}
 
   private readonly logger = new Logger(PaymentsService.name);
@@ -107,8 +109,16 @@ export class PaymentsService {
     );
   }
 
-  async handleHook(dto: IYooKassaWebHook) {
+  async handleHook(dto: IYooKassaWebHook, test = false) {
     if (dto.event === WebhookEventEnum.PaymentSucceeded) {
+      const paymentId = dto.object.metadata.id;
+      const approved = await this.approve(paymentId);
+      if (approved && !test) {
+        return await this.process(paymentId, {
+          nalog: !test && env.APP_ENV === 'production',
+          dependants: true,
+        });
+      }
       // return this.jobsService.execute(TesseractJob.ApprovePayment, {
       //   addNalog: env.APP_ENV === 'production',
       // });
@@ -162,6 +172,8 @@ export class PaymentsService {
           parse_mode: 'MarkdownV2',
         },
       );
+    } else {
+      this.telegramJobsService.sendMessage(`Платёж ${id} не подтверждён!`);
     }
     return result;
   }
@@ -340,5 +352,17 @@ export class PaymentsService {
       this.telegramJobsService.sendMessage(errMessage);
     }
     return success;
+  }
+
+  async checkout(id: string) {
+    const payment = await this.findOne(id);
+    if (!payment) {
+      throw new NotFoundException(`Payment with id ${id} not found`);
+    }
+    return await this.yookassaClient.checkout(
+      payment.amount,
+      payment.id,
+      env.APP_ENV !== 'production',
+    );
   }
 }

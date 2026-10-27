@@ -69,6 +69,7 @@ model Payment {
   childPayments        Payment[]             @relation("PaymentToChildPayment")
   referralTransactions ReferralTransaction[] @relation("ReferrerTransactionsToPayment")
   status               PaymentStatus         @default(PENDING)
+  yookassaPaymentId    String?               @map(name: "yookassa_payment_id")
 
   @@map("payments")
 }
