@@ -1,18 +1,6 @@
 'use client';
-import ContentArea from '@/app/components/content-area';
-import { FieldSet } from '@/app/components/field';
-import FormField from '@/app/components/form-field';
-import { IPayment } from '@/app/lib/api/payments/definitions';
-import { useActionState, useState } from 'react';
-import { PaymentFormState } from '../lib/definitions';
-import { createAction } from '@/app/lib/actions/payments';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/app/components/input-group';
-import { isValidDate } from '@/app/lib/utils';
-import { Popover, PopoverContent, PopoverTrigger } from '@/app/components/popover';
-import { CalendarIcon } from 'lucide-react';
+import { Button } from '@/app/components/button';
 import { Calendar } from '@/app/components/calendar';
-import { formatISO } from 'date-fns';
-import { Input } from '@/app/components/input';
 import {
 	Combobox,
 	ComboboxContent,
@@ -21,7 +9,18 @@ import {
 	ComboboxItem,
 	ComboboxList,
 } from '@/app/components/combobox';
-import { Button } from '@/app/components/button';
+import ContentArea from '@/app/components/content-area';
+import { FieldSet } from '@/app/components/field';
+import FormField from '@/app/components/form-field';
+import { Input } from '@/app/components/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/app/components/popover';
+import { Select } from '@/app/components/select';
+import { createAction } from '@/app/lib/actions/payments';
+import { PaymentStatus } from '@/app/lib/enums';
+import { formatISO } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { useActionState, useState } from 'react';
+import { PaymentFormState } from '../lib/definitions';
 
 export default function NewPaymentClientSide({
 	users,
@@ -45,6 +44,7 @@ export default function NewPaymentClientSide({
 	const [planId, setPlanID] = useState<number | null>(null);
 	const [expiresOnDate, setExpiresOnDate] = useState(new Date());
 	const [isExpiresOnOpened, setExpiresOnOpened] = useState(false);
+	const [status, setStatus] = useState(PaymentStatus.PENDING);
 	return (
 		<ContentArea>
 			<form action={formAction}>
@@ -79,7 +79,11 @@ export default function NewPaymentClientSide({
 							aria-invalid={Boolean(state?.errors?.properties?.monthsCount?.errors?.length)}
 						/>
 					</FormField>
-					<FormField id="expiresOn" label="Expires on" errors={state?.errors?.properties?.expiresOn?.errors}>
+					<FormField
+						id="expiresOn"
+						label="Expires on"
+						errors={state?.errors?.properties?.expiresOn?.errors}
+					>
 						{/* <Input
 							value={expiresOn}
 							onChange={event => setExpiresOn(event.target.value)}
@@ -89,6 +93,7 @@ export default function NewPaymentClientSide({
 							placeholder="Expires On"
 							aria-invalid={Boolean(state?.errors?.properties?.expiresOn?.errors?.length)}
 						/> */}
+						<input type="hidden" name="expiresOn" value={expiresOn} />
 						<Popover open={isExpiresOnOpened} onOpenChange={setExpiresOnOpened}>
 							<PopoverTrigger
 								render={
@@ -122,6 +127,7 @@ export default function NewPaymentClientSide({
 					<FormField id="userId" label="User" errors={state?.errors?.properties?.userId?.errors}>
 						<Combobox
 							items={users}
+							name="userId"
 							value={userId ?? undefined}
 							onValueChange={v => {
 								setUserID(Number(v));
@@ -143,6 +149,7 @@ export default function NewPaymentClientSide({
 					<FormField id="planId" label="Plan" errors={state?.errors?.properties?.planId?.errors}>
 						<Combobox
 							items={plans}
+							name="planId"
 							value={planId ?? undefined}
 							onValueChange={v => {
 								setPlanID(Number(v));
@@ -161,18 +168,19 @@ export default function NewPaymentClientSide({
 							</ComboboxContent>
 						</Combobox>
 					</FormField>
-					{/* <div className="flex flex-col">
-                    <label htmlFor="planId">Plan ID</label>
-                    <Input
-                        value={planId}
-                        onChange={event => setPlanID(Number(event.target.value))}
-                        id="planId"
-                        name="planId"
-                        autoComplete="off"
-                        placeholder="Plan ID"
-                    />
-                </div>
-                {state?.errors?.properties?.planId && <p>{state.errors?.properties.planId?.errors.join()}</p>} */}
+					<FormField id="status" label="Status" errors={state?.errors?.properties?.planId?.errors}>
+						<Select
+							name="status"
+							id="status"
+							value={status}
+							onChange={event => setStatus(event.target.value as PaymentStatus)}
+						>
+							<option value=""></option>
+							<option value={PaymentStatus.CANCELLED}>{PaymentStatus.CANCELLED}</option>
+							<option value={PaymentStatus.PENDING}>{PaymentStatus.PENDING}</option>
+							<option value={PaymentStatus.SUCCEEDED}>{PaymentStatus.SUCCEEDED}</option>
+						</Select>
+					</FormField>
 					<Button type="submit">Submit</Button>
 					{state?.errors?.errors?.length ? state?.errors?.errors.join(',') : ''}
 					{state?.data?.id ? `Successfully created payment ${state?.data.id}` : ''}

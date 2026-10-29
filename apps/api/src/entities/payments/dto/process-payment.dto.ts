@@ -4,5 +4,7 @@ export class IPaymentProcessDto {
   @IsBoolean()
   dependants?: boolean;
   @IsBoolean()
-  nalog: boolean;
+  nalog?: boolean;
+  @IsBoolean()
+  referral?: boolean;
 }

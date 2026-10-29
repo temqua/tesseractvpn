@@ -1,4 +1,5 @@
-import { addDays, addMonths } from 'date-fns';
+import { randomBytes } from 'crypto';
+import { addMonths } from 'date-fns';
 import type { Message, User as TGUser } from 'node-telegram-bot-api';
 import { basename } from 'path';
 import bot from '../../bot';
@@ -43,6 +44,7 @@ export class PaymentsService {
 
 	private nalogService: NalogService = new NalogService();
 	private params = new Map<AvailableFields, unknown>();
+	private tokens = new Map<string, string>();
 	private paymentSteps = {
 		user: false,
 		amount: false,
@@ -370,7 +372,7 @@ export class PaymentsService {
 			this.plansClient.getById(planId),
 		]);
 		const mesId = this.paymentRequestParams.get('msg_id');
-		const id = await this.init(user.id, planId);
+		const { id, token } = await this.init(user.id, planId);
 		// const yookassa = await this.yookassaCheckout(id);
 		bot.editMessageText(dict.payment_request[lang], {
 			reply_markup: getUserKeyboard(lang),
@@ -381,7 +383,7 @@ export class PaymentsService {
 		this.usersClient.createAction(user.id, 'UserPay', `${dict.paid[lang]}`);
 		await bot.sendMessage(
 			env.ADMIN_USER_ID,
-			`Пользователь ${user.username} (id = ${context.id}) ${userInfo} оставил заявку на платёж в ${plan?.amount}`,
+			`Пользователь ${user.username} (id = ${context.id}) ${userInfo} оставил заявку на платёж в ${plan?.amount}. ID платежа ${id}`,
 			{
 				reply_markup: {
 					inline_keyboard: [
@@ -392,6 +394,7 @@ export class PaymentsService {
 									[CmdCode.Scope]: CommandScope.Users,
 									[CmdCode.Context]: {
 										[CmdCode.Command]: VPNUserCommand.ApprovePayment,
+										t: token,
 									},
 								}),
 							},
@@ -410,33 +413,63 @@ export class PaymentsService {
 
 	async init(userId: number, planId: number) {
 		const id = await this.client.init(userId, planId);
-		this.params.set('paymentId', id);
-		return id;
+		const token = randomBytes(4).toString('hex');
+		this.tokens.set(token, id);
+		return { id, token };
+	}
+
+	async approveManually(message: Message, start: boolean) {
+		if (start) {
+			await bot.sendMessage(message.chat.id, 'Введите ID платежа');
+			return;
+		}
+
+		const paymentId = message.text?.trim();
+		if (!paymentId) {
+			await bot.sendMessage(message.chat.id, 'Пустой ID платежа');
+			globalHandler.finishCommand();
+			return;
+		}
+
+		await this.approvePaymentById(message.chat.id, paymentId);
+		globalHandler.finishCommand();
 	}
 
 	async approvePaymentNew(message: Message, context: UsersContext, start: boolean) {
+		if (start) {
+			const paymentId = context.t ? this.tokens.get(context.t) : undefined;
+			if (!paymentId) {
+				await bot.sendMessage(message.chat.id, 'Заявка на платёж устарела');
+				globalHandler.finishCommand();
+				return;
+			}
+			await this.approvePaymentById(message.chat.id, paymentId, start, context);
+			return;
+		}
+
+		const paymentId: string = this.params.get('paymentId') as string;
+		await this.approvePaymentById(message.chat.id, paymentId, start, context);
+	}
+
+	private async approvePaymentById(chatId: number, paymentId: string, start = true, context?: UsersContext) {
 		this.log('approvePayment');
 		if (start) {
-			const paymentId: string = this.params.get('paymentId');
 			const payment = await this.client.getById(paymentId);
 			if (!payment) {
-				await bot.sendMessage(
-					message.chat.id,
-					`Ошибка при подтверждении платежа ${context.id}. Платёж не найден`,
-				);
+				await bot.sendMessage(chatId, `Ошибка при подтверждении платежа. Платёж не найден`);
 				this.params.clear();
 				globalHandler.finishCommand();
 				return;
 			}
 			await bot.sendMessage(
-				message.chat.id,
+				chatId,
 				`Найден платёж 
 ${this.formatPayment(payment)}`,
 				{
 					parse_mode: 'MarkdownV2',
 				},
 			);
-			await bot.sendMessage(message.chat.id, `Добавить налог?`, {
+			await bot.sendMessage(chatId, `Добавить налог?`, {
 				reply_markup: {
 					inline_keyboard: getYesNoKeyboard(VPNUserCommand.ApprovePayment),
 				},
@@ -449,8 +482,8 @@ ${this.formatPayment(payment)}`,
 			return;
 		}
 		if (this.approveSteps.dependants) {
-			this.params.set('nalog', context.accept);
-			await bot.sendMessage(message.chat.id, `Добавить платежи для дочерних пользователей?`, {
+			this.params.set('nalog', context?.accept);
+			await bot.sendMessage(chatId, `Добавить платежи для дочерних пользователей?`, {
 				reply_markup: {
 					inline_keyboard: getYesNoKeyboard(VPNUserCommand.ApprovePayment),
 				},
@@ -459,24 +492,26 @@ ${this.formatPayment(payment)}`,
 			return;
 		}
 
-		const dependants = Boolean(context.accept || false);
-		const pid: string = this.params.get('paymentId');
+		const dependants = Boolean(context?.accept || false);
 		const nalog: boolean = Boolean(this.params.get('nalog'));
-		const result: Payment = await this.client.approve(pid);
+		const result: Payment = await this.client.approve(paymentId);
 		if (result.status === PaymentStatus.SUCCEEDED) {
-			await bot.sendMessage(message.chat.id, `Платёж ${result.id} успешно подтверждён`);
+			await bot.sendMessage(chatId, `Платёж ${result.id} успешно подтверждён`);
 		} else {
-			await bot.sendMessage(message.chat.id, `Платёж ${result.id} не подтверждён`);
+			await bot.sendMessage(chatId, `Платёж ${result.id} не подтверждён`);
 		}
-		const processResult: IPaymentProcessResult = await this.client.process(pid, { nalog, dependants });
+		const processResult: IPaymentProcessResult = await this.client.process(paymentId, {
+			nalog,
+			dependants,
+		});
 		await bot.sendMessage(
-			message.chat.id,
+			chatId,
 			`Результат процессинга платежа ${result.id}
 ${this.formatPaymentProcessResult(processResult)}`,
 		);
 		if (processResult.dependants.length) {
 			for (const dependantProcessed of processResult.dependants) {
-				await bot.sendMessage(message.chat.id, this.formatChildPaymentProcessResult(dependantProcessed));
+				await bot.sendMessage(chatId, this.formatChildPaymentProcessResult(dependantProcessed));
 			}
 		}
 		this.params.clear();
@@ -787,6 +822,7 @@ UUID: \`${p.id}\``;
 Количество месяцев: ${p.monthsCount}
 Оплачено до: ${p.expiresOn ? formatDate(p.expiresOn).replace(/[-.*#_]/g, match => `\\${match}`) : 'unset'}
 Сумма: ${p.amount} ${p.currency}
+Статус: ${p.status}
 ${p.parentPaymentId ? 'Parent payment ID: ' + p.parentPaymentId : ''}`;
 	}
 	private async calculateMonthsCount(chatId: number, user: VPNUser) {
@@ -1066,106 +1102,122 @@ ${this.formatPaymentProcessResult(processResult)}`,
 			await bot.sendMessage(chatId, `ID транзакции: \`${rt.id.replace(/[-.*#_]/g, match => `\\${match}`)}\``, {
 				parse_mode: 'MarkdownV2',
 			});
-			if (referrer.telegramId) {
-				try {
-					await bot.sendMessage(referrer.telegramId, dict.referral_payment_processed['ru']);
-				} catch (err) {
-					logger.error(`${err}`);
-				}
-			}
-			if (addDependants) {
-				for (const dep of referrer.dependants.filter(u => u.active)) {
-					const childResult = await this.client.create({
-						userId: dep.id,
-						amount: 0,
-						monthsCount: Number(monthsCount),
-						expiresOn: expiresOn.toISOString(),
-						parentPaymentId: result.id,
-						status: PaymentStatus.SUCCEEDED,
-					});
-					if (childResult) {
-						const successMessage = `Реферальный платёж на ${monthsCount} месяцев был успешно обработан для пользователя ${dep.username} (${dep.id}) дочернего от ${referrer.username} (${referrer.id}). 
-Новая дата истечения срока ${formatDate(expiresOn)}`;
-						logger.success(`${basename(__filename)}: ${successMessage}`);
-						await bot.sendMessage(chatId, successMessage);
-						await bot.sendMessage(
-							chatId,
-							`ID платежа: \`${result.id.replace(/[-.*#_]/g, match => `\\${match}`)}\``,
-							{
-								parse_mode: 'MarkdownV2',
-							},
-						);
-						if (!dep.active) {
-							this.usersClient
-								.update(dep.id, {
-									active: true,
-								})
-								.catch(err => {
-									bot.sendMessage(
-										env.ADMIN_USER_ID,
-										`Ошибка при активации юзера ${referrer.username} ${err}`,
-									);
-								});
-						}
-						if (env.BOT_ENV !== 'local') {
-							// if (dep.pasarguardId) {
-							// 	try {
-							// 		await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
-							// 			expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
-							// 		});
-							// 	} catch (err) {
-							// 		const ms = `Request to pasarguard failed ${err}`;
-							// 		logger.error(ms);
-							// 		await bot.sendMessage(chatId, ms);
-							// 	}
-							// }
 
-							if (dep.rwUUID) {
-								try {
-									await this.rwService.updateUser({
-										uuid: dep.rwUUID,
-										expireAt: addDays(new Date(childResult.expiresOn), 1).toISOString(),
-									});
-								} catch (err) {
-									const ms = `Request to remnawave failed ${err}`;
-									logger.error(ms);
-									await bot.sendMessage(chatId, ms);
-								}
-							}
-						}
-					} else {
-						const errMessage = `По непредвиденным обстоятельствам реферальный платеж для дочернего пользователя ${dep.username} не был создан`;
-						logger.error(`[${basename(__filename)}]: ${errMessage}`);
-						await bot.sendMessage(chatId, errMessage);
-					}
+			const processResult = await this.client.process(result.id, {
+				nalog: false,
+				dependants: addDependants,
+				referral: true,
+			});
+			await bot.sendMessage(
+				chatId,
+				`Результат процессинга платежа ${result.id}
+${this.formatPaymentProcessResult(processResult)}`,
+			);
+			if (processResult.dependants.length) {
+				for (const dependantProcessed of processResult.dependants) {
+					await bot.sendMessage(chatId, this.formatChildPaymentProcessResult(dependantProcessed));
 				}
 			}
+			// 			if (referrer.telegramId) {
+			// 				try {
+			// 					await bot.sendMessage(referrer.telegramId, dict.referral_payment_processed['ru']);
+			// 				} catch (err) {
+			// 					logger.error(`${err}`);
+			// 				}
+			// 			}
+			// 			if (addDependants) {
+			// 				for (const dep of referrer.dependants.filter(u => u.active)) {
+			// 					const childResult = await this.client.create({
+			// 						userId: dep.id,
+			// 						amount: 0,
+			// 						monthsCount: Number(monthsCount),
+			// 						expiresOn: expiresOn.toISOString(),
+			// 						parentPaymentId: result.id,
+			// 						status: PaymentStatus.SUCCEEDED,
+			// 					});
+			// 					if (childResult) {
+			// 						const successMessage = `Реферальный платёж на ${monthsCount} месяцев был успешно обработан для пользователя ${dep.username} (${dep.id}) дочернего от ${referrer.username} (${referrer.id}).
+			// Новая дата истечения срока ${formatDate(expiresOn)}`;
+			// 						logger.success(`${basename(__filename)}: ${successMessage}`);
+			// 						await bot.sendMessage(chatId, successMessage);
+			// 						await bot.sendMessage(
+			// 							chatId,
+			// 							`ID платежа: \`${result.id.replace(/[-.*#_]/g, match => `\\${match}`)}\``,
+			// 							{
+			// 								parse_mode: 'MarkdownV2',
+			// 							},
+			// 						);
+			// 						if (!dep.active) {
+			// 							this.usersClient
+			// 								.update(dep.id, {
+			// 									active: true,
+			// 								})
+			// 								.catch(err => {
+			// 									bot.sendMessage(
+			// 										env.ADMIN_USER_ID,
+			// 										`Ошибка при активации юзера ${referrer.username} ${err}`,
+			// 									);
+			// 								});
+			// 						}
+			// 						if (env.BOT_ENV !== 'local') {
+			// 							// if (dep.pasarguardId) {
+			// 							// 	try {
+			// 							// 		await this.pasarguardService.updateUser(`${dep.username}_${dep.id}`, {
+			// 							// 			expire: addDays(new Date(childResult.expiresOn), 1).toISOString(),
+			// 							// 		});
+			// 							// 	} catch (err) {
+			// 							// 		const ms = `Request to pasarguard failed ${err}`;
+			// 							// 		logger.error(ms);
+			// 							// 		await bot.sendMessage(chatId, ms);
+			// 							// 	}
+			// 							// }
 
-			if (env.BOT_ENV !== 'local') {
-				// if (referrer.pasarguardId) {
-				// 	try {
-				// 		await this.pasarguardService.updateUser(`${referrer.username}_${referrer.id}`, {
-				// 			expire: addDays(new Date(result.expiresOn), 1).toISOString(),
-				// 		});
-				// 	} catch (err) {
-				// 		const ms = `Request to pasarguard failed ${err}`;
-				// 		logger.error(ms);
-				// 		await bot.sendMessage(chatId, ms);
-				// 	}
-				// }
-				if (referrer.rwUUID) {
-					try {
-						await this.rwService.updateUser({
-							uuid: referrer.rwUUID,
-							expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
-						});
-					} catch (err) {
-						const ms = `Request to remnawave failed ${err}`;
-						logger.error(ms);
-						await bot.sendMessage(chatId, ms);
-					}
-				}
-			}
+			// 							if (dep.rwUUID) {
+			// 								try {
+			// 									await this.rwService.updateUser({
+			// 										uuid: dep.rwUUID,
+			// 										expireAt: addDays(new Date(childResult.expiresOn), 1).toISOString(),
+			// 									});
+			// 								} catch (err) {
+			// 									const ms = `Request to remnawave failed ${err}`;
+			// 									logger.error(ms);
+			// 									await bot.sendMessage(chatId, ms);
+			// 								}
+			// 							}
+			// 						}
+			// 					} else {
+			// 						const errMessage = `По непредвиденным обстоятельствам реферальный платеж для дочернего пользователя ${dep.username} не был создан`;
+			// 						logger.error(`[${basename(__filename)}]: ${errMessage}`);
+			// 						await bot.sendMessage(chatId, errMessage);
+			// 					}
+			// 				}
+			// 			}
+
+			// 			if (env.BOT_ENV !== 'local') {
+			// 				// if (referrer.pasarguardId) {
+			// 				// 	try {
+			// 				// 		await this.pasarguardService.updateUser(`${referrer.username}_${referrer.id}`, {
+			// 				// 			expire: addDays(new Date(result.expiresOn), 1).toISOString(),
+			// 				// 		});
+			// 				// 	} catch (err) {
+			// 				// 		const ms = `Request to pasarguard failed ${err}`;
+			// 				// 		logger.error(ms);
+			// 				// 		await bot.sendMessage(chatId, ms);
+			// 				// 	}
+			// 				// }
+			// 				if (referrer.rwUUID) {
+			// 					try {
+			// 						await this.rwService.updateUser({
+			// 							uuid: referrer.rwUUID,
+			// 							expireAt: addDays(new Date(result.expiresOn), 1).toISOString(),
+			// 						});
+			// 					} catch (err) {
+			// 						const ms = `Request to remnawave failed ${err}`;
+			// 						logger.error(ms);
+			// 						await bot.sendMessage(chatId, ms);
+			// 					}
+			// 				}
+			// 			}
 		} catch (err) {
 			const errMessage = `Ошибка при обработке реферального платежа для пользователя ${referrer.username} ${err}`;
 			logger.error(`[${basename(__filename)}]: ${errMessage}`);

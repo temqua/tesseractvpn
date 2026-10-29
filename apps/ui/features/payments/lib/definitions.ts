@@ -1,5 +1,6 @@
 import { IPayment } from '@/app/lib/api/payments/definitions';
 import { IErrorBody } from '@/app/lib/definitions.global';
+import { PaymentStatus } from '@/app/lib/enums';
 import z from 'zod';
 
 export const PaymentFormSchema = z.object({
@@ -10,6 +11,7 @@ export const PaymentFormSchema = z.object({
 	planId: z.number().nullable().optional(),
 	parentPaymentId: z.string().nullable().optional(),
 	paymentDate: z.string().optional(),
+	status: z.enum([PaymentStatus.CANCELLED, PaymentStatus.PENDING, PaymentStatus.SUCCEEDED]),
 });
 
 export type PaymentFormState =
@@ -37,6 +39,9 @@ export type PaymentFormState =
 						errors: string[];
 					};
 					paymentDate?: {
+						errors: string[];
+					};
+					status?: {
 						errors: string[];
 					};
 				};

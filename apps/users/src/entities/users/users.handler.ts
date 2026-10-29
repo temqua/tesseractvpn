@@ -3,7 +3,7 @@ import type { Message, Poll, User } from 'node-telegram-bot-api';
 import type { ICommandHandler } from '../../contracts';
 import { Bank, CmdCode, VPNUserCommand } from '../../enums';
 import { globalHandler } from '../../global.handler';
-import { PaymentsService } from '../payments/payments.service';
+import { PaymentsService, paymentsService as sharedPaymentsService } from '../payments/payments.service';
 import { UsersService } from './users.service';
 import type { UserCreateCommandContext, UsersContext, UserUpdateCommandContext } from './users.types';
 import logger from '../../logger';
@@ -13,7 +13,7 @@ import TelegramBot from 'node-telegram-bot-api';
 class UsersCommandsHandler implements ICommandHandler {
 	constructor(
 		private service: UsersService = new UsersService(),
-		private paymentsService: PaymentsService = new PaymentsService(),
+		private paymentsService: PaymentsService = sharedPaymentsService,
 		private plansService: PlansService = new PlansService(),
 	) {}
 	private state = {
@@ -220,4 +220,4 @@ class UsersCommandsHandler implements ICommandHandler {
 	}
 }
 
-export const userCommandsHandler = new UsersCommandsHandler(new UsersService(), new PaymentsService());
+export const userCommandsHandler = new UsersCommandsHandler(new UsersService(), sharedPaymentsService);

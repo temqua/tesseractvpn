@@ -43,16 +43,19 @@ export class PaymentsRepository {
       };
     }
     if (dto?.monthsCount) {
-      where.monthsCount = Number(dto?.monthsCount);
+      where.monthsCount = Number(dto.monthsCount);
     }
     if (dto?.amount) {
-      where.amount = Number(dto?.amount);
+      where.amount = Number(dto.amount);
     }
     if (dto?.userId) {
-      where.userId = Number(dto?.userId);
+      where.userId = Number(dto.userId);
     }
     if (dto?.planId) {
-      where.planId = Number(dto?.planId);
+      where.planId = Number(dto.planId);
+    }
+    if (dto?.status) {
+      where.status = dto.status;
     }
 
     const params = {

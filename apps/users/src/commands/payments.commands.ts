@@ -37,6 +37,10 @@ export const paymentCommandsList = {
 		regexp: /\/payment\s+delete/,
 		docs: '/payment delete — delete payment',
 	},
+	approve: {
+		regexp: /\/payment\s+approve/,
+		docs: '/payment approve — approve payment',
+	},
 };
 const paymentsService = new PaymentsService();
 
@@ -160,6 +164,22 @@ bot.onText(paymentCommandsList.getById.regexp, async (msg: Message) => {
 			scope: CommandScope.Payments,
 			context: {
 				[CmdCode.Command]: PaymentCommand.GetById,
+			},
+		},
+		{
+			message: msg,
+		} as TelegramBot.CallbackQuery,
+	);
+});
+bot.onText(paymentCommandsList.approve.regexp, async (msg: Message) => {
+	if (!isAdmin(msg)) {
+		return;
+	}
+	globalHandler.execute(
+		{
+			scope: CommandScope.Payments,
+			context: {
+				[CmdCode.Command]: PaymentCommand.Approve,
 			},
 		},
 		{

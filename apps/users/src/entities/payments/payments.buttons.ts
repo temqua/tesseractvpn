@@ -50,6 +50,17 @@ export const paymentButtons: InlineKeyboardButton[][] = [
 				},
 			}),
 		},
+	],
+	[
+		{
+			text: 'Approve+Process',
+			callback_data: JSON.stringify({
+				[CmdCode.Scope]: CommandScope.Payments,
+				[CmdCode.Context]: {
+					[CmdCode.Command]: PaymentCommand.Approve,
+				},
+			}),
+		},
 		{
 			text: 'Delete',
 			callback_data: JSON.stringify({

@@ -90,12 +90,13 @@ export class PaymentsClient {
 
 	async process(
 		id: string,
-		{ nalog = false, dependants = false }: IPaymentProcessDto,
+		{ nalog = false, dependants = false, referral = false }: IPaymentProcessDto,
 	): Promise<IPaymentProcessResult> {
 		return await client.post(`/admin/payments/process/${id}`, {
 			body: JSON.stringify({
 				nalog: nalog,
 				dependants,
+				referral,
 			}),
 		});
 	}

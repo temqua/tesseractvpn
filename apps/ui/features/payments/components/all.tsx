@@ -15,17 +15,18 @@ import ContentArea from '@/app/components/content-area';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/app/components/dialog';
 import { Input } from '@/app/components/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/app/components/popover';
+import { Select } from '@/app/components/select';
 import Table, { IColumn } from '@/app/components/table';
 import { deleteAction } from '@/app/lib/actions/payments';
 import { paymentsClient } from '@/app/lib/api/payments/client';
 import { IPayment } from '@/app/lib/api/payments/definitions';
 import { IListParams } from '@/app/lib/definitions.global';
-import { OrderDirection } from '@/app/lib/enums';
+import { OrderDirection, PaymentStatus } from '@/app/lib/enums';
 import { useUpdateParams } from '@/app/lib/use-update-params';
 import { formatISODate } from '@/app/lib/utils';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { parseISO } from 'date-fns';
-import { CalendarIcon, ChevronDownIcon, Pencil, Trash } from 'lucide-react';
+import { CalendarIcon, Pencil, Trash } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -64,6 +65,10 @@ const baseColumns: IColumn<IPayment>[] = [
 		prop: 'planId',
 	},
 	{
+		label: 'Status',
+		prop: 'status',
+	},
+	{
 		label: 'parentPaymentId',
 		prop: 'parentPaymentId',
 	},
@@ -79,6 +84,7 @@ interface IPaymentForm {
 	parentPaymentId?: string;
 	from?: string;
 	to?: string;
+	status?: PaymentStatus;
 }
 
 interface IPaymentsPageProps {
@@ -113,6 +119,7 @@ export default function PaymentsClientSide({ initialData, count, users, plans }:
 	const expiresOn = searchParams.get('expiresOn');
 	const monthsCount = searchParams.get('monthsCount');
 	const amount = searchParams.get('amount');
+	const status = searchParams.get('status');
 	const orderBy = (searchParams.get('orderBy') as keyof IPaymentForm) || '';
 	const orderDirection = (searchParams.get('orderDirection') as OrderDirection) || '';
 	const [isPaymentDateOpened, setPaymentDateOpened] = useState(false);
@@ -167,6 +174,7 @@ export default function PaymentsClientSide({ initialData, count, users, plans }:
 			from,
 			to,
 			expiresOn,
+			status,
 		],
 		queryFn: () => {
 			const params: IListParams & Partial<IPaymentFormWithOrder> = { skip: (page - 1) * take, take };
@@ -177,6 +185,7 @@ export default function PaymentsClientSide({ initialData, count, users, plans }:
 			if (from) params.from = from;
 			if (to) params.to = to;
 			if (amount) params.amount = amount;
+			if (status) params.status = status as PaymentStatus;
 			if (orderBy) params.orderBy = orderBy;
 			if (orderDirection) params.orderDirection = orderDirection;
 			return paymentsClient.getAll(params);
@@ -295,6 +304,19 @@ export default function PaymentsClientSide({ initialData, count, users, plans }:
 						</ComboboxContent>
 					</Combobox>
 				</th>
+				<th>
+					<Select
+						value={status ?? undefined}
+						onChange={event => debouncedUpdateFilter('status', event.target.value)}
+						id="status"
+						name="status"
+					>
+						<option value=""></option>
+						<option value={PaymentStatus.CANCELLED}>{PaymentStatus.CANCELLED}</option>
+						<option value={PaymentStatus.PENDING}>{PaymentStatus.PENDING}</option>
+						<option value={PaymentStatus.SUCCEEDED}>{PaymentStatus.SUCCEEDED}</option>
+					</Select>
+				</th>
 				<th></th>
 				<th></th>
 			</>
@@ -346,7 +368,7 @@ export default function PaymentsClientSide({ initialData, count, users, plans }:
 					onChangeTake={handleTakeChange}
 					onSort={handleSort}
 					loading={isLoading}
-					gridTemplateColumns={`1fr 1fr 1fr 1fr 1fr 200px 200px 1fr 1fr`}
+					gridTemplateColumns={`1fr 1fr 1fr 1fr 1fr 200px 200px 100px 1fr 1fr`}
 				/>
 			</ContentArea>
 			<Dialog open={isModalOpened}>

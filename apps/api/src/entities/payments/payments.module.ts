@@ -8,10 +8,11 @@ import { PaymentsController } from './payments.controller';
 import { PaymentsRepository } from './payments.repository';
 import { PaymentsService } from './payments.service';
 import { UserPaymentsController } from './payments.user.controller';
+import { YookassaClient } from './yookassa.client';
 
 @Module({
   controllers: [PaymentsController, UserPaymentsController],
-  providers: [PaymentsService, PaymentsRepository],
+  providers: [PaymentsService, PaymentsRepository, YookassaClient],
   exports: [PaymentsService],
   imports: [
     UsersModule,

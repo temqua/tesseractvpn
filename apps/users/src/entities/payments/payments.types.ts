@@ -48,6 +48,7 @@ export type Payment = {
 
 export interface IPaymentProcessDto {
 	dependants?: boolean;
+	referral?: boolean;
 	nalog: boolean;
 }
 

@@ -7,3 +7,9 @@ export enum UserRole {
 	CLIENT = 'CLIENT',
 	ADMIN = 'ADMIN',
 }
+
+export enum PaymentStatus {
+	PENDING = 'PENDING',
+	SUCCEEDED = 'SUCCEEDED',
+	CANCELLED = 'CANCELLED',
+}

@@ -14,7 +14,30 @@ import { formatISO } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useActionState, useState } from 'react';
 import { PaymentFormState } from '../lib/definitions';
-export default function PaymentClientSide({ data, id }: { data: IPayment; id: string }) {
+import {
+	Combobox,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxInput,
+	ComboboxItem,
+	ComboboxList,
+} from '@/app/components/combobox';
+import { PaymentStatus } from '@/app/lib/enums';
+import { Select } from '@/app/components/select';
+
+interface IPaymentFormProps {
+	users: {
+		label: string;
+		value: string;
+	}[];
+	plans: {
+		label: string;
+		value: string;
+	}[];
+	data: IPayment;
+	id: string;
+}
+export default function PaymentClientSide({ data, id, users, plans }: IPaymentFormProps) {
 	const updateAction = getUpdateAction(id);
 	const [state, formAction, isPendingUpdate] = useActionState<PaymentFormState, FormData>(updateAction, {});
 
@@ -26,6 +49,7 @@ export default function PaymentClientSide({ data, id }: { data: IPayment; id: st
 	const [isExpiresOnOpened, setExpiresOnOpened] = useState(false);
 	const [userId, setUserID] = useState(data?.userId);
 	const [planId, setPlanID] = useState(data?.planId);
+	const [status, setStatus] = useState(data.status);
 	return (
 		<ContentArea>
 			<form action={formAction}>
@@ -141,7 +165,7 @@ export default function PaymentClientSide({ data, id }: { data: IPayment; id: st
 							aria-invalid={Boolean(state?.errors?.properties?.expiresOn?.errors?.length)}
 						/> */}
 					</FormField>
-					<FormField id="userId" label="User ID" errors={state?.errors?.properties?.userId?.errors}>
+					{/* <FormField id="userId" label="User ID" errors={state?.errors?.properties?.userId?.errors}>
 						<Input
 							value={userId}
 							onChange={event => setUserID(Number(event.target.value))}
@@ -152,6 +176,63 @@ export default function PaymentClientSide({ data, id }: { data: IPayment; id: st
 							type="number"
 							aria-invalid={Boolean(state?.errors?.properties?.userId?.errors?.length)}
 						/>
+					</FormField> */}
+					<FormField id="userId" label="User" errors={state?.errors?.properties?.userId?.errors}>
+						<Combobox
+							items={users}
+							value={userId ?? undefined}
+							name="userId"
+							onValueChange={v => {
+								setUserID(Number(v));
+							}}
+						>
+							<ComboboxInput placeholder="Select user"></ComboboxInput>
+							<ComboboxContent>
+								<ComboboxEmpty>No users found.</ComboboxEmpty>
+								<ComboboxList>
+									{item => (
+										<ComboboxItem key={item.value} value={item.value}>
+											{item.label}
+										</ComboboxItem>
+									)}
+								</ComboboxList>
+							</ComboboxContent>
+						</Combobox>
+					</FormField>
+					<FormField id="planId" label="Plan" errors={state?.errors?.properties?.planId?.errors}>
+						<Combobox
+							name="planId"
+							items={plans}
+							value={planId ?? undefined}
+							onValueChange={v => {
+								setPlanID(Number(v));
+							}}
+						>
+							<ComboboxInput placeholder="Select plan"></ComboboxInput>
+							<ComboboxContent>
+								<ComboboxEmpty>No plans found.</ComboboxEmpty>
+								<ComboboxList>
+									{item => (
+										<ComboboxItem key={item.value} value={item.value}>
+											{item.label}
+										</ComboboxItem>
+									)}
+								</ComboboxList>
+							</ComboboxContent>
+						</Combobox>
+					</FormField>
+					<FormField id="status" label="Status" errors={state?.errors?.properties?.planId?.errors}>
+						<Select
+							name="status"
+							id="status"
+							value={status}
+							onChange={event => setStatus(event.target.value as PaymentStatus)}
+						>
+							<option value=""></option>
+							<option value={PaymentStatus.CANCELLED}>{PaymentStatus.CANCELLED}</option>
+							<option value={PaymentStatus.PENDING}>{PaymentStatus.PENDING}</option>
+							<option value={PaymentStatus.SUCCEEDED}>{PaymentStatus.SUCCEEDED}</option>
+						</Select>
 					</FormField>
 					{/* <div className="flex flex-col">
                 <label htmlFor="planId">Plan ID</label>

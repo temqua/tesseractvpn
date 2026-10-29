@@ -1,6 +1,7 @@
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { BaseListDto } from '../../../dto/base-dto';
 import { OrderDirection } from '../../../enums';
+import { PaymentStatus } from '@prisma/client';
 
 export enum OrderByPaymentField {
   Amount = 'amount',
@@ -33,6 +34,8 @@ export class PaymentListDto extends BaseListDto {
   @IsOptional()
   @IsEnum(OrderDirection)
   orderDirection?: OrderDirection;
+  @IsEnum(PaymentStatus)
+  status?: PaymentStatus;
 }
 
 export class UserPaymentsListDto extends BaseListDto {

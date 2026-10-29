@@ -111,7 +111,12 @@ export class PaymentsService {
 
   async handleHook(dto: IYooKassaWebHook, test = false) {
     if (dto.event === WebhookEventEnum.PaymentSucceeded) {
-      const paymentId = dto.object.metadata.id;
+      const paymentId = dto.object.metadata?.id;
+      if (!paymentId) {
+        throw new InternalServerErrorException(
+          `No data in dto.object.metadata.id. Actual value: ${dto.object.metadata?.id}`,
+        );
+      }
       const approved = await this.approve(paymentId);
       if (approved && !test) {
         return await this.process(paymentId, {
@@ -219,14 +224,14 @@ export class PaymentsService {
     }
 
     if (payment.user.telegramId) {
+      const lang = payment.user.languageCode || 'ru';
+      const messg = params.referral
+        ? dict.referral_payment_processed[lang]
+        : dict.payment_processed[lang](payment.amount);
       try {
-        const lang = payment.user.languageCode || 'ru';
-        notified = await this.telegramBotService.sendMessage(
-          dict.payment_processed[lang](payment.amount),
-          {
-            chat_id: Number(payment.user.telegramId),
-          },
-        );
+        notified = await this.telegramBotService.sendMessage(messg, {
+          chat_id: Number(payment.user.telegramId),
+        });
       } catch (err) {
         this.logger.error(`${err}`);
       }
@@ -341,7 +346,7 @@ export class PaymentsService {
         this.logger.error(errMessage);
         this.telegramJobsService.sendMessage(errMessage);
       } else {
-        const successMessage = `Налог успешно добавлен за пользователя ${username}`;
+        const successMessage = `Налог успешно добавлен за пользователя ${username}. ID: ${paymentId}`;
         this.logger.log(successMessage);
         this.telegramJobsService.sendMessage(successMessage);
         success = true;

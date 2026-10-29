@@ -6,16 +6,21 @@ import { paymentsClient } from '../api/payments/client';
 import { IPayment } from '../api/payments/definitions';
 import { IErrorBody } from '../definitions.global';
 import { toast } from '@/app/components/toast';
+import { PaymentStatus } from '../enums';
 
 export async function createAction(state: PaymentFormState, formData: FormData) {
 	const body = {
 		amount: Number(formData.get('amount')),
 		monthsCount: Number(formData.get('monthsCount')),
-		expiresOn: formData.get('expiresOn') as string,
-		parentPaymentId: formData.get('parentPaymentId') as string,
+		expiresOn: (formData.get('expiresOn') as string) ?? undefined,
+		parentPaymentId: (formData.get('parentPaymentId') as string | null) ?? undefined,
+		planId: formData.get('planId') ? Number(formData.get('planId')) : undefined,
 		userId: Number(formData.get('userId')),
+		status: formData.get('status') as PaymentStatus,
 	};
+	console.log('body :>> ', body);
 	const validatedFields = PaymentFormSchema.safeParse(body);
+	console.log('validatedFields.error :>> ', validatedFields.error);
 	if (!validatedFields.success) {
 		return {
 			errors: treeifyError(validatedFields.error),
@@ -57,7 +62,9 @@ export function getUpdateAction(id: string) {
 			planId: Number(formData.get('planId')),
 			userId: Number(formData.get('userId')),
 			paymentDate: formData.get('paymentDate'),
+			status: formData.get('status'),
 		};
+		console.log('body :>> ', body);
 		const validatedFields = PaymentFormSchema.safeParse(body);
 		if (!validatedFields.success) {
 			return {
@@ -70,9 +77,10 @@ export function getUpdateAction(id: string) {
 				monthsCount: Number(formData.get('monthsCount')),
 				expiresOn: formData.get('expiresOn') as string,
 				// parentPaymentId: formData.get('parentPaymentId'),
-				// planId: Number(formData.get('planId')),
+				planId: Number(formData.get('planId')),
 				paymentDate: formData.get('paymentDate') as string,
 				userId: Number(formData.get('userId')),
+				status: (formData.get('status') as PaymentStatus) ?? undefined,
 			});
 			if (response.ok) {
 				toast.success(`Payment ${id} has been successfully updated`);

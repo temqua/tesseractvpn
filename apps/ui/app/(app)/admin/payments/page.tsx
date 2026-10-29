@@ -1,4 +1,4 @@
-import { OrderDirection } from '@/app/lib/enums';
+import { OrderDirection, PaymentStatus } from '@/app/lib/enums';
 import PaymentsClientSide from '@/features/payments/components/all';
 import { paymentsSSRClient } from '@/features/payments/lib/ssr-client';
 import { plansSSRClient } from '@/features/plans/lib/ssr-client';
@@ -18,6 +18,7 @@ export default async function PaymentsPage(props: {
 		amount?: string;
 		from?: string;
 		to?: string;
+		status?: PaymentStatus;
 	}>;
 }) {
 	const searchParams = await props.searchParams;
@@ -32,6 +33,7 @@ export default async function PaymentsPage(props: {
 	const orderDirection = searchParams.orderDirection;
 	const from = searchParams.from;
 	const to = searchParams.to;
+	const status = searchParams.status;
 	if (!searchParams.page || !searchParams.take) {
 		const params = new URLSearchParams();
 		params.set('page', page.toString());
@@ -53,6 +55,7 @@ export default async function PaymentsPage(props: {
 		...(amount && { amount }),
 		...(from && { from }),
 		...(to && { to }),
+		...(status && { status }),
 		...(orderBy && { orderBy }),
 		...(orderDirection && { orderDirection }),
 	});

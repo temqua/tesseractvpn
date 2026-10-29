@@ -75,3 +75,9 @@ export enum VPNUserCommand {
   UserPay = 'up',
   UserReferralPay = 'urp',
 }
+
+export enum PaymentStatus {
+  PENDING = 'PENDING',
+  SUCCEEDED = 'SUCCEEDED',
+  CANCELLED = 'CANCELLED',
+}

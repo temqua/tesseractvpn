@@ -85,6 +85,7 @@ export enum VPNUserCommand {
 }
 
 export enum PaymentCommand {
+	Approve = 'a',
 	Delete = 'de',
 	DeleteExec = 'd',
 	List = 'l',
