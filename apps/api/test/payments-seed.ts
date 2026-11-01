@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma } from './helpers';
 
 export const SEED_USER = {
   username: 'test-payment-user',
@@ -54,18 +54,18 @@ export const SEED_PAYMENTS = [
 
 export const SUM_TOTAL = SEED_PAYMENTS.reduce((sum, p) => sum + p.amount, 0);
 
-export async function seedUser(prisma: PrismaClient) {
+export async function seedUser(prisma: Prisma) {
   const user = await prisma.user.create({ data: SEED_USER });
   return user;
 }
 
-export async function seedPlan(prisma: PrismaClient) {
+export async function seedPlan(prisma: Prisma) {
   const plan = await prisma.plan.create({ data: SEED_PLAN });
   return plan;
 }
 
-export async function seedPayments(prisma: PrismaClient, userId: number) {
-  const created = [];
+export async function seedPayments(prisma: Prisma, userId: number) {
+  const created: any[] = [];
   for (const payment of SEED_PAYMENTS) {
     const result = await prisma.payment.create({
       data: { ...payment, userId },
@@ -75,16 +75,16 @@ export async function seedPayments(prisma: PrismaClient, userId: number) {
   return created;
 }
 
-export async function cleanupByIds(prisma: PrismaClient, ids: string[]) {
+export async function cleanupByIds(prisma: Prisma, ids: string[]) {
   if (ids.length === 0) return;
   await prisma.payment.deleteMany({ where: { id: { in: ids } } });
 }
 
-export async function cleanupPlan(prisma: PrismaClient, planId: number) {
+export async function cleanupPlan(prisma: Prisma, planId: number) {
   await prisma.plan.deleteMany({ where: { id: planId } });
 }
 
-export async function cleanupUser(prisma: PrismaClient, userId: number) {
+export async function cleanupUser(prisma: Prisma, userId: number) {
   await prisma.payment.deleteMany({ where: { userId } });
   await prisma.user.deleteMany({ where: { id: userId } });
 }

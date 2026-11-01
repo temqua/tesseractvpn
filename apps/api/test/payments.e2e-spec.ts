@@ -1,10 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaClient } from '@prisma/client';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { DatabaseService } from '../src/database.service';
+import { Prisma } from './helpers';
 import {
   SEED_PAYMENTS,
   SEED_PLAN,
@@ -20,7 +20,7 @@ const AUTH_HEADER = `Bearer ${process.env.API_TOKEN ?? 'test-api-token'}`;
 
 describe('Payments (e2e)', () => {
   let app: INestApplication<App>;
-  let prisma: PrismaClient;
+  let prisma: Prisma;
   let seededIds: string[];
   let userId: number;
   let planId: number;
@@ -258,7 +258,7 @@ describe('Payments (e2e)', () => {
         .post('/api/v1/admin/payments/init')
         .set('Authorization', AUTH_HEADER)
         .send(dto)
-        .expect(200);
+        .expect(201);
 
       expect(res.body.id).toBeDefined();
       expect(Number(res.body.amount)).toBe(SEED_PLAN.amount);
@@ -308,15 +308,15 @@ describe('Payments (e2e)', () => {
       const res = await request(app.getHttpServer())
         .post(`/api/v1/admin/payments/approve/${id}`)
         .set('Authorization', AUTH_HEADER)
-        .send({ addNalog: true })
-        .expect(200);
+        .send({ notify: false })
+        .expect(201);
 
-      expect(res.body.status).toBe('succeeded');
+      expect(res.body.status).toBe('SUCCEEDED');
 
       await cleanupByIds(prisma, [id]);
     });
 
-    it('should approve a payment with addNalog flag', async () => {
+    it('should approve a payment without notification', async () => {
       const createRes = await request(app.getHttpServer())
         .post('/api/v1/admin/payments')
         .set('Authorization', AUTH_HEADER)
@@ -333,10 +333,10 @@ describe('Payments (e2e)', () => {
       const res = await request(app.getHttpServer())
         .post(`/api/v1/admin/payments/approve/${id}`)
         .set('Authorization', AUTH_HEADER)
-        .send({ addNalog: false })
-        .expect(200);
+        .send({ notify: false })
+        .expect(201);
 
-      expect(res.body.status).toBe('succeeded');
+      expect(res.body.status).toBe('SUCCEEDED');
 
       await cleanupByIds(prisma, [id]);
     });
@@ -344,7 +344,7 @@ describe('Payments (e2e)', () => {
     it('should return 401 without auth', async () => {
       await request(app.getHttpServer())
         .post(`/api/v1/admin/payments/approve/${seededIds[0]}`)
-        .send({ addNalog: true })
+        .send({ notify: false })
         .expect(401);
     });
 
@@ -354,7 +354,7 @@ describe('Payments (e2e)', () => {
           '/api/v1/admin/payments/approve/00000000-0000-0000-0000-000000000000',
         )
         .set('Authorization', AUTH_HEADER)
-        .send({ addNalog: true })
+        .send({ notify: false })
         .expect(404);
     });
   });

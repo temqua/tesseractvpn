@@ -1,10 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ExpenseCategory, PrismaClient } from '@prisma/client';
+import { ExpenseCategory } from '@prisma/client';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { DatabaseService } from '../src/database.service';
+import { Prisma } from './helpers';
 import {
   SEED_EXPENSES,
   SUM_NALOG,
@@ -17,7 +18,7 @@ const AUTH_HEADER = `Bearer ${process.env.API_TOKEN ?? 'test-api-token'}`;
 
 describe('Expenses (e2e)', () => {
   let app: INestApplication<App>;
-  let prisma: PrismaClient;
+  let prisma: Prisma;
   let seededIds: string[];
 
   beforeAll(async () => {

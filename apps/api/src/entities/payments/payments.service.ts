@@ -117,7 +117,7 @@ export class PaymentsService {
           `No data in dto.object.metadata.id. Actual value: ${dto.object.metadata?.id}`,
         );
       }
-      const approved = await this.approve(paymentId);
+      const approved = await this.approve(paymentId, true);
       if (approved && !test) {
         return await this.process(paymentId, {
           nalog: !test && env.APP_ENV === 'production',
@@ -156,7 +156,7 @@ export class PaymentsService {
     });
   }
 
-  async approve(id: string | null) {
+  async approve(id: string | null, notify = true) {
     if (!id) {
       return;
     }
@@ -166,6 +166,9 @@ export class PaymentsService {
     }
 
     const result = await this.repository.approve(id);
+    if (!notify) {
+      return result;
+    }
     if (result) {
       const successMessage = `Платёж ${payment.id} количеством ${payment.amount} рублей на ${payment.monthsCount} месяцев был успешно подтверждён для пользователя ${payment.user.username}.
 Новая дата истечения срока ${payment.expiresOn ? formatDate(payment.expiresOn) : 'null'}.`;
