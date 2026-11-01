@@ -239,7 +239,7 @@ export class PaymentsService {
         this.logger.error(`${err}`);
       }
     }
-\    if (payment.user.rwId && !isLocal) {
+    if (payment.user.rwId && !isLocal) {
       try {
         const result = await this.remnawaveService.updateUser({
           id: payment.user.rwId,
