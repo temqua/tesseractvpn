@@ -640,7 +640,6 @@ export class UsersRepository {
     userId: number,
     rwLink: string | null,
     rwUsername: string | null,
-    rwUUID: string | null,
     rwId: number | null,
   ) {
     return await this.databaseService.client.user.update({
@@ -648,7 +647,6 @@ export class UsersRepository {
         rwId,
         rwLink,
         rwUsername,
-        rwUUID,
       },
       where: {
         id: userId,

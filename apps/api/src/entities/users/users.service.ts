@@ -136,14 +136,13 @@ export class UsersService {
     );
     const resp = result?.response;
     const addToSquad = await this.rwService.updateUser({
-      uuid: resp.uuid,
+      id: resp.id,
       activeInternalSquads: ['df0af3dd-572e-43e5-a8a0-e84103392eca'],
     });
     return await this.repository.createSubscription(
       userId,
       resp?.subscriptionUrl ?? null,
       resp?.username ?? null,
-      resp?.uuid ?? null,
       resp?.id ?? null,
     );
   }
@@ -164,12 +163,10 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException(`User with id ${userId} not found`);
     }
-    if (!user.rwUUID) {
-      throw new NotFoundException(
-        `User with id ${userId} has no remnawave UUID`,
-      );
+    if (!user.rwId) {
+      throw new NotFoundException(`User with id ${userId} has no remnawave id`);
     }
-    const result = await this.rwService.deleteUser(user.rwUUID);
+    const result = await this.rwService.deleteUser(user.rwId);
     if (!result) {
       throw new InternalServerErrorException(
         `Unexpected error while deleting user ${user?.username}_${user?.id}`,

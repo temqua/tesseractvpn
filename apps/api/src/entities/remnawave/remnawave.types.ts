@@ -55,8 +55,8 @@ export interface IRWNewUserDTO {
 }
 
 export interface IRWUpdateUserDTO {
-  uuid?: string;
   username?: string;
+  id?: number | null;
   status?: IRWUserStatus;
   trafficLimitBytes?: number;
   trafficLimitStrategy?: IRWTrafficLimitStrategy;

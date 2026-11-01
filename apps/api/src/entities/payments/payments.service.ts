@@ -239,10 +239,10 @@ export class PaymentsService {
         this.logger.error(`${err}`);
       }
     }
-    if (payment.user.rwUUID && !isLocal) {
+\    if (payment.user.rwId && !isLocal) {
       try {
         const result = await this.remnawaveService.updateUser({
-          uuid: payment.user.rwUUID,
+          id: payment.user.rwId,
           expireAt: addDays(
             new Date(payment.expiresOn as Date),
             1,
@@ -312,11 +312,11 @@ export class PaymentsService {
           }
         }
 
-        if (dep.rwUUID && !isLocal) {
+        if (dep.rwId && !isLocal) {
           try {
             const newDate = addDays(childResult.expiresOn as Date, 1);
             const result = await this.remnawaveService.updateUser({
-              uuid: dep.rwUUID,
+              id: payment.user.rwId,
               expireAt: newDate.toISOString(),
             });
             current.renewed = result.response.expireAt == newDate.toISOString();
