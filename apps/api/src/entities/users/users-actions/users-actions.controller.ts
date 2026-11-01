@@ -7,12 +7,21 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UsersService } from '../users.service';
 import { CreateUsersActionDto } from './dto/create-users-action.dto';
 import { UpdateUsersActionDto } from './dto/update-users-action.dto';
 import { UserExistsPipe } from '../user-exists-pipe';
 import { UsersActionsService } from './users-actions.service';
+import { UserAction } from './entities/user-action.entity';
 
+@ApiTags('users')
+@ApiBearerAuth()
 @Controller('users/:userId/actions')
 export class UsersActionsController {
   constructor(
@@ -21,6 +30,8 @@ export class UsersActionsController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Создать действие пользователя' })
+  @ApiOkResponse({ type: UserAction })
   async create(
     @Param('userId', UserExistsPipe) userId: string,
     @Body() createUsersActionDto: CreateUsersActionDto,
@@ -32,11 +43,15 @@ export class UsersActionsController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Действия пользователя' })
+  @ApiOkResponse({ type: UserAction, isArray: true })
   async findAll(@Param('userId', UserExistsPipe) userId: string) {
     return await this.usersActionsService.findAll(Number(userId));
   }
 
   @Get(':actionId')
+  @ApiOperation({ summary: 'Действие пользователя по id' })
+  @ApiOkResponse({ type: UserAction })
   async findOne(
     @Param('userId', UserExistsPipe) userId: string,
     @Param('actionId') actionId: string,
@@ -48,6 +63,8 @@ export class UsersActionsController {
   }
 
   @Patch(':actionId')
+  @ApiOperation({ summary: 'Обновить действие пользователя' })
+  @ApiOkResponse({ type: UserAction })
   async update(
     @Param('userId', UserExistsPipe) userId: string,
     @Param('actionId') actionId: string,
@@ -61,6 +78,7 @@ export class UsersActionsController {
   }
 
   @Delete(':actionId')
+  @ApiOperation({ summary: 'Удалить действие пользователя' })
   async remove(
     @Param('userId', UserExistsPipe) userId: string,
     @Param('actionId') actionId: string,

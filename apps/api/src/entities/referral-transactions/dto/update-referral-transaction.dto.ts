@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { CreateReferralTransactionDto } from './create-referral-transaction.dto';
 
 export class UpdateReferralTransactionDto extends PartialType(

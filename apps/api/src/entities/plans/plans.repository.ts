@@ -4,12 +4,28 @@ import { DatabaseService } from '../../database.service';
 import { UpdatePlanDto } from './dto/update-plan.dto';
 import { SearchPlanDto } from './dto/search-plan.dto';
 
+const PLAN_SELECTABLE_FIELDS = new Set<string>([
+  'id',
+  'name',
+  'amount',
+  'price',
+  'currency',
+  'months',
+  'minCount',
+  'maxCount',
+  'createdAt',
+  'legacy',
+]);
+
 @Injectable()
 export class PlansRepository {
   constructor(private databaseService: DatabaseService) {}
   async findPlan(dto?: SearchPlanDto) {
     const where: Prisma.PlanWhereInput = this.buildWhere(dto);
-    const select = dto?.select ? dto.select.split(',') : [];
+    const select = (dto?.select ?? '')
+      .split(',')
+      .map((field) => field.trim())
+      .filter((field) => PLAN_SELECTABLE_FIELDS.has(field));
     const baseParams = {
       where,
       orderBy:
@@ -22,7 +38,7 @@ export class PlansRepository {
     const countParams = {
       where,
     };
-    if (dto?.select?.length) {
+    if (select.length) {
       const params = {
         ...baseParams,
         select: select.reduce((acc, curr) => {
@@ -215,12 +231,16 @@ export class PlansRepository {
   }
 
   async update(id: number, dto: UpdatePlanDto) {
+    const { months, monthsCount, ...rest } = dto;
     return await this.databaseService.client.plan.update({
       where: {
         id,
       },
       data: {
-        ...dto,
+        ...rest,
+        ...(months !== undefined || monthsCount !== undefined
+          ? { months: months ?? monthsCount }
+          : {}),
       },
     });
   }

@@ -48,7 +48,7 @@ export default async function PlansPage(props: {
 		...(id && { id }),
 		...(price && { price }),
 		...(amount && { amount }),
-		...(monthsCount && { monthsCount }),
+		...(monthsCount && { months: monthsCount }),
 		...(name && { name }),
 		...(minCount && { minCount }),
 		...(maxCount && { maxCount }),

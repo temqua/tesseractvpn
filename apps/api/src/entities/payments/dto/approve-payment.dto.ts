@@ -1,6 +1,12 @@
-import { IsBoolean } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsOptional } from 'class-validator';
 
 export class PaymentApproveDto {
+  @ApiPropertyOptional({
+    example: false,
+    description: 'Отправлять ли уведомление о подтверждении платежа в Telegram',
+  })
   @IsBoolean()
-  addNalog: boolean;
+  @IsOptional()
+  notify?: boolean;
 }

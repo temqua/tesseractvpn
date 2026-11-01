@@ -79,11 +79,7 @@ export default function NewPaymentClientSide({
 							aria-invalid={Boolean(state?.errors?.properties?.monthsCount?.errors?.length)}
 						/>
 					</FormField>
-					<FormField
-						id="expiresOn"
-						label="Expires on"
-						errors={state?.errors?.properties?.expiresOn?.errors}
-					>
+					<FormField id="expiresOn" label="Expires on" errors={state?.errors?.properties?.expiresOn?.errors}>
 						{/* <Input
 							value={expiresOn}
 							onChange={event => setExpiresOn(event.target.value)}

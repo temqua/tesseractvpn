@@ -45,7 +45,7 @@ export class ExpensesService {
 		}
 		try {
 			const category = this.params.get('category');
-			const amount = this.params.get('amount');
+			const amount = Number(this.params.get('amount'));
 			await this.client.create({
 				category,
 				amount,
