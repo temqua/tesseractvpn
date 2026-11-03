@@ -67,7 +67,6 @@ export interface UpdateUserDto extends Partial<CreateUserDto> {
 	pasarguardId?: number | null;
 	rwLink?: string | null;
 	rwUsername?: string | null;
-	rwUUID?: string | null;
 	rwId?: number | null;
 	active?: boolean;
 }
@@ -123,7 +122,6 @@ export type User = {
 	rwLink: string | null;
 	rwUsername: string | null;
 	rwId: number | null;
-	rwUUID: string | null;
 	payerId: number | null;
 	referrerId: number | null;
 	muted: boolean | null;

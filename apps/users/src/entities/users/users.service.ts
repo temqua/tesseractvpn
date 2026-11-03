@@ -2045,7 +2045,6 @@ Price: ${user.price}
 Subscription link: ${user.subLink ? env.PASARGUARD_ROOT : ''}${user.subLink}
 RW link: ${user.rwLink}
 RW username: ${user.rwUsername}
-RW UUID: ${user.rwUUID}
 RW ID: ${user.rwId}
 Language Code: ${user.languageCode}
 Created At: ${formatDate(user.createdAt)}\n`;
