@@ -62,8 +62,8 @@ export class RemnawaveService {
 		return result;
 	}
 
-	async deleteUser(uuid: string) {
-		const response = await client.delete(`${this.apiRoot}/api/users/${uuid}`, {
+	async deleteUser(id: number) {
+		const response = await client.delete(`${this.apiRoot}/api/users/${id}`, {
 			headers: {
 				Authorization: `Bearer ${env.RW_TOKEN}`,
 			},
@@ -72,7 +72,6 @@ export class RemnawaveService {
 			const responseBody = <IRWServerErrorResponse | IRWClientErrorResponse>await response.json();
 			throw new Error(`Error while requesting remnawave: ${responseBody.message}`);
 		}
-		const result = (await response.json()) as IRWDeleteUserResponse;
-		return result?.response.isDeleted;
+		return response.ok;
 	}
 }

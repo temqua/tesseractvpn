@@ -577,14 +577,14 @@ export class UsersService {
 						: `User ${user.pasarguardUsername} has not been removed from pasarguard. Reason ${deleteResult.error}`;
 					await bot.sendMessage(msg.chat.id, deleteMessage);
 				}
-				if (user.rwUUID) {
-					const errorMessage = `User ${user.rwUUID} has not been removed from remnawave.`;
+				if (user.rwId) {
+					const errorMessage = `User ${user.rwId} has not been removed from remnawave.`;
 					try {
-						const deleteResult = await this.rwService.deleteUser(user.rwUUID);
+						const deleteResult = await this.rwService.deleteUser(user.rwId);
 						if (deleteResult) {
 							await bot.sendMessage(
 								msg.chat.id,
-								`User ${user.rwUUID} has been successfully removed from remnawave`,
+								`User ${user.rwId} has been successfully removed from remnawave`,
 							);
 						} else {
 							await bot.sendMessage(msg.chat.id, errorMessage);
@@ -2144,14 +2144,13 @@ ${env.PAYMENT_CARDS}`
 	private async createRWUser(username: string, id: number) {
 		const createdRWUser = await this.rwService.createUser(`${username}_${id}`);
 		const addToSquad = await this.rwService.updateUser({
-			uuid: createdRWUser.response.uuid,
+			id: createdRWUser.response.id,
 			activeInternalSquads: ['df0af3dd-572e-43e5-a8a0-e84103392eca'],
 		});
 		return await this.client.update(id, {
 			rwLink: createdRWUser.response.subscriptionUrl,
 			rwId: createdRWUser.response.id,
 			rwUsername: createdRWUser.response.username,
-			rwUUID: createdRWUser.response.uuid,
 		});
 	}
 
