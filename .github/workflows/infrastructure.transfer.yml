@@ -22,6 +22,9 @@ on:
                     - latvia
                     - spb
                     - msk2
+                    - msk-ufo
+                    - msk-4vps
+                    - msk-us
 
 jobs:
     build-deploy:

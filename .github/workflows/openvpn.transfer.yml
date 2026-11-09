@@ -25,6 +25,7 @@ on:
                     - spb
                     - msk-ufo
                     - msk-4vps
+                    - msk-us
 
 jobs:
     build-deploy:
