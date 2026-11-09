@@ -23,6 +23,8 @@ on:
                     - fin
                     - latvia
                     - spb
+                    - msk-ufo
+                    - msk-4vps
 
 jobs:
     build-deploy:

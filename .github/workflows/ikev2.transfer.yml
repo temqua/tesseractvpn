@@ -21,6 +21,8 @@ on:
                     - de
                     - fin
                     - latvia
+                    - msk-ufo
+                    - msk-4vps
 jobs:
     build-deploy:
         runs-on: ubuntu-latest
