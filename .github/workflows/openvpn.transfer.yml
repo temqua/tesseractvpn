@@ -86,5 +86,5 @@ jobs:
                     if [ -n "${{ secrets.CERT_PATH }}" ]; then
                       echo "CERT_PATH=${{ secrets.CERT_PATH }}" >> "openvpn/.env"
                     fi                                           
-                    docker compose up -d
+                    docker compose up openvpn_service -d
                   '
