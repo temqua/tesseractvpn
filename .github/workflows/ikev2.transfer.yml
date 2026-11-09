@@ -22,9 +22,9 @@ on:
                     - fin
                     - latvia
                     - msk-ufo
-                    - msk-4vps
+                    - msk-4v
                     - msk-us
-                    
+
 jobs:
     build-deploy:
         runs-on: ubuntu-latest
