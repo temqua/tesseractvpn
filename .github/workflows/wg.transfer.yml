@@ -1,99 +1,28 @@
 name: Build & Deploy Wireguard management service
 
+run-name: 'Deploy Wireguard → ${{ inputs.environment }}'
+
 on:
     workflow_dispatch:
         inputs:
             environment:
                 description: 'Target environment'
                 required: true
-                default: t
-                type: choice
-                options:
-                    - austria
-                    - msk
-                    - neth
-                    - sweden
-                    - us2
-                    - de
-                    - fin
-                    - fin2-subs
-                    - fin3-subs
-                    - fin4-subs
-                    - neth-subs
-                    - neth2-subs
-                    - neth3-subs
-                    - sweden-subs
-                    - turkey
-                    - france
-                    - switzerland
-                    - india
-                    - spain
-                    - latvia
+                type: environment
+
+concurrency:
+    group: vpn-wireguard-${{ inputs.environment }}
+    cancel-in-progress: false
+
+permissions:
+    contents: read
 
 jobs:
-    build-deploy:
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-        environment: ${{ inputs.environment }}
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-
-            - name: Setup SSH
-              uses: webfactory/ssh-agent@v0.9.1
-              with:
-                  ssh-private-key: ${{ secrets.VPN_SERVER_SSH_KEY }}
-
-            - name: Add VPN server to known hosts
-              run: |
-                  mkdir -p ~/.ssh
-                  ssh-keyscan -H ${{ secrets.VPN_SERVER_HOST }} >> ~/.ssh/known_hosts
-
-            - name: Build WireGuard image
-              working-directory: apps/infrastructure
-              run: |
-                  docker compose build wg_service
-
-            - name: Upload WireGuard to server
-              working-directory: apps/infrastructure
-              run: |
-                  docker save wg_service:latest \
-                  | gzip \
-                  | ssh -o ServerAliveInterval=15 \
-                          -o ServerAliveCountMax=8 \
-                          ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} \
-                          'gunzip | docker load'
-
-            - name: Upload docker-compose.yml via SSH
-              run: |
-                  cat ./apps/infrastructure/docker-compose.yml | ssh ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} "cat > ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}/docker-compose.yml"
-
-            - name: Update .env and restart Wireguard container on server
-              run: |
-                  ssh ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} '
-                    cd ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}
-                    echo "SERVICE_TOKEN=${{ secrets.SERVICE_TOKEN }}" > "wireguard/.env"
-                    echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> "wireguard/.env"
-                    echo "COOKIE_NAME=${{ secrets.COOKIE_NAME }}" >> "wireguard/.env"
-
-                    if [ -n "${{ secrets.KEY_PATH }}" ]; then
-                      echo "KEY_PATH=${{ secrets.KEY_PATH }}" >> "wireguard/.env"
-                    fi
-
-                    if [ -n "${{ secrets.CERT_PATH }}" ]; then
-                      echo "CERT_PATH=${{ secrets.CERT_PATH }}" >> "wireguard/.env"
-                    fi
-                    docker compose up -d wg_service
-                  '
-
-            - name: Deployment summary
-              if: success()
-              run: |
-                  echo "Deployed Wireguard management service to environment: ${{ inputs.environment }}"
-                  {
-                    echo "## Deployment summary"
-                    echo ""
-                    echo "- Service: **Wireguard management service**"
-                    echo "- Environment: **${{ inputs.environment }}**"
-                    echo "- Commit: \`${{ github.sha }}\`"
-                  } >> "$GITHUB_STEP_SUMMARY"
+    deploy:
+        uses: ./.github/workflows/deploy-vpn-service.yml
+        secrets: inherit
+        with:
+            environment: ${{ inputs.environment }}
+            title: Wireguard management service
+            services: wg_service
+            env_dirs: wireguard

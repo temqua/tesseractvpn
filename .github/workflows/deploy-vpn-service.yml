@@ -1,0 +1,113 @@
+name: Deploy VPN service
+
+on:
+    workflow_call:
+        inputs:
+            environment:
+                description: 'Target environment'
+                required: true
+                type: string
+            title:
+                description: 'Service name shown in the deployment summary'
+                required: true
+                type: string
+            services:
+                description: 'Space-separated docker compose services to build, upload and start'
+                required: true
+                type: string
+            env_dirs:
+                description: 'Space-separated directories, relative to the infra directory, whose .env files are updated'
+                required: true
+                type: string
+
+jobs:
+    build-deploy:
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        environment: ${{ inputs.environment }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Validate deployment secrets
+              env:
+                  VPN_SERVER_HOST: ${{ secrets.VPN_SERVER_HOST }}
+                  VPN_SERVER_USERNAME: ${{ secrets.VPN_SERVER_USERNAME }}
+                  VPN_SERVER_INFRA_DIRECTORY: ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}
+              run: |
+                  for name in VPN_SERVER_HOST VPN_SERVER_USERNAME VPN_SERVER_INFRA_DIRECTORY; do
+                    if [ -z "${!name}" ]; then
+                      echo "::error::$name is empty for environment '${{ inputs.environment }}'. Check the environment secrets."
+                      exit 1
+                    fi
+                  done
+
+            - name: Setup SSH
+              uses: webfactory/ssh-agent@v0.9.1
+              with:
+                  ssh-private-key: ${{ secrets.VPN_SERVER_SSH_KEY }}
+
+            - name: Add VPN server to known hosts
+              run: |
+                  mkdir -p ~/.ssh
+                  ssh-keyscan -H ${{ secrets.VPN_SERVER_HOST }} >> ~/.ssh/known_hosts
+
+            - name: Build ${{ inputs.title }} image
+              working-directory: apps/infrastructure
+              run: |
+                  docker compose build ${{ inputs.services }}
+
+            - name: Upload ${{ inputs.title }} to server
+              working-directory: apps/infrastructure
+              env:
+                  SERVICES: ${{ inputs.services }}
+              run: |
+                  images=()
+                  for service in $SERVICES; do
+                    images+=("$service:latest")
+                  done
+                  docker save "${images[@]}" \
+                  | gzip \
+                  | ssh -o ServerAliveInterval=15 \
+                          -o ServerAliveCountMax=8 \
+                          ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} \
+                          'gunzip | docker load'
+
+            - name: Upload docker-compose.yml via SSH
+              run: |
+                  cat ./apps/infrastructure/docker-compose.yml | ssh ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} "cat > ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}/docker-compose.yml"
+
+            - name: Update .env and restart containers on server
+              run: |
+                  ssh ${{ secrets.VPN_SERVER_USERNAME }}@${{ secrets.VPN_SERVER_HOST }} '
+                    cd ${{ secrets.VPN_SERVER_INFRA_DIRECTORY }}
+                    for dir in ${{ inputs.env_dirs }}; do
+                      echo "SERVICE_TOKEN=${{ secrets.SERVICE_TOKEN }}" > "$dir/.env"
+                      echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> "$dir/.env"
+                      echo "COOKIE_NAME=${{ secrets.COOKIE_NAME }}" >> "$dir/.env"
+
+                      if [ -n "${{ secrets.KEY_PATH }}" ]; then
+                        echo "KEY_PATH=${{ secrets.KEY_PATH }}" >> "$dir/.env"
+                      fi
+
+                      if [ -n "${{ secrets.CERT_PATH }}" ]; then
+                        echo "CERT_PATH=${{ secrets.CERT_PATH }}" >> "$dir/.env"
+                      fi
+                    done
+                    docker compose up -d ${{ inputs.services }}
+                  '
+
+            - name: Deployment summary
+              if: always()
+              run: |
+                  echo "Deployed ${{ inputs.title }} to environment: ${{ inputs.environment }} (status: ${{ job.status }})"
+                  {
+                    echo "## Deployment summary"
+                    echo ""
+                    echo "| Field | Value |"
+                    echo "| --- | --- |"
+                    echo "| Service | **${{ inputs.title }}** |"
+                    echo "| Environment | **${{ inputs.environment }}** |"
+                    echo "| Status | **${{ job.status }}** |"
+                    echo "| Commit | \`${{ github.sha }}\` |"
+                  } >> "$GITHUB_STEP_SUMMARY"
