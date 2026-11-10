@@ -50,11 +50,6 @@ jobs:
             - name: Build OpenVPN image
               working-directory: apps/infrastructure
               run: |
-                  docker compose build wg_service
-
-            - name: Build OpenVPN image
-              working-directory: apps/infrastructure
-              run: |
                   docker compose build openvpn_service
 
             - name: Upload OpenVPN to server
