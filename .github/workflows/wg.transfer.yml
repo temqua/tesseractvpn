@@ -85,3 +85,15 @@ jobs:
                     fi
                     docker compose up -d wg_service
                   '
+
+            - name: Deployment summary
+              if: success()
+              run: |
+                  echo "Deployed Wireguard management service to environment: ${{ inputs.environment }}"
+                  {
+                    echo "## Deployment summary"
+                    echo ""
+                    echo "- Service: **Wireguard management service**"
+                    echo "- Environment: **${{ inputs.environment }}**"
+                    echo "- Commit: \`${{ github.sha }}\`"
+                  } >> "$GITHUB_STEP_SUMMARY"

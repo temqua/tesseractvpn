@@ -81,3 +81,15 @@ jobs:
                                                                 
                     docker compose up -d ikev2_service
                   '
+
+            - name: Deployment summary
+              if: success()
+              run: |
+                  echo "Deployed IKEv2 management service to environment: ${{ inputs.environment }}"
+                  {
+                    echo "## Deployment summary"
+                    echo ""
+                    echo "- Service: **IKEv2 management service**"
+                    echo "- Environment: **${{ inputs.environment }}**"
+                    echo "- Commit: \`${{ github.sha }}\`"
+                  } >> "$GITHUB_STEP_SUMMARY"

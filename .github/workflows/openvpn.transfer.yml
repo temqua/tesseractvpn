@@ -83,3 +83,15 @@ jobs:
                     fi                                           
                     docker compose up openvpn_service -d
                   '
+
+            - name: Deployment summary
+              if: success()
+              run: |
+                  echo "Deployed OpenVPN management service to environment: ${{ inputs.environment }}"
+                  {
+                    echo "## Deployment summary"
+                    echo ""
+                    echo "- Service: **OpenVPN management service**"
+                    echo "- Environment: **${{ inputs.environment }}**"
+                    echo "- Commit: \`${{ github.sha }}\`"
+                  } >> "$GITHUB_STEP_SUMMARY"

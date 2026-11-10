@@ -112,3 +112,15 @@ jobs:
                     done                                                                        
                     docker compose up -d
                   '
+
+            - name: Deployment summary
+              if: success()
+              run: |
+                  echo "Deployed VPN infrastructure to environment: ${{ inputs.environment }}"
+                  {
+                    echo "## Deployment summary"
+                    echo ""
+                    echo "- Service: **VPN infrastructure (IKEv2, WireGuard, OpenVPN)**"
+                    echo "- Environment: **${{ inputs.environment }}**"
+                    echo "- Commit: \`${{ github.sha }}\`"
+                  } >> "$GITHUB_STEP_SUMMARY"
