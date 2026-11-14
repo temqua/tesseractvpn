@@ -316,7 +316,7 @@ export class PaymentsService {
           try {
             const newDate = addDays(childResult.expiresOn as Date, 1);
             const result = await this.remnawaveService.updateUser({
-              id: payment.user.rwId,
+              id: dep.rwId,
               expireAt: newDate.toISOString(),
             });
             current.renewed = result.response.expireAt == newDate.toISOString();
